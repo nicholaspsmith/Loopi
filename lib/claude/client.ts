@@ -89,6 +89,14 @@ export async function streamChatCompletion(params: {
         for (const line of lines) {
           try {
             const data = JSON.parse(line)
+
+            // Check if stream is complete
+            if (data.done) {
+              done = true
+              break
+            }
+
+            // Add content if available
             if (data.message?.content) {
               const text = data.message.content
               fullText += text
