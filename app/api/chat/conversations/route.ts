@@ -7,7 +7,7 @@ import {
 } from '@/lib/db/operations/conversations'
 import { success, error as errorResponse } from '@/lib/api/response'
 import { validate } from '@/lib/validation/helpers'
-import { UnauthorizedError } from '@/lib/errors'
+import { AuthenticationError } from '@/lib/errors'
 
 /**
  * GET /api/chat/conversations
@@ -19,7 +19,7 @@ export async function GET() {
     const session = await auth()
 
     if (!session?.user?.id) {
-      throw new UnauthorizedError('Not authenticated')
+      throw new AuthenticationError('Not authenticated')
     }
 
     const conversations = await getConversationsByUserId(session.user.id)
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     const session = await auth()
 
     if (!session?.user?.id) {
-      throw new UnauthorizedError('Not authenticated')
+      throw new AuthenticationError('Not authenticated')
     }
 
     const body = await request.json()

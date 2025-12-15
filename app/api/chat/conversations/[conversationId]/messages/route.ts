@@ -11,7 +11,7 @@ import {
 } from '@/lib/db/operations/conversations'
 import { success, error as errorResponse } from '@/lib/api/response'
 import { validate } from '@/lib/validation/helpers'
-import { UnauthorizedError, NotFoundError } from '@/lib/errors'
+import { AuthenticationError, AuthorizationError, NotFoundError } from '@/lib/errors'
 import { streamChatCompletion, toClaudeMessages } from '@/lib/claude/client'
 import { getSystemPrompt } from '@/lib/claude/prompts'
 
@@ -21,27 +21,27 @@ import { getSystemPrompt } from '@/lib/claude/prompts'
  * Get all messages for a conversation
  */
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { conversationId: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const session = await auth()
 
     if (!session?.user?.id) {
-      throw new UnauthorizedError('Not authenticated')
+      throw new AuthenticationError('Not authenticated')
     }
 
-    const { conversationId } = params
+    const { conversationId } = await params
 
     // Verify conversation exists and belongs to user
     const conversation = await getConversationById(conversationId)
 
     if (!conversation) {
-      throw new NotFoundError('Conversation not found')
+      throw new NotFoundError('Conversation', conversationId)
     }
 
     if (conversation.userId !== session.user.id) {
-      throw new UnauthorizedError('Not authorized to access this conversation')
+      throw new AuthorizationError('Not authorized to access this conversation')
     }
 
     const messages = await getMessagesByConversationId(conversationId)
@@ -63,31 +63,32 @@ const SendMessageSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const session = await auth()
 
     if (!session?.user?.id) {
-      throw new UnauthorizedError('Not authenticated')
+      throw new AuthenticationError('Not authenticated')
     }
 
-    const { conversationId } = params
+    const { conversationId } = await params
+    const userId = session.user.id // Capture userId for use in callbacks
 
     // Verify conversation exists and belongs to user
-    const belongsToUser = await conversationBelongsToUser(conversationId, session.user.id)
+    const belongsToUser = await conversationBelongsToUser(conversationId, userId)
 
     if (!belongsToUser) {
-      throw new NotFoundError('Conversation not found')
+      throw new NotFoundError('Conversation', conversationId)
     }
 
     const body = await request.json()
     const data = validate(SendMessageSchema, body)
 
     // Create user message
-    const userMessage = await createMessage({
+    await createMessage({
       conversationId,
-      userId: session.user.id,
+      userId,
       role: 'user',
       content: data.content,
     })
@@ -100,8 +101,6 @@ export async function POST(
 
     // Create a readable stream for SSE
     const encoder = new TextEncoder()
-    let assistantMessageId: string | null = null
-    let fullResponse = ''
 
     const stream = new ReadableStream({
       async start(controller) {
@@ -114,18 +113,15 @@ export async function POST(
               controller.enqueue(
                 encoder.encode(`data: ${JSON.stringify({ type: 'chunk', text })}\n\n`)
               )
-              fullResponse += text
             },
             onComplete: async (text) => {
               // Save assistant message to database
               const assistantMessage = await createMessage({
                 conversationId,
-                userId: session.user.id,
+                userId,
                 role: 'assistant',
                 content: text,
               })
-
-              assistantMessageId = assistantMessage.id
 
               // Send completion event
               controller.enqueue(

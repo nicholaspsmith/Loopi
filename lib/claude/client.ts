@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import type { Message, MessageRole } from '@/types'
+import type { Message } from '@/types'
 
 /**
  * Claude Client Wrapper
