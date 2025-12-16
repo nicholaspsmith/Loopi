@@ -1,12 +1,14 @@
 'use client'
 
 import type { Message as MessageType } from '@/types'
+import GenerateFlashcardsButton from './GenerateFlashcardsButton'
 
 /**
  * Message Component
  *
  * Displays a single message in the chat interface.
  * Shows different styling for user vs assistant messages.
+ * Includes GenerateFlashcardsButton for assistant messages (FR-008).
  */
 
 interface MessageProps {
@@ -16,6 +18,7 @@ interface MessageProps {
 
 export default function Message({ message, isStreaming = false }: MessageProps) {
   const isUser = message.role === 'user'
+  const isAssistant = message.role === 'assistant'
 
   return (
     <div
@@ -50,6 +53,15 @@ export default function Message({ message, isStreaming = false }: MessageProps) 
             minute: '2-digit',
           })}
         </div>
+
+        {/* Generate Flashcards Button (FR-008: only for assistant messages) */}
+        {isAssistant && !isStreaming && (
+          <GenerateFlashcardsButton
+            messageId={message.id}
+            conversationId={message.conversationId}
+            hasFlashcards={message.hasFlashcards || false}
+          />
+        )}
       </div>
     </div>
   )
