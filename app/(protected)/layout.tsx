@@ -1,6 +1,7 @@
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import LogoutButton from '@/components/auth/LogoutButton'
+import Navigation from '@/components/nav/Navigation'
 
 /**
  * Protected Layout
@@ -27,7 +28,7 @@ export default async function ProtectedLayout({
       {/* Header */}
       <header className="border-b border-gray-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-bold text-gray-900">MemoryLoop</h1>
               {session.user?.name && (
@@ -39,6 +40,9 @@ export default async function ProtectedLayout({
 
             <LogoutButton />
           </div>
+
+          {/* Navigation Tabs */}
+          <Navigation />
         </div>
       </header>
 
