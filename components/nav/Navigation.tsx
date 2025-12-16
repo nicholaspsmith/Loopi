@@ -24,15 +24,16 @@ export default function Navigation() {
   const pathname = usePathname()
 
   return (
-    <nav className="flex space-x-1 border-b border-gray-200 -mb-px">
+    <nav className="flex space-x-1 border-b border-gray-200 -mb-px" role="navigation" aria-label="Main navigation">
       {navLinks.map((link) => {
         const isActive = pathname === link.href
         return (
           <Link
             key={link.href}
             href={link.href}
+            aria-current={isActive ? 'page' : undefined}
             className={`
-              px-4 py-2 text-sm font-medium border-b-2 transition-colors
+              px-4 py-2 text-sm font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
               ${
                 isActive
                   ? 'border-blue-600 text-blue-600'

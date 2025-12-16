@@ -25,6 +25,8 @@ export default function Message({ message, isStreaming = false }: MessageProps) 
       className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}
       data-testid="chat-message"
       data-role={message.role}
+      role="article"
+      aria-label={`Message from ${isUser ? 'You' : 'Claude'}`}
     >
       <div
         className={`max-w-[80%] rounded-lg px-4 py-3 ${
@@ -34,25 +36,25 @@ export default function Message({ message, isStreaming = false }: MessageProps) 
         }`}
       >
         {/* Role label */}
-        <div className="text-xs font-semibold mb-1 opacity-70">
+        <div className="text-xs font-semibold mb-1 opacity-70" aria-label="Sender">
           {isUser ? 'You' : 'Claude'}
         </div>
 
         {/* Message content */}
-        <div className="whitespace-pre-wrap break-words">
+        <div className="whitespace-pre-wrap break-words" role="text">
           {message.content}
           {isStreaming && (
-            <span className="inline-block w-2 h-4 ml-1 bg-current animate-pulse" />
+            <span className="inline-block w-2 h-4 ml-1 bg-current animate-pulse" aria-label="Message is being typed" />
           )}
         </div>
 
         {/* Timestamp */}
-        <div className="text-xs mt-2 opacity-60">
+        <time className="text-xs mt-2 opacity-60 block" dateTime={new Date(message.createdAt).toISOString()}>
           {new Date(message.createdAt).toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit',
           })}
-        </div>
+        </time>
 
         {/* Generate Flashcards Button (FR-008: only for assistant messages) */}
         {isAssistant && !isStreaming && (

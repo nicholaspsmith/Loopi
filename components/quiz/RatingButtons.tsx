@@ -24,7 +24,7 @@ export default function RatingButtons({
   ]
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" role="group" aria-label="Rate your knowledge of this flashcard">
       <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 text-center mb-4">
         How well did you know this?
       </p>
@@ -34,7 +34,8 @@ export default function RatingButtons({
             key={value}
             onClick={() => onRate(value)}
             disabled={disabled}
-            className={`px-4 py-3 ${color} text-white font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed`}
+            aria-label={`Rate as ${label} - difficulty level ${value} of 4`}
+            className={`px-4 py-3 ${color} text-white font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white`}
           >
             {label}
           </button>

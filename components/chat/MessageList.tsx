@@ -50,6 +50,9 @@ export default function MessageList({
     <div
       ref={containerRef}
       className="flex-1 overflow-y-auto px-4 py-6 space-y-4"
+      role="log"
+      aria-live="polite"
+      aria-label="Chat conversation"
     >
       {messages.map((message) => (
         <Message
@@ -60,12 +63,12 @@ export default function MessageList({
       ))}
 
       {isLoading && messages.length > 0 && (
-        <div className="flex justify-start mb-4">
+        <div className="flex justify-start mb-4" role="status" aria-label="Claude is thinking">
           <div className="bg-gray-100 border border-gray-200 rounded-lg px-4 py-3">
             <div className="text-xs font-semibold mb-1 text-gray-600">Claude</div>
             <div className="flex items-center gap-2 text-gray-600">
               <span>Thinking</span>
-              <div className="flex gap-1">
+              <div className="flex gap-1" aria-hidden="true">
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -76,7 +79,7 @@ export default function MessageList({
       )}
 
       {/* Invisible div to scroll to */}
-      <div ref={messagesEndRef} />
+      <div ref={messagesEndRef} aria-hidden="true" />
     </div>
   )
 }
