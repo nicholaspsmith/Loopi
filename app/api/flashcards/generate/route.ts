@@ -8,7 +8,7 @@ import {
   getFlashcardsByMessageId,
 } from '@/lib/db/operations/flashcards'
 import { markMessageWithFlashcards } from '@/lib/db/operations/messages'
-import { generateEmbedding } from '@/lib/embeddings/openai'
+import { generateEmbedding } from '@/lib/embeddings/ollama'
 
 /**
  * POST /api/flashcards/generate

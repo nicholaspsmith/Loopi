@@ -159,7 +159,7 @@
 - [x] T072 [US2] Create chat page in app/(protected)/chat/page.tsx (2-tab layout per FR-004, chat tab active)
 - [x] T073 [US2] Add conversation context management in lib/claude/context.ts (maintain context per FR-006)
 - [x] T074 [US2] Add conversation history persistence per FR-023 (verify messages persist across sessions)
-- [x] T075 [US2] Create OpenAI embeddings client in lib/embeddings/openai.ts (for message embeddings)
+- [x] T075 [US2] Create Ollama embeddings client in lib/embeddings/ollama.ts (for message embeddings)
 - [x] T076 [US2] Add embedding generation to message creation (async, graceful degradation)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently. Users can authenticate and have persistent conversations with Claude.

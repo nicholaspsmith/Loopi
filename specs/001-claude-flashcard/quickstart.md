@@ -25,9 +25,9 @@
 - **npm**: v10.x or later (included with Node.js)
 - **Git**: For version control
 
-### API Keys
+### API Keys & Local Services
 
-- **OpenAI API Key**: For embeddings generation ([Get key](https://platform.openai.com/api-keys))
+- **Ollama**: For local embeddings and LLM ([Installation guide](https://ollama.ai/download))
 - **Anthropic API Key**: For Claude interactions ([Get key](https://console.anthropic.com/))
 
 ### Recommended Tools
@@ -107,8 +107,8 @@ LANCEDB_PATH=./data/lancedb
 AUTH_SECRET=your-random-secret-here-generate-with-openssl-rand-base64-32
 AUTH_URL=http://localhost:3000
 
-# OpenAI API (for embeddings)
-OPENAI_API_KEY=sk-...
+# Ollama API (for embeddings and local LLM)
+OLLAMA_BASE_URL=http://localhost:11434
 
 # Anthropic API (for Claude)
 ANTHROPIC_API_KEY=sk-ant-...
@@ -422,8 +422,8 @@ npm run test:integration -- chat-flow
    - File: `components/chat/GenerateFlashcardsButton.tsx`
    - File: `components/flashcards/FlashcardPreview.tsx`
 
-3. **OpenAI embeddings integration**:
-   - File: `lib/embeddings/openai.ts`
+3. **Ollama embeddings integration**:
+   - File: `lib/embeddings/ollama.ts`
 
 **Test**:
 ```bash
@@ -485,14 +485,15 @@ npm run db:init
 
 ---
 
-#### 3. OpenAI API Rate Limit
+#### 3. Ollama Connection Issues
 
-**Error**: `429 Too Many Requests`
+**Error**: Cannot connect to Ollama
 
 **Solution**:
-- Check API key tier limits at https://platform.openai.com/account/limits
-- Implement request throttling in `lib/embeddings/openai.ts`
-- Reduce batch size for embeddings generation
+- Ensure Ollama is installed and running: `ollama serve`
+- Pull required models: `ollama pull nomic-embed-text` and `ollama pull llama3.2`
+- Check OLLAMA_BASE_URL in environment variables
+- Verify Ollama is accessible at http://localhost:11434
 
 ---
 
@@ -564,7 +565,7 @@ memoryloop/
 │   ├── claude/               # Anthropic SDK wrapper
 │   ├── auth/                 # NextAuth 5 configuration
 │   ├── fsrs/                 # FSRS scheduler wrapper
-│   ├── embeddings/           # OpenAI embeddings
+│   ├── embeddings/           # Ollama embeddings
 │   └── validation/           # Zod schemas
 │
 ├── types/                    # TypeScript type definitions
@@ -619,7 +620,8 @@ memoryloop/
 - **LanceDB Documentation**: https://lancedb.github.io/lancedb/
 - **Anthropic Claude API**: https://docs.anthropic.com/
 - **ts-fsrs Library**: https://github.com/open-spaced-repetition/ts-fsrs
-- **OpenAI Embeddings**: https://platform.openai.com/docs/guides/embeddings
+- **Ollama**: https://ollama.ai/
+- **Nomic Embed Text**: https://ollama.ai/library/nomic-embed-text
 
 ---
 

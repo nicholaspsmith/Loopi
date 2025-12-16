@@ -14,7 +14,7 @@ This document defines the entity schemas, database tables, and validation rules 
 - **Database**: LanceDB (embedded vector database)
 - **Format**: Apache Arrow IPC files
 - **Validation**: Zod 3.x schemas
-- **Vector Embeddings**: OpenAI text-embedding-3-small (1536 dimensions)
+- **Vector Embeddings**: Ollama nomic-embed-text (768 dimensions)
 - **IDs**: UUIDv4 strings
 - **Timestamps**: Unix timestamps (milliseconds, number type)
 
@@ -166,7 +166,7 @@ export const MessageSchema = z.object({
   userId: z.string().uuid(),
   role: MessageRoleSchema,
   content: z.string().min(1).max(50000), // Max 50k characters
-  embedding: z.array(z.number()).length(1536).nullable(), // OpenAI text-embedding-3-small
+  embedding: z.array(z.number()).length(768).nullable(), // Ollama nomic-embed-text
   createdAt: z.number().int().positive(),
   hasFlashcards: z.boolean().default(false),
 });
@@ -193,7 +193,7 @@ export type Message = z.infer<typeof MessageSchema>;
 - Messages are **immutable** after creation (append-only)
 - Only `assistant` messages can have flashcards generated (`role: 'assistant'`)
 - `hasFlashcards` is set to `true` after successful flashcard generation
-- `embedding` is generated asynchronously via OpenAI API (nullable for graceful degradation)
+- `embedding` is generated asynchronously via Ollama API (nullable for graceful degradation)
 - Messages maintain conversation context in chronological order
 
 ---
@@ -416,7 +416,7 @@ export async function initializeSchema() {
       userId: '00000000-0000-0000-0000-000000000000',
       role: 'user',
       content: 'Init message for schema creation',
-      embedding: new Array(1536).fill(0), // OpenAI text-embedding-3-small
+      embedding: new Array(768).fill(0), // Ollama nomic-embed-text
       createdAt: Date.now(),
       hasFlashcards: false,
     }
