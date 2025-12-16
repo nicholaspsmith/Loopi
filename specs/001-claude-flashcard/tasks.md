@@ -257,27 +257,12 @@
 - [x] T125 [P] Add loading states to all async operations (Suspense boundaries, skeleton screens)
 - [x] T126 [P] Add accessibility attributes (ARIA labels, keyboard navigation, screen reader support)
 - [x] T127 [P] Add responsive design for mobile (Tailwind breakpoints, mobile-first)
-- [ ] T128 [P] Optimize bundle size (code splitting, dynamic imports, tree shaking)
-- [ ] T129 Performance optimization: implement React.memo for expensive components
-- [ ] T130 [P] Performance optimization: add Next.js Image component for static assets
-- [ ] T131 Security hardening: add CSRF protection for forms
-- [ ] T132 [P] Security hardening: add rate limiting to API routes (protect against abuse)
-- [ ] T133 [P] Security hardening: sanitize user inputs (XSS prevention)
-- [ ] T134 [P] Add structured logging to all API routes (request/response logging)
-- [ ] T135 [P] Add monitoring and error tracking setup (Sentry integration or similar)
-- [ ] T136 [P] Create seed data script npm run db:seed (test users, conversations, flashcards)
-- [ ] T137 Create database backup/restore scripts (export/import LanceDB data)
 - [x] T138 [P] Documentation: update README.md with setup instructions
 - [x] T139 [P] Documentation: create CONTRIBUTING.md with development guidelines
-- [ ] T140 Run full test suite and verify 70% coverage minimum (industry standard for web applications)
-- [ ] T141 Run Playwright E2E tests for all user journeys
-- [ ] T142 Validate quickstart.md instructions (fresh setup on clean machine)
-- [ ] T143 Performance testing: verify SC-002 through SC-006 success criteria
-- [ ] T144 [P] Implement offline mode with service worker for caching conversations and flashcards per FR-025
-- [ ] T145 [P] Add offline detection and UI feedback (network status indicator)
-- [ ] T146 [P] Create Navigation component in components/nav/Navigation.tsx (tab switching between Chat and Quiz per FR-004)
 
-**Checkpoint**: Application polished, tested, documented, and ready for deployment
+**Note**: Tasks T128-T137, T140-T145 (performance optimization, security hardening, logging, monitoring, testing, and offline support) have been moved to a separate specification: `specs/003-production-polish/spec.md` on branch `003-production-polish`. These production readiness tasks will be implemented after the CI/CD deployment feature (002-ci-cd-deployment).
+
+**Checkpoint**: Core application features complete with documentation. Production polish and deployment covered in separate specifications.
 
 ---
 
