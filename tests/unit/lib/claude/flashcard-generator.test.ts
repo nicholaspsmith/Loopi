@@ -22,6 +22,27 @@ Key concepts:
 2. Superposition: Multiple states exist simultaneously
 3. Correlation: Measuring one affects the other`
 
+      // Mock Ollama API response
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          message: {
+            content: JSON.stringify([
+              {
+                question: 'What is quantum entanglement?',
+                answer:
+                  'Quantum entanglement is a physical phenomenon that occurs when pairs of particles remain connected.',
+              },
+              {
+                question: 'What is non-locality in quantum physics?',
+                answer:
+                  'Non-locality means particles remain connected regardless of distance.',
+              },
+            ]),
+          },
+        }),
+      })
+
       const flashcards = await generateFlashcardsFromContent(content)
 
       expect(Array.isArray(flashcards)).toBe(true)
@@ -128,6 +149,26 @@ It occurs in chloroplasts and requires sunlight, carbon dioxide, and water.`
     async () => {
       const content = `RESTful APIs use HTTP methods (GET, POST, PUT, DELETE) to perform CRUD operations.
 They are stateless and can return data in JSON or XML format.`
+
+      // Mock Ollama API response
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          message: {
+            content: JSON.stringify([
+              {
+                question: 'What are RESTful APIs?',
+                answer:
+                  'RESTful APIs use HTTP methods (GET, POST, PUT, DELETE) to perform CRUD operations.',
+              },
+              {
+                question: 'What data formats can RESTful APIs return?',
+                answer: 'RESTful APIs can return data in JSON or XML format.',
+              },
+            ]),
+          },
+        }),
+      })
 
       const flashcards = await generateFlashcardsFromContent(content)
 

@@ -54,7 +54,7 @@ export async function initializeSchema() {
         userId: '00000000-0000-0000-0000-000000000000',
         role: 'user',
         content: 'Init message for schema creation',
-        embedding: new Array(768).fill(0), // Ollama nomic-embed-text
+        embedding: null, // Ollama nomic-embed-text - nullable, filled async
         createdAt: Date.now(),
         hasFlashcards: false,
       },
