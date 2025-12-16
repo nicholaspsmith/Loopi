@@ -254,7 +254,7 @@
 **Purpose**: Improvements that affect multiple user stories
 
 - [x] T124 [P] Add error boundaries to all major components (app/error.tsx, per-route errors)
-- [ ] T125 [P] Add loading states to all async operations (Suspense boundaries, skeleton screens)
+- [x] T125 [P] Add loading states to all async operations (Suspense boundaries, skeleton screens)
 - [ ] T126 [P] Add accessibility attributes (ARIA labels, keyboard navigation, screen reader support)
 - [ ] T127 [P] Add responsive design for mobile (Tailwind breakpoints, mobile-first)
 - [ ] T128 [P] Optimize bundle size (code splitting, dynamic imports, tree shaking)
