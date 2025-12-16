@@ -216,34 +216,34 @@
 
 ### Tests for User Story 4 (TDD - Write FIRST) ⚠️
 
-- [ ] T099 [P] [US4] Contract test for GET /api/quiz/due in tests/contract/quiz.test.ts
-- [ ] T100 [P] [US4] Contract test for POST /api/quiz/rate in tests/contract/quiz.test.ts
-- [ ] T101 [P] [US4] Contract test for GET /api/quiz/stats in tests/contract/quiz.test.ts
-- [ ] T102 [P] [US4] Contract test for GET /api/quiz/history in tests/contract/quiz.test.ts
-- [ ] T103 [US4] Integration test for quiz session flow in tests/integration/quiz-session.spec.ts
-- [ ] T104 [P] [US4] Component test for QuizCard in tests/unit/components/quiz/QuizCard.test.tsx
-- [ ] T105 [P] [US4] Component test for QuizProgress in tests/unit/components/quiz/QuizProgress.test.tsx
-- [ ] T106 [P] [US4] Component test for QuizStats in tests/unit/components/quiz/QuizStats.test.tsx
-- [ ] T107 [P] [US4] Unit test for FSRS scheduler in tests/unit/lib/fsrs/scheduler.test.ts
+- [x] T099 [P] [US4] Contract test for GET /api/quiz/due in tests/contract/quiz.test.ts
+- [x] T100 [P] [US4] Contract test for POST /api/quiz/rate in tests/contract/quiz.test.ts
+- [x] T101 [P] [US4] Contract test for GET /api/quiz/stats in tests/contract/quiz.test.ts
+- [x] T102 [P] [US4] Contract test for GET /api/quiz/history in tests/contract/quiz.test.ts
+- [x] T103 [US4] Integration test for quiz session flow in tests/integration/quiz-session.test.ts
+- [x] T104 [P] [US4] Component test for QuizCard in tests/unit/components/quiz/QuizCard.test.tsx
+- [x] T105 [P] [US4] Component test for QuizProgress in tests/unit/components/quiz/QuizProgress.test.tsx
+- [x] T106 [P] [US4] Component test for QuizStats in tests/unit/components/quiz/QuizStats.test.tsx
+- [x] T107 [P] [US4] Unit test for FSRS scheduler in tests/unit/lib/fsrs/scheduler.test.ts
 
 ### Implementation for User Story 4
 
-- [ ] T108 [US4] Create review log database operations in lib/db/operations/review-logs.ts (create, get history)
-- [ ] T109 [US4] Create FSRS utilities in lib/fsrs/utils.ts (rating helpers, state helpers)
-- [ ] T110 [US4] Create GET /api/quiz/due route in app/api/quiz/due/route.ts (filter by FSRS due date)
-- [ ] T111 [US4] Create POST /api/quiz/rate route in app/api/quiz/rate/route.ts (FSRS repeat, update card, create log)
-- [ ] T112 [US4] Create GET /api/quiz/stats route in app/api/quiz/stats/route.ts (progress tracking per FR-020)
-- [ ] T113 [US4] Create GET /api/quiz/history route in app/api/quiz/history/route.ts (review log retrieval)
-- [ ] T114 [P] [US4] Create QuizCard component in components/quiz/QuizCard.tsx (question/answer flip per FR-013, FR-014, 4-button rating)
-- [ ] T115 [P] [US4] Create QuizProgress component in components/quiz/QuizProgress.tsx (show position "Card X of Y" per FR-020)
-- [ ] T116 [P] [US4] Create QuizStats component in components/quiz/QuizStats.tsx (display due count, reviewed today, retention rate)
-- [ ] T117 [P] [US4] Create RatingButtons component in components/quiz/RatingButtons.tsx (Again/Hard/Good/Easy buttons)
-- [ ] T118 [US4] Create QuizInterface component in components/quiz/QuizInterface.tsx (orchestrate quiz flow per FR-012)
-- [ ] T119 [US4] Create quiz page in app/(protected)/quiz/page.tsx (quiz tab in 2-tab layout)
-- [ ] T120 [US4] Add completion notification per FR-021 (modal or message when all cards reviewed)
-- [ ] T121 [US4] Add empty state for quiz tab per FR-011 acceptance scenario 7 (no flashcards yet)
-- [ ] T122 [US4] Update flashcard FSRS state after rating (delete + insert pattern for LanceDB)
-- [ ] T123 [US4] Create review log entry after each rating (audit trail for analytics)
+- [x] T108 [US4] Create review log database operations in lib/db/operations/review-logs.ts (create, get history)
+- [x] T109 [US4] Create FSRS utilities in lib/fsrs/utils.ts (rating helpers, state helpers)
+- [x] T110 [US4] Create GET /api/quiz/due route in app/api/quiz/due/route.ts (filter by FSRS due date)
+- [x] T111 [US4] Create POST /api/quiz/rate route in app/api/quiz/rate/route.ts (FSRS repeat, update card, create log)
+- [x] T112 [US4] Create GET /api/quiz/stats route in app/api/quiz/stats/route.ts (progress tracking per FR-020)
+- [x] T113 [US4] Create GET /api/quiz/history route in app/api/quiz/history/route.ts (review log retrieval)
+- [x] T114 [P] [US4] Create QuizCard component in components/quiz/QuizCard.tsx (question/answer flip per FR-013, FR-014, 4-button rating)
+- [x] T115 [P] [US4] Create QuizProgress component in components/quiz/QuizProgress.tsx (show position "Card X of Y" per FR-020)
+- [x] T116 [P] [US4] Create QuizStats component in components/quiz/QuizStats.tsx (display due count, reviewed today, retention rate)
+- [x] T117 [P] [US4] Create RatingButtons component in components/quiz/RatingButtons.tsx (Again/Hard/Good/Easy buttons)
+- [x] T118 [US4] Create QuizInterface component in components/quiz/QuizInterface.tsx (orchestrate quiz flow per FR-012)
+- [x] T119 [US4] Create quiz page in app/(protected)/quiz/page.tsx (quiz tab in 2-tab layout)
+- [x] T120 [US4] Add completion notification per FR-021 (modal or message when all cards reviewed)
+- [x] T121 [US4] Add empty state for quiz tab per FR-011 acceptance scenario 7 (no flashcards yet)
+- [x] T122 [US4] Update flashcard FSRS state after rating (delete + insert pattern for LanceDB)
+- [x] T123 [US4] Create review log entry after each rating (audit trail for analytics)
 
 **Checkpoint**: All user stories should now be independently functional. Complete end-to-end flow: authenticate → chat → generate flashcards → quiz with FSRS scheduling.
 
