@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { initializeSchema, closeDB } from '@/lib/db/schema'
+import { closeDbConnection } from '@/lib/db/client'
 import { createUser } from '@/lib/db/operations/users'
 import {
   createConversation,
@@ -9,7 +9,7 @@ import {
   createMessage,
   getMessagesByConversationId,
 } from '@/lib/db/operations/messages'
-import { hashPassword } from '@/lib/auth/password'
+import { hashPassword } from '@/lib/auth/helpers'
 
 /**
  * Integration Test for Chat Conversation Flow
@@ -23,9 +23,6 @@ describe('Chat Conversation Flow Integration', () => {
   let testConversationId: string
 
   beforeAll(async () => {
-    // Initialize test database
-    await initializeSchema()
-
     // Create test user
     const passwordHash = await hashPassword('TestPass123!')
     const user = await createUser({
@@ -38,7 +35,7 @@ describe('Chat Conversation Flow Integration', () => {
   })
 
   afterAll(async () => {
-    await closeDB()
+    await closeDbConnection()
   })
 
   it('should complete full chat conversation flow', async () => {

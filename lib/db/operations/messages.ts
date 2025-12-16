@@ -3,6 +3,7 @@ import { create, find, findById, update } from '../queries'
 import type { Message, MessageRole } from '@/types'
 import { MessageSchema } from '@/types'
 import { incrementMessageCount } from './conversations'
+import { generateEmbedding } from '@/lib/embeddings/openai'
 
 /**
  * Message Database Operations
@@ -14,6 +15,10 @@ const MESSAGES_TABLE = 'messages'
 
 /**
  * Create a new message
+ *
+ * Messages are created immediately with embedding: null.
+ * Embeddings are generated asynchronously and updated after creation.
+ * This ensures fast message creation with graceful degradation if embedding fails.
  */
 export async function createMessage(data: {
   conversationId: string
@@ -43,7 +48,37 @@ export async function createMessage(data: {
   // Increment conversation message count
   await incrementMessageCount(data.conversationId)
 
+  // Generate embedding asynchronously (fire and forget)
+  // This doesn't block message creation and gracefully degrades on failure
+  if (!data.embedding) {
+    generateMessageEmbeddingAsync(message.id, data.content).catch((error) => {
+      console.error(`[Messages] Failed to generate embedding for message ${message.id}:`, error)
+    })
+  }
+
   return message
+}
+
+/**
+ * Generate and update message embedding asynchronously
+ *
+ * This runs in the background and doesn't block message creation.
+ * Failures are logged but don't affect the message.
+ */
+async function generateMessageEmbeddingAsync(
+  messageId: string,
+  content: string
+): Promise<void> {
+  try {
+    const embedding = await generateEmbedding(content)
+
+    if (embedding) {
+      await updateMessage(messageId, { embedding })
+    }
+  } catch (error) {
+    // Graceful degradation - message exists without embedding
+    console.error(`[Messages] Error in async embedding generation:`, error)
+  }
 }
 
 /**
