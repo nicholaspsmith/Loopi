@@ -19,6 +19,23 @@ export interface CreateFlashcardInput {
 }
 
 /**
+ * Transform flashcard data from LanceDB format to app format
+ * Converts timestamp numbers to Date objects for FSRS state
+ */
+function transformFlashcardFromDB(raw: any): any {
+  return {
+    ...raw,
+    fsrsState: {
+      ...raw.fsrsState,
+      due: new Date(raw.fsrsState.due),
+      last_review: raw.fsrsState.last_review
+        ? new Date(raw.fsrsState.last_review)
+        : undefined,
+    },
+  }
+}
+
+/**
  * Create a new flashcard with initial FSRS state
  */
 export async function createFlashcard(
@@ -63,17 +80,16 @@ export async function getFlashcardById(
   const table = await db.openTable('flashcards')
   const results = await table
     .query()
-    .where(`\`id\` = '${flashcardId}'`)
+    .where(`id = '${flashcardId}'`)
     .limit(1)
-    .execute()
+    .toArray()
 
-  const resultArray = Array.from(results)
-
-  if (resultArray.length === 0) {
+  if (results.length === 0) {
     return null
   }
 
-  return FlashcardSchema.parse(resultArray[0])
+  const transformed = transformFlashcardFromDB(results[0])
+  return FlashcardSchema.parse(transformed)
 }
 
 /**
@@ -88,16 +104,17 @@ export async function getFlashcardsByUserId(
   const results = await table
     .query()
     .where(`\`userId\` = '${userId}'`)
-    .execute()
-
-  const resultArray = Array.from(results)
+    .toArray()
 
   // Sort by createdAt ascending (oldest first)
-  const sorted = resultArray.sort(
+  const sorted = results.sort(
     (a: any, b: any) => a.createdAt - b.createdAt
   )
 
-  return sorted.map((fc: any) => FlashcardSchema.parse(fc))
+  return sorted.map((fc: any) => {
+    const transformed = transformFlashcardFromDB(fc)
+    return FlashcardSchema.parse(transformed)
+  })
 }
 
 /**
@@ -112,10 +129,12 @@ export async function getFlashcardsByMessageId(
   const results = await table
     .query()
     .where(`\`messageId\` = '${messageId}'`)
-    .execute()
+    .toArray()
 
-  const resultArray = Array.from(results)
-  return resultArray.map((fc: any) => FlashcardSchema.parse(fc))
+  return results.map((fc: any) => {
+    const transformed = transformFlashcardFromDB(fc)
+    return FlashcardSchema.parse(transformed)
+  })
 }
 
 /**
@@ -130,16 +149,17 @@ export async function getFlashcardsByConversationId(
   const results = await table
     .query()
     .where(`\`conversationId\` = '${conversationId}'`)
-    .execute()
-
-  const resultArray = Array.from(results)
+    .toArray()
 
   // Sort by createdAt ascending
-  const sorted = resultArray.sort(
+  const sorted = results.sort(
     (a: any, b: any) => a.createdAt - b.createdAt
   )
 
-  return sorted.map((fc: any) => FlashcardSchema.parse(fc))
+  return sorted.map((fc: any) => {
+    const transformed = transformFlashcardFromDB(fc)
+    return FlashcardSchema.parse(transformed)
+  })
 }
 
 /**
@@ -152,13 +172,11 @@ export async function getDueFlashcards(userId: string): Promise<Flashcard[]> {
   const results = await table
     .query()
     .where(`\`userId\` = '${userId}'`)
-    .execute()
-
-  const resultArray = Array.from(results)
+    .toArray()
 
   // Filter by due date in memory (LanceDB doesn't support date comparison in WHERE)
   const now = new Date()
-  const dueFlashcards = resultArray.filter((fc: any) => {
+  const dueFlashcards = results.filter((fc: any) => {
     const dueDate = new Date(fc.fsrsState.due)
     return dueDate <= now
   })
@@ -170,7 +188,10 @@ export async function getDueFlashcards(userId: string): Promise<Flashcard[]> {
     return aDue - bDue
   })
 
-  return sorted.map((fc: any) => FlashcardSchema.parse(fc))
+  return sorted.map((fc: any) => {
+    const transformed = transformFlashcardFromDB(fc)
+    return FlashcardSchema.parse(transformed)
+  })
 }
 
 /**
@@ -186,16 +207,17 @@ export async function getFlashcardsByState(
   const results = await table
     .query()
     .where(`\`userId\` = '${userId}'`)
-    .execute()
-
-  const resultArray = Array.from(results)
+    .toArray()
 
   // Filter by state in memory
-  const filtered = resultArray.filter(
+  const filtered = results.filter(
     (fc: any) => fc.fsrsState.state === state
   )
 
-  return filtered.map((fc: any) => FlashcardSchema.parse(fc))
+  return filtered.map((fc: any) => {
+    const transformed = transformFlashcardFromDB(fc)
+    return FlashcardSchema.parse(transformed)
+  })
 }
 
 /**
@@ -277,7 +299,7 @@ export async function deleteFlashcard(flashcardId: string): Promise<void> {
   const db = await getDbConnection()
 
   const table = await db.openTable('flashcards')
-  await table.delete(`\`id\` = '${flashcardId}'`)
+  await table.delete(`id = '${flashcardId}'`)
 
   console.log(`[Flashcards] Deleted flashcard ${flashcardId}`)
 }

@@ -187,6 +187,9 @@ Photosynthesis is essential for life on Earth because it produces oxygen and for
       answer: 'Sunlight, carbon dioxide, and water',
     })
 
+    // Wait for LanceDB to commit and index new records
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
     // Retrieve by message ID
     const flashcards = await getFlashcardsByMessageId(educationalMessageId)
 
@@ -232,6 +235,9 @@ Photosynthesis is essential for life on Earth because it produces oxygen and for
       question: 'Question 3',
       answer: 'Answer 3',
     })
+
+    // Wait for LanceDB to commit and index new records
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     // Retrieve all user flashcards
     const flashcards = await getFlashcardsByUserId(testUserId)
