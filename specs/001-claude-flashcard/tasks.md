@@ -95,28 +95,28 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T032 [P] [US1] Contract test for POST /api/auth/signin in tests/contract/auth.test.ts
-- [ ] T033 [P] [US1] Contract test for POST /api/auth/signup in tests/contract/auth.test.ts
-- [ ] T034 [P] [US1] Contract test for POST /api/auth/signout in tests/contract/auth.test.ts
-- [ ] T035 [P] [US1] Contract test for GET /api/auth/session in tests/contract/auth.test.ts
-- [ ] T036 [US1] Integration test for authentication flow in tests/integration/auth-flow.spec.ts
-- [ ] T037 [P] [US1] Component test for LoginForm in tests/unit/components/auth/LoginForm.test.tsx
-- [ ] T038 [P] [US1] Component test for SignupForm in tests/unit/components/auth/SignupForm.test.tsx
+- [x] T032 [P] [US1] Contract test for POST /api/auth/signin in tests/contract/auth.test.ts
+- [x] T033 [P] [US1] Contract test for POST /api/auth/signup in tests/contract/auth.test.ts
+- [x] T034 [P] [US1] Contract test for POST /api/auth/signout in tests/contract/auth.test.ts
+- [x] T035 [P] [US1] Contract test for GET /api/auth/session in tests/contract/auth.test.ts
+- [x] T036 [US1] Integration test for authentication flow in tests/integration/auth-flow.spec.ts
+- [x] T037 [P] [US1] Component test for LoginForm in tests/unit/components/auth/LoginForm.test.tsx
+- [x] T038 [P] [US1] Component test for SignupForm in tests/unit/components/auth/SignupForm.test.tsx
 
 ### Implementation for User Story 1
 
-- [ ] T039 [US1] Configure NextAuth.js 5 in auth.ts (database session strategy, Credentials provider)
-- [ ] T040 [US1] Create NextAuth.js API route handler in app/api/auth/[...nextauth]/route.ts
-- [ ] T041 [US1] Create authentication helper functions in lib/auth/helpers.ts (password hashing, session validation)
-- [ ] T042 [US1] Create middleware in middleware.ts (protect routes, redirect logic per FR-002, FR-003)
-- [ ] T043 [P] [US1] Create LoginForm component in components/auth/LoginForm.tsx
-- [ ] T044 [P] [US1] Create SignupForm component in components/auth/SignupForm.tsx
-- [ ] T045 [US1] Create login page in app/(auth)/login/page.tsx
-- [ ] T046 [P] [US1] Create signup page in app/(auth)/signup/page.tsx
-- [ ] T047 [US1] Create user database operations in lib/db/operations/users.ts (createUser, getUserByEmail)
-- [ ] T048 [US1] Add session expiration handling per FR-022 in middleware.ts
-- [ ] T049 [US1] Create protected layout in app/(protected)/layout.tsx (auth guard, redirect to login)
-- [ ] T050 [US1] Create home redirect in app/page.tsx (redirect authenticated users to /chat per FR-003)
+- [x] T039 [US1] Configure NextAuth.js 5 in auth.ts (database session strategy, Credentials provider)
+- [x] T040 [US1] Create NextAuth.js API route handler in app/api/auth/[...nextauth]/route.ts
+- [x] T041 [US1] Create authentication helper functions in lib/auth/helpers.ts (password hashing, session validation)
+- [ ] T042 [US1] Create middleware in middleware.ts (protect routes, redirect logic per FR-002, FR-003) - **Note**: Auth protection currently handled in app/(protected)/layout.tsx
+- [x] T043 [P] [US1] Create LoginForm component in components/auth/LoginForm.tsx
+- [x] T044 [P] [US1] Create SignupForm component in components/auth/SignupForm.tsx
+- [x] T045 [US1] Create login page in app/(auth)/login/page.tsx
+- [x] T046 [P] [US1] Create signup page in app/(auth)/signup/page.tsx
+- [x] T047 [US1] Create user database operations in lib/db/operations/users.ts (createUser, getUserByEmail)
+- [ ] T048 [US1] Add session expiration handling per FR-022 in middleware.ts - **Note**: Currently handled in app/(protected)/layout.tsx
+- [x] T049 [US1] Create protected layout in app/(protected)/layout.tsx (auth guard, redirect to login)
+- [x] T050 [US1] Create home redirect in app/page.tsx (redirect authenticated users to /chat per FR-003)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently. Users can sign up, log in, log out, and access control works.
 
