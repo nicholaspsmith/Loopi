@@ -458,6 +458,91 @@ With multiple developers:
 
 ---
 
+---
+
+## Phase 5: CI/CD Pipeline & Deployment
+
+**Purpose**: Automate testing, building, and deployment to production
+
+**Infrastructure**: VPS (Hetzner/DigitalOcean) with Docker, Nginx reverse proxy, Let's Encrypt SSL
+
+**Domain**: memoryloop.nicholaspsmith.com
+
+### CI/CD Pipeline (GitHub Actions)
+
+- [ ] T118 [P] Create GitHub Actions workflow for CI in .github/workflows/ci.yml (lint, type-check, unit tests)
+- [ ] T119 [P] Create GitHub Actions workflow for integration tests in .github/workflows/integration.yml (Playwright E2E)
+- [ ] T120 [P] Create GitHub Actions workflow for deployment in .github/workflows/deploy.yml (build, push Docker image, deploy)
+- [ ] T121 [P] Add build caching to CI workflow (npm cache, Docker layer cache)
+- [ ] T122 [P] Configure GitHub Actions secrets (ANTHROPIC_API_KEY, VPS_SSH_KEY, etc.)
+- [ ] T123 Add branch protection rules requiring CI checks to pass before merge
+
+**Checkpoint**: CI pipeline running on all PRs and merges to main
+
+### Docker Configuration
+
+- [ ] T124 Create Dockerfile for Next.js production build (multi-stage build for optimization)
+- [ ] T125 Create docker-compose.yml for local development (app, ollama, nginx)
+- [ ] T126 Create docker-compose.prod.yml for production deployment (app, ollama, nginx, volumes)
+- [ ] T127 Create .dockerignore file (node_modules, .git, .next, tests, etc.)
+- [ ] T128 Add health check endpoint in app/api/health/route.ts (check DB, Ollama, Anthropic API)
+- [ ] T129 [P] Create Docker entrypoint script in scripts/docker-entrypoint.sh (DB init, migrations, startup)
+
+**Checkpoint**: Docker builds successfully, app runs in container locally
+
+### VPS Setup & Configuration
+
+- [ ] T130 Provision VPS (Hetzner CX22 or DigitalOcean Droplet - 4GB RAM, 2 vCPU)
+- [ ] T131 Configure firewall (UFW) - allow ports 22 (SSH), 80 (HTTP), 443 (HTTPS)
+- [ ] T132 Install Docker and Docker Compose on VPS
+- [ ] T133 Create deploy user with sudo access and SSH key authentication
+- [ ] T134 Configure SSH hardening (disable password auth, change port, fail2ban)
+- [ ] T135 Create directory structure on VPS (/opt/memoryloop, /opt/memoryloop/data, etc.)
+
+**Checkpoint**: VPS accessible, Docker ready, secure SSH configured
+
+### Nginx & SSL Configuration
+
+- [ ] T136 Create Nginx configuration for reverse proxy in nginx/memoryloop.conf
+- [ ] T137 Install Certbot on VPS for Let's Encrypt SSL certificates
+- [ ] T138 Configure DNS A record for memoryloop.nicholaspsmith.com pointing to VPS IP
+- [ ] T139 Obtain SSL certificate using Certbot (certbot --nginx -d memoryloop.nicholaspsmith.com)
+- [ ] T140 Configure Nginx SSL settings (TLS 1.3, HSTS, security headers)
+- [ ] T141 Set up automatic SSL certificate renewal (certbot renew --nginx)
+
+**Checkpoint**: HTTPS working, SSL certificate valid, automatic renewal configured
+
+### Deployment Automation
+
+- [ ] T142 Create deployment script in scripts/deploy.sh (pull image, stop old container, start new, health check)
+- [ ] T143 Configure GitHub Actions to trigger deployment on merge to main branch
+- [ ] T144 Add deployment notifications (Discord/Slack webhook on success/failure)
+- [ ] T145 Create rollback script in scripts/rollback.sh (revert to previous Docker image)
+- [ ] T146 Set up automated database backups (daily cron job, backup to S3/B2)
+- [ ] T147 Configure log rotation for Docker containers (Docker logging driver)
+
+**Checkpoint**: Automated deployment working, can deploy with git push
+
+### Monitoring & Observability
+
+- [ ] T148 [P] Set up application logging (structured logs to stdout)
+- [ ] T149 [P] Configure Docker log aggregation (send to external service or local file)
+- [ ] T150 [P] Add error tracking (Sentry or similar - optional, can be added later)
+- [ ] T151 Set up uptime monitoring (UptimeRobot, Pingdom, or self-hosted)
+- [ ] T152 Create monitoring dashboard script in scripts/monitor.sh (check health, disk usage, memory)
+
+**Checkpoint**: Application deployed, monitored, and accessible at memoryloop.nicholaspsmith.com
+
+### Documentation
+
+- [ ] T153 Create deployment documentation in docs/deployment.md (VPS setup, deployment process)
+- [ ] T154 Create operations runbook in docs/operations.md (restart, rollback, backup/restore, troubleshooting)
+- [ ] T155 Update README.md with production deployment badge and links
+
+**Final Checkpoint**: Application in production, fully documented, automated CI/CD pipeline
+
+---
+
 ## Notes
 
 - [P] tasks = different files, no dependencies within phase
