@@ -1,6 +1,6 @@
 # Project Rules for Claude Code
 
-## Git Commit
+## Git Commit Rules
 
 1. **Maximum Commit Message Length**: 100 characters for commit message
 2. **No AI Attribution**: Do not mention "Generated with Claude Code" or similar AI attribution in commit messages
@@ -42,10 +42,10 @@ Added comprehensive integration tests.
 Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 ```
 
-## General Guidelines
+## Remember
 
 - Keep commits focused and atomic
 - Write clear, imperative commit messages ("Add feature" not "Added feature")
-- Subject line must be under 100 characters
+- Commit message must be under 100 characters
 - Reference issue/task numbers in commit body if needed, not subject line
 - Detailed descriptions belong in commit body, not subject
