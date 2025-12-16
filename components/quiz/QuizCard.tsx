@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import RatingButtons from './RatingButtons'
 
 /**
  * QuizCard Component
@@ -86,37 +87,7 @@ export default function QuizCard({ flashcard, onRate }: QuizCardProps) {
           </button>
         ) : (
           /* Rating Buttons */
-          <div className="space-y-3">
-            <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 text-center mb-4">
-              How well did you know this?
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <button
-                onClick={() => handleRating(1)}
-                className="px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200"
-              >
-                Again
-              </button>
-              <button
-                onClick={() => handleRating(2)}
-                className="px-4 py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-lg transition-colors duration-200"
-              >
-                Hard
-              </button>
-              <button
-                onClick={() => handleRating(3)}
-                className="px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200"
-              >
-                Good
-              </button>
-              <button
-                onClick={() => handleRating(4)}
-                className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
-              >
-                Easy
-              </button>
-            </div>
-          </div>
+          <RatingButtons onRate={handleRating} />
         )}
       </div>
     </div>
