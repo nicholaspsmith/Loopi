@@ -47,6 +47,85 @@ Remember: Generate MULTIPLE flashcards (not just one). Extract every important c
 CONTENT TO ANALYZE:`
 
 /**
+ * Parse flashcard response from LLM (handles both Claude and Ollama formats)
+ */
+function parseFlashcardsFromResponse(rawResponse: string, provider: string): FlashcardPair[] {
+  try {
+    let jsonString = rawResponse.trim()
+
+    // Step 1: Remove markdown code blocks (common in Claude responses)
+    if (jsonString.includes('```')) {
+      const codeBlockMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)```/)
+      if (codeBlockMatch) {
+        jsonString = codeBlockMatch[1].trim()
+        console.log(`[FlashcardGenerator] Extracted JSON from ${provider} code block`)
+      }
+    }
+
+    // Step 2: Extract JSON array from anywhere in the text
+    // This handles cases where LLM adds explanatory text before/after JSON
+    const arrayMatch = jsonString.match(/\[[\s\S]*?\](?=\s*$|```|\n\n)/)
+    if (arrayMatch) {
+      jsonString = arrayMatch[0]
+      console.log(`[FlashcardGenerator] Extracted JSON array from ${provider} response`)
+    }
+
+    // Step 3: Try to parse the JSON
+    let parsed: any
+    try {
+      parsed = JSON.parse(jsonString)
+      console.log(`[FlashcardGenerator] Successfully parsed ${provider} JSON`)
+    } catch (parseError) {
+      console.error(`[FlashcardGenerator] Failed to parse ${provider} JSON:`, parseError)
+      console.error(`[FlashcardGenerator] Attempted to parse:`, jsonString.substring(0, 500))
+
+      // Last resort: Try to extract Q&A pairs with regex
+      const questionMatches = Array.from(
+        jsonString.matchAll(/"question"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g)
+      )
+      const answerMatches = Array.from(
+        jsonString.matchAll(/"answer"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g)
+      )
+
+      if (questionMatches.length > 0 && questionMatches.length === answerMatches.length) {
+        const recovered = questionMatches.map((qMatch, i) => ({
+          question: qMatch[1].replace(/\\"/g, '"').replace(/\\n/g, '\n'),
+          answer: answerMatches[i][1].replace(/\\"/g, '"').replace(/\\n/g, '\n'),
+        }))
+        console.log(`[FlashcardGenerator] Recovered ${recovered.length} flashcards via regex`)
+        return recovered
+      }
+
+      return []
+    }
+
+    // Step 4: Normalize to array format
+    let flashcards: FlashcardPair[] = []
+
+    if (Array.isArray(parsed)) {
+      flashcards = parsed
+    } else if (parsed && Array.isArray(parsed.flashcards)) {
+      flashcards = parsed.flashcards
+    } else if (parsed && Array.isArray(parsed.questions)) {
+      flashcards = parsed.questions
+    } else if (parsed && typeof parsed.question === 'string' && typeof parsed.answer === 'string') {
+      // Single flashcard - wrap in array
+      flashcards = [parsed]
+      console.log(`[FlashcardGenerator] ${provider} returned single flashcard, wrapping in array`)
+    } else {
+      console.warn(`[FlashcardGenerator] Unexpected ${provider} JSON structure:`, parsed)
+      return []
+    }
+
+    console.log(`[FlashcardGenerator] Parsed ${flashcards.length} flashcards from ${provider}`)
+    return flashcards
+  } catch (error) {
+    console.error(`[FlashcardGenerator] Error parsing ${provider} response:`, error)
+    return []
+  }
+}
+
+/**
  * Generate flashcards from educational content
  *
  * @param content - The content to generate flashcards from
@@ -87,67 +166,16 @@ export async function generateFlashcardsFromContent(
       userApiKey,
     })
 
-    console.log('[FlashcardGenerator] Raw response:', rawResponse.substring(0, 200))
+    const provider = userApiKey ? 'Claude' : 'Ollama'
+    console.log(`[FlashcardGenerator] Using ${provider} for generation`)
+    console.log('[FlashcardGenerator] Raw response length:', rawResponse.length)
+    console.log('[FlashcardGenerator] Raw response preview:', rawResponse.substring(0, 500))
 
-    // Parse JSON response
-    let flashcards: FlashcardPair[]
-    try {
-      let parsed: any
+    // Parse response - handle both Claude and Ollama formats
+    const flashcards = parseFlashcardsFromResponse(rawResponse, provider)
 
-      try {
-        parsed = JSON.parse(rawResponse)
-      } catch (firstParseError) {
-        // Try to fix common JSON issues
-        let fixed = rawResponse.trim()
-
-        // If it starts with { but isn't an array, try to wrap it
-        if (fixed.startsWith('{') && !fixed.startsWith('[')) {
-          // Try to extract individual Q&A objects and create an array
-          const questionMatches = fixed.matchAll(/["{]question["']?\s*:\s*["']([^"']+)["']/g)
-          const answerMatches = fixed.matchAll(/["{]answer["']?\s*:\s*["']([^"']+)["']/g)
-
-          const questions = Array.from(questionMatches).map((m) => m[1])
-          const answers = Array.from(answerMatches).map((m) => m[1])
-
-          if (questions.length > 0 && questions.length === answers.length) {
-            flashcards = questions.map((q, i) => ({
-              question: q,
-              answer: answers[i],
-            }))
-            console.log(
-              `[FlashcardGenerator] Recovered ${flashcards.length} flashcards from malformed JSON`
-            )
-          } else {
-            throw firstParseError
-          }
-        } else {
-          throw firstParseError
-        }
-      }
-
-      // Handle different response formats
-      if (!flashcards) {
-        if (Array.isArray(parsed)) {
-          flashcards = parsed
-        } else if (parsed && Array.isArray(parsed.questions)) {
-          flashcards = parsed.questions
-        } else if (parsed && Array.isArray(parsed.flashcards)) {
-          flashcards = parsed.flashcards
-        } else if (
-          parsed &&
-          typeof parsed.question === 'string' &&
-          typeof parsed.answer === 'string'
-        ) {
-          // Single flashcard object
-          flashcards = [parsed]
-        } else {
-          console.warn('[FlashcardGenerator] Unexpected JSON format:', parsed)
-          flashcards = []
-        }
-      }
-    } catch (parseError) {
-      console.error('[FlashcardGenerator] Failed to parse JSON:', parseError)
-      console.error('[FlashcardGenerator] Raw response was:', rawResponse)
+    if (flashcards.length === 0) {
+      console.log('[FlashcardGenerator] No flashcards parsed from response')
       return []
     }
 
@@ -193,7 +221,13 @@ function hasEducationalContent(content: string): boolean {
     return false
   }
 
-  // Purely conversational phrases
+  // If content is long enough (>200 chars), assume it has educational value
+  // This allows Claude to decide what's educational rather than our heuristic
+  if (content.length > 200) {
+    return true
+  }
+
+  // Purely conversational phrases (only reject very short conversations)
   const conversationalPhrases = [
     'hello',
     'how are you',
@@ -203,17 +237,15 @@ function hasEducationalContent(content: string): boolean {
     'nice to meet',
     'see you later',
     'goodbye',
-    'thank you',
-    "you're welcome",
   ]
 
-  const isConversational = conversationalPhrases.some((phrase) => lowerContent.includes(phrase))
+  const isOnlyConversational = conversationalPhrases.some((phrase) => lowerContent.includes(phrase))
 
-  if (isConversational && content.length < 100) {
+  if (isOnlyConversational && content.length < 100) {
     return false
   }
 
-  // Educational indicators
+  // For content between 50-200 chars, check for educational indicators
   const educationalIndicators = [
     'is a',
     'is the',
@@ -235,6 +267,10 @@ function hasEducationalContent(content: string): boolean {
     'method',
     'theory',
     'principle',
+    'can',
+    'will',
+    'should',
+    'would',
   ]
 
   const hasEducationalIndicators = educationalIndicators.some((indicator) =>
