@@ -127,6 +127,7 @@ Next.js App Router structure:
 - [ ] T040 [US3] Implement POST /api/settings/api-key/validate route handler in app/api/settings/api-key/validate/route.ts
 - [ ] T041 [US3] Update ApiKeyForm component to add validation button and feedback UI in components/settings/ApiKeyForm.tsx
 - [ ] T042 [US3] Add validation state management to ApiKeyForm (loading, success, error states) in components/settings/ApiKeyForm.tsx
+- [ ] T042a [US3] Performance test for SC-004: Verify API key validation feedback within 3 seconds in tests/integration/settings/api-key-validation-performance.test.ts
 
 **Checkpoint**: At this point, User Stories 1, 2, AND 3 should all work independently - validation enhances the key entry experience
 
@@ -181,12 +182,12 @@ Next.js App Router structure:
 
 **Purpose**: Handle failure scenarios and edge cases
 
-- [ ] T056 [P] Implement error handling for API key authentication failures in lib/claude/client.ts
-- [ ] T057 [P] Implement error handling for quota exceeded errors in lib/claude/client.ts
-- [ ] T058 [P] Implement error handling for rate limit errors in lib/claude/client.ts
-- [ ] T059 Add API key invalidation logic (mark isValid=false) in lib/db/operations/api-keys.ts
-- [ ] T060 [P] Handle API key revocation mid-conversation in app/api/chat/conversations/[id]/messages/route.ts
-- [ ] T061 [P] Add error boundaries for settings page in app/(protected)/settings/error.tsx
+- [ ] T056 [P] [FR-010] [FR-015] Implement error handling for API key authentication failures (display modal, trigger re-validation per FR-015) in lib/claude/client.ts
+- [ ] T057 [P] [FR-010] Implement error handling for quota exceeded errors in lib/claude/client.ts
+- [ ] T058 [P] [FR-010] Implement error handling for rate limit errors in lib/claude/client.ts
+- [ ] T059 [FR-015] Add API key invalidation logic (mark isValid=false) in lib/db/operations/api-keys.ts
+- [ ] T060 [P] [FR-010] [FR-015] Handle API key revocation mid-conversation in app/api/chat/conversations/[id]/messages/route.ts
+- [ ] T061 [P] [FR-010] Add error boundaries for settings page in app/(protected)/settings/error.tsx
 
 ---
 
@@ -201,6 +202,7 @@ Next.js App Router structure:
 - [ ] T066 [P] Add dark mode styling for settings components in components/settings/*.tsx
 - [ ] T067 [P] Add loading skeletons for settings page in components/settings/
 - [ ] T068 [P] Add accessibility labels (aria-*) to settings forms in components/settings/ApiKeyForm.tsx
+- [ ] T068a [P] [FR-012] [SC-005] Security audit: Verify API keys are NOT exposed in client-side code, logs, or error messages
 - [ ] T069 Run full test suite and verify all tests pass (npm test && npm run test:e2e)
 - [ ] T070 Validate against quickstart.md verification checklist in specs/004-claude-api/quickstart.md
 - [ ] T071 Update navigation to highlight active settings page in components/nav/Navigation.tsx

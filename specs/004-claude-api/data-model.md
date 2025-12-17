@@ -8,6 +8,25 @@
 
 This feature extends the existing database schema to support user-managed Claude API keys with encryption at rest. The data model integrates with the existing NextAuth-based user system and message tracking.
 
+## Naming Conventions
+
+This project follows standard naming conventions across different layers:
+
+- **Database Layer** (PostgreSQL, Drizzle schema): `snake_case` for table names, column names, and constraints
+  - Tables: `api_keys`, `messages`, `users`
+  - Columns: `user_id`, `encrypted_key`, `is_valid`, `last_validated_at`
+  - Foreign keys: `api_key_id`, `user_id`
+
+- **TypeScript/JavaScript Layer** (application code): `camelCase` for variables/properties, `PascalCase` for types/components
+  - Types/Interfaces: `ApiKey`, `Message`, `ProviderBadge`
+  - Variables/Properties: `userId`, `encryptedKey`, `isValid`, `lastValidatedAt`
+  - Functions: `validateApiKey()`, `getUserApiKey()`
+
+- **File Names**:
+  - Components: `PascalCase.tsx` (e.g., `ApiKeyForm.tsx`, `ProviderBadge.tsx`)
+  - Other TypeScript files: `kebab-case.ts` (e.g., `api-key.ts`, `flashcard-generator.ts`)
+  - Test files: Match source file convention with `.test` suffix (e.g., `ApiKeyForm.test.tsx`, `api-key.test.ts`)
+
 ## New Entities
 
 ### ApiKey

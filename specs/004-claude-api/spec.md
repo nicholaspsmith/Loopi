@@ -109,9 +109,9 @@ A user wants to update their existing API key (e.g., after rotating keys for sec
 - **FR-005**: System MUST validate API key format before allowing save (basic format check: starts with "sk-ant-")
 - **FR-006**: System MUST provide real-time API key validation by making a test request to the Claude API
 - **FR-007**: System MUST display masked API keys in the UI (showing only first 7 and last 4 characters, e.g., "sk-ant-...xyz123")
-- **FR-008**: System MUST prevent users without an API key from accessing Claude API features
+- **FR-008**: System MUST prevent users without an API key from accessing Claude API directly (falling back to Ollama for AI features instead)
 - **FR-009**: System MUST display clear indicators to users showing which AI provider (Claude API or Ollama) generated each message - shown as a small icon or label on each assistant message
-- **FR-010**: System MUST handle API key errors (authentication failure, quota exceeded, revoked key) by displaying an error message and requiring user action to either fix their API key or acknowledge fallback to Ollama
+- **FR-010**: System MUST handle API key errors (authentication failure, quota exceeded, revoked key) by displaying an error message in a modal dialog that blocks interaction until the user acknowledges and chooses to either fix their API key or proceed with Ollama fallback
 - **FR-011**: System MUST allow users to delete their stored API key at any time
 - **FR-012**: System MUST NOT expose API keys in client-side code, logs, or error messages
 - **FR-013**: System MUST associate API keys with specific user accounts (one key per user)
@@ -125,22 +125,26 @@ A user wants to update their existing API key (e.g., after rotating keys for sec
   - Must be encrypted before storage
   - Optional (nullable) - users can use the app without one
   - Can be validated, updated, or deleted
+  - Tracks validation status: `isValid` (boolean, updated on validation attempts) and `lastValidatedAt` (timestamp of last validation check)
+  - Enables re-validation when authentication errors occur (FR-015)
 
-- **AI Provider Configuration**: Tracks which AI provider (Claude API or Ollama) is being used per request
-  - Associated with Messages and Flashcard generation requests
-  - Determines routing of AI requests
+- **AI Provider Tracking**: Tracks which AI provider (Claude API or Ollama) was used for each request
+  - Implemented as fields on the messages table: `aiProvider` (enum: 'claude'|'ollama'), `apiKeyId` (nullable foreign key)
+  - Each Message and Flashcard records which provider generated it
+  - Determines routing of AI requests based on user's API key availability
   - Provides audit trail for user API usage
+  - Note: This is not a separate entity/table, but metadata on existing entities
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: Users can successfully save their Claude API key and use it for chat within 2 minutes of first attempt
+- **SC-001**: Users can save their Claude API key, navigate to chat, submit a prompt, and receive a Claude API response (response time limited only by Claude's actual API latency; test timeout: 30 seconds for simple prompts)
 - **SC-002**: 95% of users with valid API keys successfully generate responses using Claude API without errors
 - **SC-003**: Users without API keys can still complete basic chat flows using Ollama fallback
 - **SC-004**: API key validation provides feedback within 3 seconds of user input
 - **SC-005**: Zero API keys are exposed in application logs, client-side code, or error messages during security audit
-- **SC-006**: System gracefully handles Claude API errors and falls back to Ollama in 100% of failure cases
+- **SC-006**: System handles Claude API errors by displaying error messages and requiring user acknowledgment in 100% of failure cases (per Clarification #2)
 - **SC-007**: Users can identify which AI provider is being used for their current session within 1 glance at the UI
 
 ## Assumptions
