@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { auth } from '@/auth'
 import { getUserApiKeyRecord, saveUserApiKey, deleteUserApiKey } from '@/lib/db/operations/api-keys'
 import { validateApiKey } from '@/lib/validation/api-key'
 import { z } from 'zod'
