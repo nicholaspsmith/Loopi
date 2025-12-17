@@ -67,20 +67,37 @@ export async function update<T extends { id: string }>(
     throw new Error(`Record not found: ${id}`)
   }
 
-  // Delete old record
-  await table.delete(`id = '${id}'`)
-
   // Insert updated record - exclude embedding from existing to avoid LanceDB type issues
-  const { embedding: _, ...existingWithoutEmbedding } = existing as any
+  const { embedding: _, ...existingWithoutEmbedding} = existing as any
   const updated = { ...existingWithoutEmbedding, ...updates }
 
-  // Ensure embedding field exists in the record (set to null if not in updates)
+  // Only add embedding field if it existed in the original record (e.g., messages have it, conversations don't)
   // This preserves the schema structure while avoiding LanceDB internal type issues
-  if (!('embedding' in updates)) {
+  if ('embedding' in existing && !('embedding' in updates)) {
     updated.embedding = null
   }
 
-  await table.add([updated])
+  // Delete old record AFTER preparing the update to minimize risk of data loss
+  await table.delete(`id = '${id}'`)
+
+  try {
+    await table.add([updated])
+  } catch (addError) {
+    // If add fails, try to restore the original record
+    console.error(`[DB] Failed to add updated record for ${id}, attempting to restore:`, addError)
+    try {
+      // Restore with embedding set to null to avoid type issues
+      const restore = { ...existingWithoutEmbedding, embedding: 'embedding' in existing ? null : undefined }
+      if (restore.embedding === undefined) {
+        delete restore.embedding
+      }
+      await table.add([restore])
+      console.error(`[DB] Original record restored for ${id}`)
+    } catch (restoreError) {
+      console.error(`[DB] CRITICAL: Failed to restore record ${id}:`, restoreError)
+    }
+    throw addError
+  }
 }
 
 /**
