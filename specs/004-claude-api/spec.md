@@ -1,6 +1,6 @@
 # Feature Specification: Claude API Integration with User API Keys
 
-**Feature Branch**: `001-claude-api`
+**Feature Branch**: `004-claude-api`
 **Created**: 2025-12-17
 **Status**: Draft
 **Input**: User description: "Implement Claude API integration. Use Ollama as a fallback only. Claude API key will be entered by user through user interface. It will be stored securely. Each user can only hit the Claude API if they entered their API key through the user interface."
@@ -102,16 +102,16 @@ A user wants to update their existing API key (e.g., after rotating keys for sec
 
 ### Functional Requirements
 
-- **FR-001**: System MUST provide a dedicated settings page where users can enter, view (masked), update, and remove their Claude API key
-- **FR-002**: System MUST securely store user API keys using encryption at rest
+- **FR-001**: System MUST provide a dedicated settings page (`/settings` route) where users can enter, view (masked), update, and remove their Claude API key
+- **FR-002**: System MUST securely store user API keys using database-level encryption at rest (PostgreSQL pgcrypto or built-in encryption)
 - **FR-003**: System MUST use a user's personal Claude API key when available for all AI-powered features (chat, flashcard generation)
 - **FR-004**: System MUST fall back to Ollama when a user has no API key configured
 - **FR-005**: System MUST validate API key format before allowing save (basic format check: starts with "sk-ant-")
 - **FR-006**: System MUST provide real-time API key validation by making a test request to the Claude API
 - **FR-007**: System MUST display masked API keys in the UI (showing only first 7 and last 4 characters, e.g., "sk-ant-...xyz123")
 - **FR-008**: System MUST prevent users without an API key from accessing Claude API features
-- **FR-009**: System MUST display clear indicators to users showing whether they're using Claude API or Ollama fallback
-- **FR-010**: System MUST handle API key errors gracefully and provide actionable error messages
+- **FR-009**: System MUST display clear indicators to users showing which AI provider (Claude API or Ollama) generated each message - shown as a small icon or label on each assistant message
+- **FR-010**: System MUST handle API key errors (authentication failure, quota exceeded, revoked key) by displaying an error message and requiring user action to either fix their API key or acknowledge fallback to Ollama
 - **FR-011**: System MUST allow users to delete their stored API key at any time
 - **FR-012**: System MUST NOT expose API keys in client-side code, logs, or error messages
 - **FR-013**: System MUST associate API keys with specific user accounts (one key per user)
@@ -149,8 +149,8 @@ A user wants to update their existing API key (e.g., after rotating keys for sec
 - Ollama is already configured and running on the system for fallback scenarios
 - Users understand basic concept of API keys and API usage costs
 - Application already has a user authentication system to associate keys with specific users
-- Encryption at rest will use industry-standard AES-256 encryption
-- Database already supports encrypted field storage or encryption can be added
+- Database-level encryption will be implemented using PostgreSQL's pgcrypto extension or built-in encryption features
+- PostgreSQL supports encrypted field storage through pgcrypto or can be configured for encryption
 - Users will be responsible for their own API costs when using their personal keys
 - Session management exists to maintain user identity across requests
 
@@ -170,3 +170,17 @@ A user wants to update their existing API key (e.g., after rotating keys for sec
 - Automatic API key rotation or expiration
 - Usage quotas or rate limiting per user
 - Historical API usage analytics or reporting
+
+## Clarifications *(from /speckit.clarify - 2025-12-17)*
+
+The following decisions were made to resolve ambiguities in the specification:
+
+1. **Encryption Method (FR-002)**: Database-level encryption using PostgreSQL's pgcrypto extension or built-in encryption features. This approach was chosen over application-level encryption for simplicity and leveraging database security capabilities.
+
+2. **API Key Failure Handling (FR-010)**: When a user's Claude API key fails (authentication error, quota exceeded, revoked), the system will display an error message and require user action to either fix their API key or acknowledge fallback to Ollama. This ensures users are aware of failures and can take corrective action rather than silently falling back.
+
+3. **Settings UI Location (FR-001)**: API key management will be located on a dedicated `/settings` route/page rather than embedded in other UI elements. This provides clear separation of configuration from workflow.
+
+4. **Provider Indication (FR-009)**: AI provider (Claude API vs Ollama) will be indicated at the message level - each assistant message will display a small icon or label showing which provider generated it. This provides clear per-message attribution.
+
+5. **Cost Warnings**: No additional cost warnings will be shown to users before making API requests. Users who enter an API key are assumed to understand that API usage will be charged to their Anthropic account.
