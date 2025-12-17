@@ -13,7 +13,7 @@ import Anthropic from '@anthropic-ai/sdk'
 // Ollama configuration
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
 export const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2'
-export const CLAUDE_MODEL = 'claude-3-5-sonnet-20241022'
+export const CLAUDE_MODEL = 'claude-sonnet-4-5-20250929'
 export const MAX_TOKENS = 4096
 
 // Message history type for Claude API
