@@ -18,24 +18,32 @@ export interface GenerateFlashcardsOptions {
   minContentLength?: number
 }
 
-const FLASHCARD_GENERATION_PROMPT = `You are a flashcard generator. Extract question-answer pairs from the content.
+const FLASHCARD_GENERATION_PROMPT = `
+You are a flashcard generator. 
+Your task is to create multiple question-answer pairs from educational content.
 
-CRITICAL: Return ONLY a valid JSON array. Do not add any explanatory text before or after the JSON.
+CRITICAL INSTRUCTIONS:
+1. Generate AS MANY flashcards as possible (up to the specified maximum) while minimizing duplicate information
+2. Return ONLY a valid JSON array - no other text
+3. Each flashcard must have "question" and "answer" keys
+4. Questions should use interrogative format (What, How, Why, When, Where)
+5. Answers should be concise (10-200 words)
+6. Cover ALL key concepts in the content
 
-OUTPUT MUST BE EXACTLY THIS FORMAT:
+REQUIRED OUTPUT FORMAT (must be a JSON array with multiple objects):
 [
   {"question": "What is X?", "answer": "X is..."},
-  {"question": "What does Y do?", "answer": "Y does..."}
+  {"question": "How does Y work?", "answer": "Y works by..."},
+  {"question": "Why is Z important?", "answer": "Z is important because..."}
 ]
 
-RULES:
-- Each object must have "question" and "answer" keys
-- Questions use interrogative format (What, How, Why, When, Where)
-- Answers are concise (10-200 words)
-- Focus on key concepts and definitions
-- Return ONLY the JSON array, nothing else
+EXAMPLES OF GOOD FLASHCARDS:
+- Question: "What is photosynthesis?" Answer: "Photosynthesis is the process by which plants convert light energy into chemical energy."
+- Question: "What are the three states of matter?" Answer: "The three states of matter are solid, liquid, and gas."
 
-CONTENT:`
+Remember: Generate MULTIPLE flashcards (not just one). Extract every important concept from the content.
+
+CONTENT TO ANALYZE:`
 
 /**
  * Generate flashcards from educational content
@@ -48,17 +56,12 @@ export async function generateFlashcardsFromContent(
   content: string,
   options: GenerateFlashcardsOptions = {}
 ): Promise<FlashcardPair[]> {
-  const {
-    maxFlashcards = 20,
-    minContentLength = 50,
-  } = options
+  const { maxFlashcards = 20, minContentLength = 50 } = options
 
   // Validate content length
   const trimmedContent = content.trim()
   if (trimmedContent.length < minContentLength) {
-    console.log(
-      `[FlashcardGenerator] Content too short (${trimmedContent.length} chars), skipping`
-    )
+    console.log(`[FlashcardGenerator] Content too short (${trimmedContent.length} chars), skipping`)
     return []
   }
 
@@ -83,12 +86,21 @@ export async function generateFlashcardsFromContent(
         model: OLLAMA_MODEL,
         messages: [
           {
+            role: 'system',
+            content:
+              'You are a flashcard generator. You MUST generate MULTIPLE flashcards from educational content. MINIMUM 3 flashcards, preferably 5-10. Each important concept should have its own flashcard. Always return a JSON array with multiple flashcard objects, never just a single flashcard.',
+          },
+          {
             role: 'user',
             content: prompt,
           },
         ],
         stream: false,
         format: 'json',
+        options: {
+          temperature: 0.7,
+          num_predict: 2048,
+        },
       }),
     })
 
@@ -117,15 +129,17 @@ export async function generateFlashcardsFromContent(
           const questionMatches = fixed.matchAll(/["{]question["']?\s*:\s*["']([^"']+)["']/g)
           const answerMatches = fixed.matchAll(/["{]answer["']?\s*:\s*["']([^"']+)["']/g)
 
-          const questions = Array.from(questionMatches).map(m => m[1])
-          const answers = Array.from(answerMatches).map(m => m[1])
+          const questions = Array.from(questionMatches).map((m) => m[1])
+          const answers = Array.from(answerMatches).map((m) => m[1])
 
           if (questions.length > 0 && questions.length === answers.length) {
             flashcards = questions.map((q, i) => ({
               question: q,
-              answer: answers[i]
+              answer: answers[i],
             }))
-            console.log(`[FlashcardGenerator] Recovered ${flashcards.length} flashcards from malformed JSON`)
+            console.log(
+              `[FlashcardGenerator] Recovered ${flashcards.length} flashcards from malformed JSON`
+            )
           } else {
             throw firstParseError
           }
@@ -142,7 +156,11 @@ export async function generateFlashcardsFromContent(
           flashcards = parsed.questions
         } else if (parsed && Array.isArray(parsed.flashcards)) {
           flashcards = parsed.flashcards
-        } else if (parsed && typeof parsed.question === 'string' && typeof parsed.answer === 'string') {
+        } else if (
+          parsed &&
+          typeof parsed.question === 'string' &&
+          typeof parsed.answer === 'string'
+        ) {
           // Single flashcard object
           flashcards = [parsed]
         } else {
@@ -175,9 +193,7 @@ export async function generateFlashcardsFromContent(
       }))
       .slice(0, maxFlashcards) // Enforce max limit
 
-    console.log(
-      `[FlashcardGenerator] Generated ${validFlashcards.length} valid flashcards`
-    )
+    console.log(`[FlashcardGenerator] Generated ${validFlashcards.length} valid flashcards`)
 
     // Remove duplicates
     const uniqueFlashcards = removeDuplicates(validFlashcards)
@@ -214,9 +230,7 @@ function hasEducationalContent(content: string): boolean {
     "you're welcome",
   ]
 
-  const isConversational = conversationalPhrases.some((phrase) =>
-    lowerContent.includes(phrase)
-  )
+  const isConversational = conversationalPhrases.some((phrase) => lowerContent.includes(phrase))
 
   if (isConversational && content.length < 100) {
     return false
