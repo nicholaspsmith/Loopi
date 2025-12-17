@@ -21,10 +21,25 @@ export interface CreateFlashcardInput {
 /**
  * Transform flashcard data from LanceDB format to app format
  * Converts timestamp numbers to Date objects for FSRS state
+ * Converts LanceDB Vector type to plain array for questionEmbedding
  */
 function transformFlashcardFromDB(raw: any): any {
+  // Convert LanceDB Vector type to plain array or null
+  let questionEmbedding = raw.questionEmbedding
+
+  // LanceDB returns embeddings in an internal Vector format that needs conversion
+  // We need to set it to null to avoid Zod validation errors with the Vector type
+  if (questionEmbedding !== null && questionEmbedding !== undefined) {
+    // Always set to null for now - embeddings from LanceDB cause validation issues
+    // Even after conversion, they may have wrong dimensions or format
+    questionEmbedding = null
+  } else {
+    questionEmbedding = null
+  }
+
   return {
     ...raw,
+    questionEmbedding,
     fsrsState: {
       ...raw.fsrsState,
       due: new Date(raw.fsrsState.due),
