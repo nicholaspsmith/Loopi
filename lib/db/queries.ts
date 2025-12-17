@@ -80,13 +80,22 @@ export async function update<T extends { id: string }>(
     if (emb === null || emb === undefined) {
       updated.embedding = null
     } else if (Array.isArray(emb)) {
-      // Already a plain array, keep as is
-      updated.embedding = emb
-    } else if (typeof emb === 'object' && 'toArray' in emb) {
-      // LanceDB vector type with toArray method
-      updated.embedding = (emb as any).toArray()
+      // Convert to plain array to avoid LanceDB vector type issues
+      updated.embedding = [...emb]
+    } else if (typeof emb === 'object') {
+      // Try to convert object-like embeddings to arrays
+      if ('toArray' in emb && typeof (emb as any).toArray === 'function') {
+        updated.embedding = (emb as any).toArray()
+      } else if ('length' in emb) {
+        // Array-like object with length - convert to plain array
+        updated.embedding = Array.from(emb as any)
+      } else {
+        // Unknown type, set to null to avoid schema errors
+        console.warn('[DB] Unknown embedding type, setting to null:', typeof emb)
+        updated.embedding = null
+      }
     } else {
-      // Unknown type, set to null to avoid schema errors
+      // Primitive type, set to null
       updated.embedding = null
     }
   }

@@ -12,6 +12,11 @@ describe('Flashcard Generator', () => {
     vi.clearAllMocks()
   })
 
+  afterEach(() => {
+    // Restore global.fetch after each test to avoid interfering with dev server
+    vi.restoreAllMocks()
+  })
+
   it(
     'should generate flashcards from educational content',
     async () => {
