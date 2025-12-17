@@ -28,9 +28,9 @@ Next.js App Router structure:
 
 **Purpose**: Project initialization and environment configuration
 
-- [ ] T001 Enable pgcrypto extension in PostgreSQL database
-- [ ] T002 [P] Generate and configure API_KEY_ENCRYPTION_SECRET environment variable in .env.local
-- [ ] T003 [P] Verify @anthropic-ai/sdk package is installed (already in package.json v0.71.2)
+- [X] T001 Enable pgcrypto extension in PostgreSQL database
+- [X] T002 [P] Generate and configure API_KEY_ENCRYPTION_SECRET environment variable in .env.local
+- [X] T003 [P] Verify @anthropic-ai/sdk package is installed (already in package.json v0.71.2)
 
 ---
 
@@ -40,13 +40,13 @@ Next.js App Router structure:
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Create database migration to add api_keys table with pgcrypto encryption in drizzle/migrations/
-- [ ] T005 Update Drizzle schema to add apiKeys table in lib/db/drizzle-schema.ts
-- [ ] T006 Update Drizzle schema to add aiProvider and apiKeyId fields to messages table in lib/db/drizzle-schema.ts
-- [ ] T007 Run database migration to apply schema changes
-- [ ] T008 [P] Create encryption service module in lib/encryption/api-key.ts
-- [ ] T009 [P] Create API key validation utilities in lib/validation/api-key.ts
-- [ ] T010 [P] Create types for API keys in lib/types/api-key.ts
+- [X] T004 Create database migration to add api_keys table with pgcrypto encryption in drizzle/migrations/
+- [X] T005 Update Drizzle schema to add apiKeys table in lib/db/drizzle-schema.ts
+- [X] T006 Update Drizzle schema to add aiProvider and apiKeyId fields to messages table in lib/db/drizzle-schema.ts
+- [X] T007 Run database migration to apply schema changes
+- [X] T008 [P] Create encryption service module in lib/encryption/api-key.ts
+- [X] T009 [P] Create API key validation utilities in lib/validation/api-key.ts
+- [X] T010 [P] Create types for API keys in lib/types/api-key.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
