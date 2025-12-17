@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import RatingButtons from './RatingButtons'
 
 /**
@@ -42,6 +42,11 @@ interface QuizCardProps {
 
 export default function QuizCard({ flashcard, onRate }: QuizCardProps) {
   const [isAnswerRevealed, setIsAnswerRevealed] = useState(false)
+
+  // Reset answer visibility when flashcard changes
+  useEffect(() => {
+    setIsAnswerRevealed(false)
+  }, [flashcard.id])
 
   const handleRevealAnswer = () => {
     setIsAnswerRevealed(true)
