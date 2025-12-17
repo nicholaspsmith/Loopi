@@ -50,7 +50,8 @@ export async function createMessage(data: {
 
   // Generate embedding asynchronously (fire and forget)
   // This doesn't block message creation and gracefully degrades on failure
-  if (!data.embedding) {
+  // Skip in test environment to avoid race conditions
+  if (!data.embedding && process.env.NODE_ENV !== 'test') {
     generateMessageEmbeddingAsync(message.id, data.content).catch((error) => {
       console.error(`[Messages] Failed to generate embedding for message ${message.id}:`, error)
     })

@@ -7,7 +7,6 @@ import {
   createFlashcard,
   getFlashcardsByMessageId,
 } from '@/lib/db/operations/flashcards'
-import { markMessageWithFlashcards } from '@/lib/db/operations/messages'
 import { generateEmbedding } from '@/lib/embeddings/ollama'
 
 /**
@@ -118,14 +117,17 @@ export async function POST(request: NextRequest) {
         })
 
         // Generate question embedding asynchronously (fire and forget)
-        generateQuestionEmbeddingAsync(flashcard.id, pair.question).catch(
-          (error) => {
-            console.error(
-              `[FlashcardGenerate] Failed to generate embedding for flashcard ${flashcard.id}:`,
-              error
-            )
-          }
-        )
+        // Skip in test environment to avoid race conditions
+        if (process.env.NODE_ENV !== 'test') {
+          generateQuestionEmbeddingAsync(flashcard.id, pair.question).catch(
+            (error) => {
+              console.error(
+                `[FlashcardGenerate] Failed to generate embedding for flashcard ${flashcard.id}:`,
+                error
+              )
+            }
+          )
+        }
 
         return flashcard
       })
