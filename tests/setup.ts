@@ -1,5 +1,10 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
+import { config } from 'dotenv'
+import path from 'path'
+
+// Load environment variables from .env.local for tests
+config({ path: path.resolve(process.cwd(), '.env.local') })
 
 // Mock Next.js navigation
 const mockRouter = {
