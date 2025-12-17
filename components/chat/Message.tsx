@@ -2,6 +2,7 @@
 
 import type { Message as MessageType } from '@/types'
 import GenerateFlashcardsButton from './GenerateFlashcardsButton'
+import ProviderBadge from '@/components/settings/ProviderBadge'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -104,13 +105,18 @@ export default function Message({ message, isStreaming = false }: MessageProps) 
           )}
         </div>
 
-        {/* Timestamp */}
-        <time className="text-xs mt-2 opacity-60 block" dateTime={new Date(message.createdAt).toISOString()}>
-          {new Date(message.createdAt).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        </time>
+        {/* Timestamp and Provider Badge */}
+        <div className="flex items-center gap-2 mt-2">
+          <time className="text-xs opacity-60" dateTime={new Date(message.createdAt).toISOString()}>
+            {new Date(message.createdAt).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </time>
+          {isAssistant && message.aiProvider && (
+            <ProviderBadge provider={message.aiProvider} size="sm" showTooltip />
+          )}
+        </div>
 
         {/* Generate Flashcards Button (FR-008: only for assistant messages) */}
         {isAssistant && !isStreaming && (
