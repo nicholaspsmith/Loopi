@@ -1,15 +1,13 @@
-import { v4 as uuidv4 } from 'uuid'
-import { create, find, findById, update } from '../queries'
+import { getDb } from '@/lib/db/pg-client'
+import { conversations } from '@/lib/db/drizzle-schema'
+import { eq, desc } from 'drizzle-orm'
 import type { Conversation } from '@/types'
-import { ConversationSchema } from '@/types'
 
 /**
  * Conversation Database Operations
  *
- * Provides CRUD operations for conversations in LanceDB.
+ * Provides CRUD operations for conversations in PostgreSQL.
  */
-
-const CONVERSATIONS_TABLE = 'conversations'
 
 /**
  * Create a new conversation
@@ -18,44 +16,74 @@ export async function createConversation(data: {
   userId: string
   title?: string | null
 }): Promise<Conversation> {
-  const now = Date.now()
+  const db = getDb()
 
-  const conversation: Conversation = {
-    id: uuidv4(),
-    userId: data.userId,
-    title: data.title || `New Conversation - ${new Date().toLocaleDateString()}`,
-    createdAt: now,
-    updatedAt: now,
-    messageCount: 0,
+  const [conversation] = await db
+    .insert(conversations)
+    .values({
+      userId: data.userId,
+      title: data.title || `New Conversation - ${new Date().toLocaleDateString()}`,
+      messageCount: 0,
+    })
+    .returning()
+
+  return {
+    id: conversation.id,
+    userId: conversation.userId,
+    title: conversation.title,
+    messageCount: conversation.messageCount,
+    createdAt: conversation.createdAt.getTime(),
+    updatedAt: conversation.updatedAt.getTime(),
   }
-
-  // Validate before inserting
-  ConversationSchema.parse(conversation)
-
-  await create(CONVERSATIONS_TABLE, [conversation])
-
-  return conversation
 }
 
 /**
  * Get conversation by ID
  */
 export async function getConversationById(id: string): Promise<Conversation | null> {
-  return await findById<Conversation>(CONVERSATIONS_TABLE, id)
+  const db = getDb()
+
+  const [conversation] = await db
+    .select()
+    .from(conversations)
+    .where(eq(conversations.id, id))
+    .limit(1)
+
+  if (!conversation) {
+    return null
+  }
+
+  return {
+    id: conversation.id,
+    userId: conversation.userId,
+    title: conversation.title,
+    messageCount: conversation.messageCount,
+    createdAt: conversation.createdAt.getTime(),
+    updatedAt: conversation.updatedAt.getTime(),
+  }
 }
 
 /**
  * Get all conversations for a user
  */
 export async function getConversationsByUserId(userId: string): Promise<Conversation[]> {
-  const conversations = await find<Conversation>(
-    CONVERSATIONS_TABLE,
-    `\`userId\` = '${userId}'`,
-    1000
-  )
+  const db = getDb()
 
-  // Sort by most recent first
-  return conversations.sort((a, b) => b.updatedAt - a.updatedAt)
+  const results = await db
+    .select()
+    .from(conversations)
+    .where(eq(conversations.userId, userId))
+    .orderBy(desc(conversations.updatedAt))
+    .limit(1000)
+
+  return results.map((conv) => ({
+    id: conv.id,
+    userId: conv.userId,
+    title: conv.title,
+    messageCount: conv.messageCount,
+    createdAt: conv.createdAt.getTime(),
+    updatedAt: conv.updatedAt.getTime(),
+  }))
 }
 
 /**
@@ -63,50 +91,56 @@ export async function getConversationsByUserId(userId: string): Promise<Conversa
  */
 export async function updateConversation(
   id: string,
-  updates: Partial<Conversation>
+  updates: Partial<Pick<Conversation, 'title' | 'messageCount'>>
 ): Promise<Conversation> {
-  const now = Date.now()
+  const db = getDb()
 
-  await update<Conversation>(CONVERSATIONS_TABLE, id, {
-    ...updates,
-    updatedAt: now,
-  })
-
-  const updatedConversation = await getConversationById(id)
+  const [updatedConversation] = await db
+    .update(conversations)
+    .set({
+      ...updates,
+      updatedAt: new Date(),
+    })
+    .where(eq(conversations.id, id))
+    .returning()
 
   if (!updatedConversation) {
-    throw new Error(`Conversation not found after update: ${id}`)
+    throw new Error(`Conversation not found: ${id}`)
   }
 
-  return updatedConversation
+  return {
+    id: updatedConversation.id,
+    userId: updatedConversation.userId,
+    title: updatedConversation.title,
+    messageCount: updatedConversation.messageCount,
+    createdAt: updatedConversation.createdAt.getTime(),
+    updatedAt: updatedConversation.updatedAt.getTime(),
+  }
 }
 
 /**
  * Increment message count for a conversation
  */
 export async function incrementMessageCount(conversationId: string): Promise<void> {
-  const conversation = await getConversationById(conversationId)
+  const db = getDb()
+  const { sql } = await import('drizzle-orm')
 
-  if (!conversation) {
-    throw new Error(`Conversation not found: ${conversationId}`)
-  }
-
-  await updateConversation(conversationId, {
-    messageCount: conversation.messageCount + 1,
-  })
+  await db
+    .update(conversations)
+    .set({
+      messageCount: sql`${conversations.messageCount} + 1`,
+      updatedAt: new Date(),
+    })
+    .where(eq(conversations.id, conversationId))
 }
 
 /**
- * Delete conversation (soft delete by updating status if we add that field later,
- * or actual delete for now)
+ * Delete conversation
  */
 export async function deleteConversation(id: string): Promise<void> {
-  // For now, we'll implement actual deletion
-  // In production, you might want to soft-delete by adding a 'deleted' field
-  const { getDbConnection } = await import('../client')
-  const db = await getDbConnection()
-  const table = await db.openTable(CONVERSATIONS_TABLE)
-  await table.delete(`id = '${id}'`)
+  const db = getDb()
+
+  await db.delete(conversations).where(eq(conversations.id, id))
 }
 
 /**
