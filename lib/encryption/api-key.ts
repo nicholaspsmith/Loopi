@@ -23,14 +23,14 @@ if (!ENCRYPTION_SECRET) {
 export async function encryptApiKey(apiKey: string): Promise<string> {
   const db = getDb()
 
-  const result = await db.execute(sql`
+  const result = await db.execute<{ encrypted: string }>(sql`
     SELECT encode(
       pgp_sym_encrypt(${apiKey}, ${ENCRYPTION_SECRET}),
       'base64'
     ) as encrypted
   `)
 
-  return result.rows[0].encrypted as string
+  return result[0].encrypted
 }
 
 /**
@@ -43,14 +43,14 @@ export async function decryptApiKey(encryptedKey: string): Promise<string | null
   const db = getDb()
 
   try {
-    const result = await db.execute(sql`
+    const result = await db.execute<{ decrypted: string }>(sql`
       SELECT pgp_sym_decrypt(
         decode(${encryptedKey}, 'base64'),
         ${ENCRYPTION_SECRET}
       ) as decrypted
     `)
 
-    return result.rows[0].decrypted as string
+    return result[0].decrypted
   } catch (error) {
     console.error('[Encryption] Failed to decrypt API key:', error)
     return null
