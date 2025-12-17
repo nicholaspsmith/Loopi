@@ -1,17 +1,15 @@
-import { v4 as uuidv4 } from 'uuid'
-import { create, find, findById, update } from '../queries'
+import { getDb } from '@/lib/db/pg-client'
+import { messages } from '@/lib/db/drizzle-schema'
+import { eq } from 'drizzle-orm'
 import type { Message, MessageRole } from '@/types'
-import { MessageSchema } from '@/types'
 import { incrementMessageCount } from './conversations'
 import { generateEmbedding } from '@/lib/embeddings/ollama'
 
 /**
  * Message Database Operations
  *
- * Provides CRUD operations for messages in LanceDB.
+ * Provides CRUD operations for messages in PostgreSQL.
  */
-
-const MESSAGES_TABLE = 'messages'
 
 /**
  * Create a new message
@@ -29,25 +27,24 @@ export async function createMessage(data: {
   aiProvider?: 'claude' | 'ollama' | null
   apiKeyId?: string | null
 }): Promise<Message> {
-  const now = Date.now()
+  const db = getDb()
 
-  const message: Message = {
-    id: uuidv4(),
-    conversationId: data.conversationId,
-    userId: data.userId,
-    role: data.role,
-    content: data.content,
-    embedding: data.embedding || null,
-    createdAt: now,
-    hasFlashcards: false,
-    aiProvider: data.aiProvider || null,
-    apiKeyId: data.apiKeyId || null,
-  }
+  // Convert embedding array to pgvector string format if provided
+  const embeddingString = data.embedding ? `[${data.embedding.join(',')}]` : null
 
-  // Validate before inserting
-  MessageSchema.parse(message)
-
-  await create(MESSAGES_TABLE, [message])
+  const [message] = await db
+    .insert(messages)
+    .values({
+      conversationId: data.conversationId,
+      userId: data.userId,
+      role: data.role,
+      content: data.content,
+      embedding: embeddingString as any,
+      hasFlashcards: false,
+      aiProvider: data.aiProvider || null,
+      apiKeyId: data.apiKeyId || null,
+    })
+    .returning()
 
   // Increment conversation message count
   await incrementMessageCount(data.conversationId)
@@ -61,7 +58,18 @@ export async function createMessage(data: {
     })
   }
 
-  return message
+  return {
+    id: message.id,
+    conversationId: message.conversationId,
+    userId: message.userId,
+    role: message.role as MessageRole,
+    content: message.content,
+    embedding: null, // Don't return embedding in API responses
+    createdAt: message.createdAt.getTime(),
+    hasFlashcards: message.hasFlashcards,
+    aiProvider: message.aiProvider as 'claude' | 'ollama' | null,
+    apiKeyId: message.apiKeyId,
+  }
 }
 
 /**
@@ -90,7 +98,26 @@ async function generateMessageEmbeddingAsync(
  * Get message by ID
  */
 export async function getMessageById(id: string): Promise<Message | null> {
-  return await findById<Message>(MESSAGES_TABLE, id)
+  const db = getDb()
+
+  const [message] = await db.select().from(messages).where(eq(messages.id, id)).limit(1)
+
+  if (!message) {
+    return null
+  }
+
+  return {
+    id: message.id,
+    conversationId: message.conversationId,
+    userId: message.userId,
+    role: message.role as MessageRole,
+    content: message.content,
+    embedding: null, // Don't return embedding in API responses
+    createdAt: message.createdAt.getTime(),
+    hasFlashcards: message.hasFlashcards,
+    aiProvider: message.aiProvider as 'claude' | 'ollama' | null,
+    apiKeyId: message.apiKeyId,
+  }
 }
 
 /**
@@ -99,14 +126,27 @@ export async function getMessageById(id: string): Promise<Message | null> {
 export async function getMessagesByConversationId(
   conversationId: string
 ): Promise<Message[]> {
-  const messages = await find<Message>(
-    MESSAGES_TABLE,
-    `\`conversationId\` = '${conversationId}'`,
-    10000
-  )
+  const db = getDb()
 
-  // Sort by creation time (oldest first for chat history)
-  return messages.sort((a, b) => a.createdAt - b.createdAt)
+  const results = await db
+    .select()
+    .from(messages)
+    .where(eq(messages.conversationId, conversationId))
+    .orderBy(messages.createdAt)
+    .limit(10000)
+
+  return results.map((msg) => ({
+    id: msg.id,
+    conversationId: msg.conversationId,
+    userId: msg.userId,
+    role: msg.role as MessageRole,
+    content: msg.content,
+    embedding: null, // Don't return embedding in API responses
+    createdAt: msg.createdAt.getTime(),
+    hasFlashcards: msg.hasFlashcards,
+    aiProvider: msg.aiProvider as 'claude' | 'ollama' | null,
+    apiKeyId: msg.apiKeyId,
+  }))
 }
 
 /**
@@ -116,10 +156,27 @@ export async function getRecentMessages(
   conversationId: string,
   limit: number = 10
 ): Promise<Message[]> {
-  const allMessages = await getMessagesByConversationId(conversationId)
+  const db = getDb()
 
-  // Return the N most recent messages
-  return allMessages.slice(-limit)
+  const results = await db
+    .select()
+    .from(messages)
+    .where(eq(messages.conversationId, conversationId))
+    .orderBy(messages.createdAt)
+    .limit(limit)
+
+  return results.map((msg) => ({
+    id: msg.id,
+    conversationId: msg.conversationId,
+    userId: msg.userId,
+    role: msg.role as MessageRole,
+    content: msg.content,
+    embedding: null,
+    createdAt: msg.createdAt.getTime(),
+    hasFlashcards: msg.hasFlashcards,
+    aiProvider: msg.aiProvider as 'claude' | 'ollama' | null,
+    apiKeyId: msg.apiKeyId,
+  }))
 }
 
 /**
@@ -127,85 +184,36 @@ export async function getRecentMessages(
  */
 export async function updateMessage(
   id: string,
-  updates: Partial<Message>
+  updates: Partial<Pick<Message, 'embedding' | 'hasFlashcards'>>
 ): Promise<Message> {
-  await update<Message>(MESSAGES_TABLE, id, updates)
+  const db = getDb()
 
-  const updatedMessage = await getMessageById(id)
+  // Convert embedding array to pgvector string format if provided
+  const updateData: any = { ...updates }
+  if (updates.embedding) {
+    updateData.embedding = `[${updates.embedding.join(',')}]`
+  }
+
+  const [updatedMessage] = await db
+    .update(messages)
+    .set(updateData)
+    .where(eq(messages.id, id))
+    .returning()
 
   if (!updatedMessage) {
-    throw new Error(`Message not found after update: ${id}`)
+    throw new Error(`Message not found: ${id}`)
   }
 
-  return updatedMessage
-}
-
-/**
- * Mark message as having flashcards
- *
- * Note: Uses a workaround to avoid the embedding field update issue
- * Instead of using the generic update, we delete and re-add with a fresh read
- */
-export async function markMessageWithFlashcards(messageId: string): Promise<void> {
-  const db = await getDbConnection()
-  const table = await db.openTable(MESSAGES_TABLE)
-
-  // Get the message first
-  const message = await getMessageById(messageId)
-  if (!message) {
-    throw new Error(`Message not found: ${messageId}`)
+  return {
+    id: updatedMessage.id,
+    conversationId: updatedMessage.conversationId,
+    userId: updatedMessage.userId,
+    role: updatedMessage.role as MessageRole,
+    content: updatedMessage.content,
+    embedding: null, // Don't return embedding in API responses
+    createdAt: updatedMessage.createdAt.getTime(),
+    hasFlashcards: updatedMessage.hasFlashcards,
+    aiProvider: updatedMessage.aiProvider as 'claude' | 'ollama' | null,
+    apiKeyId: updatedMessage.apiKeyId,
   }
-
-  // Delete the old record
-  await table.delete(`id = '${messageId}'`)
-
-  // Re-add with updated hasFlashcards, but without embedding to avoid schema issues
-  await table.add([{
-    ...message,
-    hasFlashcards: true,
-    embedding: null, // Reset embedding to null to avoid LanceDB type issues
-  }])
-}
-
-/**
- * Search messages by content (vector search when embedding is available)
- */
-export async function searchMessages(
-  userId: string,
-  query: string,
-  limit: number = 10
-): Promise<Message[]> {
-  // For now, simple text search
-  // TODO: Implement vector search using embeddings
-  const messages = await find<Message>(MESSAGES_TABLE, `\`userId\` = '${userId}'`, 10000)
-
-  // Filter by content matching
-  const filtered = messages.filter((msg) =>
-    msg.content.toLowerCase().includes(query.toLowerCase())
-  )
-
-  return filtered.slice(0, limit)
-}
-
-/**
- * Get messages with flashcards for a user
- */
-export async function getMessagesWithFlashcards(userId: string): Promise<Message[]> {
-  const messages = await find<Message>(
-    MESSAGES_TABLE,
-    `\`userId\` = '${userId}' AND \`hasFlashcards\` = true`,
-    10000
-  )
-
-  return messages.sort((a, b) => b.createdAt - a.createdAt)
-}
-
-/**
- * Delete message
- */
-export async function deleteMessage(id: string): Promise<void> {
-  const { getDbConnection } = await import('../client')
-  const db = await getDbConnection()
-  const table = await db.openTable(MESSAGES_TABLE)
-  await table.delete(`id = '${id}'`)
 }
