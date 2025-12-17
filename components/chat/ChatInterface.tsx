@@ -247,7 +247,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
         isLoading={isLoading}
       />
 
-      <div className="border-t border-gray-200 p-4 bg-white">
+      <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
         <MessageInput onSend={sendMessage} disabled={isSending || isLoading} />
       </div>
     </div>

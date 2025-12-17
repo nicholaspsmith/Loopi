@@ -85,9 +85,9 @@ export default function GenerateFlashcardsButton({
         disabled={isGenerating || hasFlashcards}
         className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
           hasFlashcards
-            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+            ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 cursor-not-allowed'
             : isGenerating
-              ? 'bg-gray-100 text-gray-500 cursor-wait'
+              ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-wait'
               : 'bg-blue-500 text-white hover:bg-blue-600'
         }`}
       >
@@ -102,8 +102,8 @@ export default function GenerateFlashcardsButton({
         <p
           className={`text-sm ${
             flashcardCount !== null
-              ? 'text-green-600'
-              : 'text-amber-600'
+              ? 'text-green-600 dark:text-green-400'
+              : 'text-amber-600 dark:text-amber-400'
           }`}
         >
           {message}
