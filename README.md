@@ -14,10 +14,14 @@ MemoryLoop is a web application that enables you to learn through conversation w
 - **Framework**: Next.js 15.1 with React 19 and App Router
 - **Language**: TypeScript 5.7
 - **Authentication**: NextAuth.js 5
-- **Database**: LanceDB (vector database)
-- **AI**: Anthropic Claude API
+- **Database**: Hybrid architecture
+  - PostgreSQL + pgvector (users, conversations, messages, API keys)
+  - LanceDB (flashcards, review logs)
+- **AI**: Anthropic Claude API with Ollama fallback
 - **Styling**: Tailwind CSS 4
 - **Testing**: Vitest, Playwright, React Testing Library
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed database design rationale.
 
 ## Prerequisites
 
@@ -49,11 +53,14 @@ Create a `.env.local` file in the root directory:
 NEXTAUTH_SECRET=your-secret-key-here
 NEXTAUTH_URL=http://localhost:3000
 
-# Anthropic API
-ANTHROPIC_API_KEY=your-anthropic-api-key-here
+# PostgreSQL Database (Supabase or local)
+DATABASE_URL=postgresql://user:pass@host:5432/database
 
-# Database
+# LanceDB (local file-based)
 DATABASE_PATH=./data/lancedb
+
+# Ollama (local AI fallback - optional)
+OLLAMA_BASE_URL=http://localhost:11434
 ```
 
 Generate a secure `NEXTAUTH_SECRET`:
@@ -61,6 +68,8 @@ Generate a secure `NEXTAUTH_SECRET`:
 ```bash
 openssl rand -base64 32
 ```
+
+**Note:** Users can optionally add their own Claude API key via the Settings page in the app (encrypted storage). If no API key is configured, the app falls back to Ollama for local AI inference.
 
 ### 4. Initialize the database
 
