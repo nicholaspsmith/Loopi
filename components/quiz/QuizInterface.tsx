@@ -140,6 +140,42 @@ export default function QuizInterface({
     fetchFlashcards('all')
   }
 
+  const handleDelete = async (flashcardId: string) => {
+    try {
+      setError(null)
+
+      const response = await fetch(`/api/flashcards/${flashcardId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete flashcard')
+      }
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Remove flashcard from state
+        const updatedFlashcards = flashcards.filter((f) => f.id !== flashcardId)
+        setFlashcards(updatedFlashcards)
+
+        // Update current index if needed
+        if (updatedFlashcards.length === 0) {
+          // No more flashcards
+          setIsCompleted(true)
+        } else if (currentIndex >= updatedFlashcards.length) {
+          // Current index is out of bounds, go to last card
+          setCurrentIndex(updatedFlashcards.length - 1)
+        }
+        // If currentIndex < updatedFlashcards.length, it will automatically show the next card
+      } else {
+        throw new Error(data.error || 'Failed to delete flashcard')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    }
+  }
+
   // Loading state
   if (isLoading) {
     return (
@@ -314,6 +350,7 @@ export default function QuizInterface({
         <QuizCard
           flashcard={currentFlashcard}
           onRate={handleRate}
+          onDelete={handleDelete}
         />
       </div>
 
