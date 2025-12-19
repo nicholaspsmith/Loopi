@@ -10,7 +10,7 @@ import {
 } from '@/lib/db/operations/flashcards'
 import { createReviewLog, getReviewLogsByUserId } from '@/lib/db/operations/review-logs'
 import { hashPassword } from '@/lib/auth/helpers'
-import { scheduleCard, initializeCard } from '@/lib/fsrs/scheduler'
+import { scheduleCard } from '@/lib/fsrs/scheduler'
 import { Rating } from 'ts-fsrs'
 
 /**
@@ -29,7 +29,6 @@ describe('Quiz Session Flow Integration', () => {
   let testMessageId: string
   let flashcard1Id: string
   let flashcard2Id: string
-  let flashcard3Id: string
 
   beforeAll(async () => {
     // Create test user
@@ -58,7 +57,7 @@ describe('Quiz Session Flow Integration', () => {
     testMessageId = message.id
 
     // Create flashcards with different due dates
-    const now = new Date()
+    // (timestamp not used but documents when cards are created)
 
     // Flashcard 1: Due now
     const fc1 = await createFlashcard({
@@ -84,14 +83,13 @@ describe('Quiz Session Flow Integration', () => {
     // Note: createFlashcard uses default FSRS state with due = now
     // So we need to create it and then update it, or just accept that
     // for this test we'll create it after the other cards are reviewed
-    const fc3 = await createFlashcard({
+    await createFlashcard({
       userId: testUserId,
       conversationId: testConversationId,
       messageId: testMessageId,
       question: 'What is active recall?',
       answer: 'A study method where you actively retrieve information from memory.',
     })
-    flashcard3Id = fc3.id
 
     // Note: In real usage, this card would be scheduled in the future after review
     // For this test, we'll filter by comparing against a future timestamp in the test
@@ -359,8 +357,6 @@ describe('Quiz Session Flow Integration', () => {
       const maxCardsToReview = Math.min(2, totalCards)
 
       while (currentIndex < maxCardsToReview) {
-        const currentCard = dueCards[currentIndex]
-
         // Progress should be: (currentIndex + 1) / totalCards
         const progress = ((currentIndex + 1) / totalCards) * 100
         expect(progress).toBeGreaterThan(0)
@@ -384,10 +380,7 @@ describe('Quiz Session Flow Integration', () => {
       const totalCards = dueCards.length
 
       // Simulate reviewing all cards
-      let reviewed = 0
-      for (const card of dueCards) {
-        reviewed++
-      }
+      const reviewed = dueCards.length
 
       // Should have reviewed all cards
       expect(reviewed).toBe(totalCards)

@@ -45,7 +45,7 @@ describe('SignupForm', () => {
     const user = userEvent.setup()
 
     // Mock pending API response
-    global.fetch = vi.fn(() => new Promise(() => {}))
+    global.fetch = vi.fn(() => new Promise(() => {})) as typeof fetch
 
     render(<SignupForm onSuccess={mockOnSuccess} />)
 

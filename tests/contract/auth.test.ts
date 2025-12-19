@@ -1,6 +1,5 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { getDbConnection } from '@/lib/db/client'
-import { initializeDatabase } from '@/lib/db/schema'
+import { describe, it, expect, beforeAll } from 'vitest'
+import { initializeSchema } from '@/lib/db/schema'
 
 /**
  * Contract Tests for Authentication API
@@ -12,7 +11,7 @@ import { initializeDatabase } from '@/lib/db/schema'
 describe('POST /api/auth/signup', () => {
   beforeAll(async () => {
     // Initialize test database
-    await initializeDatabase()
+    await initializeSchema()
   })
 
   it('should return 201 and user data for valid signup', async () => {

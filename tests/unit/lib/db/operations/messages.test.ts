@@ -182,7 +182,7 @@ describe('Message Database Operations', () => {
 
     it('should return messages in chronological order (oldest first)', async () => {
       // Create messages with slight delay to ensure different timestamps
-      const message1 = await createMessage({
+      await createMessage({
         conversationId: testConversationId,
         userId: testUserId,
         role: 'user',
@@ -191,7 +191,7 @@ describe('Message Database Operations', () => {
 
       await new Promise((resolve) => setTimeout(resolve, 10))
 
-      const message2 = await createMessage({
+      await createMessage({
         conversationId: testConversationId,
         userId: testUserId,
         role: 'assistant',
@@ -200,7 +200,7 @@ describe('Message Database Operations', () => {
 
       await new Promise((resolve) => setTimeout(resolve, 10))
 
-      const message3 = await createMessage({
+      await createMessage({
         conversationId: testConversationId,
         userId: testUserId,
         role: 'user',

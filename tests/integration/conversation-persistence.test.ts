@@ -97,7 +97,7 @@ describe('Conversation History Persistence (FR-023)', () => {
 
   it('should maintain chronological message order across sessions', async () => {
     // Session 2 (continuing): User sends follow-up message
-    const message3 = await createMessage({
+    await createMessage({
       conversationId: testConversationId,
       userId: testUserId,
       role: 'user',

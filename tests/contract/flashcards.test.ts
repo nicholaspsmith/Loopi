@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { hashPassword } from '@/lib/auth/helpers'
 import { createUser } from '@/lib/db/operations/users'
 import { createConversation } from '@/lib/db/operations/conversations'
@@ -246,7 +246,7 @@ Applications include quantum computing, quantum cryptography, and quantum telepo
     it('should return empty array if user has no flashcards', async () => {
       // Create new user with no flashcards
       const passwordHash = await hashPassword('TestPass123!')
-      const newUser = await createUser({
+      await createUser({
         email: `test-no-flashcards-${Date.now()}@example.com`,
         passwordHash,
         name: 'No Flashcards User',

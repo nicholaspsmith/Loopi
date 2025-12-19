@@ -89,10 +89,6 @@ describe('QuizProgress', () => {
     it('should display a progress bar', () => {
       render(<QuizProgress current={3} total={10} />)
 
-      // Should have a progress bar element (could be <progress>, role="progressbar", etc.)
-      const progressIndicator =
-        screen.queryByRole('progressbar') || screen.queryByTestId('progress-bar')
-
       // At minimum, the text should be present even if visual bar isn't implemented yet
       expect(screen.getByText(/3.*of.*10/i)).toBeInTheDocument()
     })

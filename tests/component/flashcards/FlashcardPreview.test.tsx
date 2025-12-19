@@ -25,6 +25,7 @@ describe('FlashcardPreview', () => {
       difficulty: 0,
       elapsed_days: 0,
       scheduled_days: 0,
+      learning_steps: 0,
       reps: 0,
       lapses: 0,
       state: 0,

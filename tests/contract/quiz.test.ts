@@ -22,7 +22,6 @@ describe('Quiz API Contract Tests', () => {
   let testUserId: string
   let testConversationId: string
   let testMessageId: string
-  let testFlashcardId: string
   let dueFlashcardId: string
 
   beforeAll(async () => {
@@ -52,7 +51,6 @@ describe('Quiz API Contract Tests', () => {
     testMessageId = message.id
 
     // Create a flashcard that's due now
-    const now = new Date()
     const dueFlashcard = await createFlashcard({
       userId: testUserId,
       conversationId: testConversationId,
@@ -63,15 +61,13 @@ describe('Quiz API Contract Tests', () => {
     dueFlashcardId = dueFlashcard.id
 
     // Create a flashcard that's not due yet (future due date)
-    const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
-    const futureFlashcard = await createFlashcard({
+    await createFlashcard({
       userId: testUserId,
       conversationId: testConversationId,
       messageId: testMessageId,
       question: 'What is the FSRS algorithm?',
       answer: 'Free Spaced Repetition Scheduler - an evidence-based scheduling algorithm.',
     })
-    testFlashcardId = futureFlashcard.id
   })
 
   afterAll(async () => {
