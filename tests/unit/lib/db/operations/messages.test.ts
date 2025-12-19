@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
 import {
   createMessage,
   getMessageById,
@@ -6,16 +6,14 @@ import {
 } from '@/lib/db/operations/messages'
 import { createConversation } from '@/lib/db/operations/conversations'
 import { createUser } from '@/lib/db/operations/users'
-import { initializeSchema, isSchemaInitialized } from '@/lib/db/schema'
-import { closeDbConnection } from '@/lib/db/client'
-import fs from 'fs'
-import path from 'path'
 
 /**
  * Message Database Operations Tests
  *
  * Tests the message CRUD operations with LanceDB.
  * These tests focus on the bug where messages aren't retrieved after creation.
+ *
+ * Note: Database setup/teardown is handled by tests/db-setup.ts
  */
 
 describe('Message Database Operations', () => {
@@ -23,22 +21,9 @@ describe('Message Database Operations', () => {
   let testConversationId: string
 
   beforeAll(async () => {
-    // Ensure test database directory exists
-    const dbPath = path.join(process.cwd(), 'data', 'lancedb')
-    if (!fs.existsSync(dbPath)) {
-      fs.mkdirSync(dbPath, { recursive: true })
-    }
-
-    // Initialize database schema if not already initialized
-    const initialized = await isSchemaInitialized()
-    if (!initialized) {
-      console.log('Initializing test database schema...')
-      await initializeSchema()
-    }
-
     // Create a test user for all tests
     const testUser = await createUser({
-      email: 'message-test@example.com',
+      email: `message-test-${Date.now()}@example.com`,
       passwordHash: '$2b$10$n0.ChK4kNntDZE1yNFNs3ufwt2FyPZ7Pf9h8Do24W8M/wkdKznMa.',
       name: 'Message Test User',
     })
@@ -52,11 +37,6 @@ describe('Message Database Operations', () => {
       title: 'Test Conversation',
     })
     testConversationId = conversation.id
-  })
-
-  afterAll(async () => {
-    // Clean up database connection
-    await closeDbConnection()
   })
 
   describe('createMessage', () => {

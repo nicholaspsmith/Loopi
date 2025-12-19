@@ -1,16 +1,15 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { initializeSchema, isSchemaInitialized } from '@/lib/db/schema'
-import { closeDbConnection, getDbConnection } from '@/lib/db/client'
+import { describe, it, expect, beforeAll } from 'vitest'
+import { getDbConnection } from '@/lib/db/client'
 import { createUser } from '@/lib/db/operations/users'
 import { createConversation } from '@/lib/db/operations/conversations'
 import { v4 as uuidv4 } from 'uuid'
-import fs from 'fs'
-import path from 'path'
 
 /**
  * Direct LanceDB Query Test
  *
  * Tests direct queries without using the helper functions
+ *
+ * Note: Database setup/teardown is handled by tests/db-setup.ts
  */
 
 describe('Direct LanceDB Query', () => {
@@ -18,22 +17,9 @@ describe('Direct LanceDB Query', () => {
   let testConversationId: string
 
   beforeAll(async () => {
-    // Ensure test database directory exists
-    const dbPath = path.join(process.cwd(), 'data', 'lancedb')
-    if (!fs.existsSync(dbPath)) {
-      fs.mkdirSync(dbPath, { recursive: true })
-    }
-
-    // Initialize database schema if not already initialized
-    const initialized = await isSchemaInitialized()
-    if (!initialized) {
-      console.log('Initializing test database schema...')
-      await initializeSchema()
-    }
-
     // Create a test user
     const testUser = await createUser({
-      email: 'direct-test@example.com',
+      email: `direct-test-${Date.now()}@example.com`,
       passwordHash: '$2b$10$n0.ChK4kNntDZE1yNFNs3ufwt2FyPZ7Pf9h8Do24W8M/wkdKznMa.',
       name: 'Direct Test User',
     })
@@ -45,10 +31,6 @@ describe('Direct LanceDB Query', () => {
       title: 'Direct Test Conversation',
     })
     testConversationId = conversation.id
-  })
-
-  afterAll(async () => {
-    await closeDbConnection()
   })
 
   it('should directly add and query a message', async () => {

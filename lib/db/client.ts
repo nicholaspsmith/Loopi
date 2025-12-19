@@ -31,3 +31,11 @@ export async function closeDbConnection(): Promise<void> {
     console.log('✅ LanceDB connection closed')
   }
 }
+
+/**
+ * Reset database connection (for test isolation)
+ * Forces a new connection on next getDbConnection call
+ */
+export function resetDbConnection(): void {
+  dbConnection = null
+}
