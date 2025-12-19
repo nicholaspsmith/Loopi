@@ -10,7 +10,6 @@ import { createUser, getUserByEmail, getUserById, emailExists } from '@/lib/db/o
  */
 
 describe('User Database Operations', () => {
-
   it('should successfully create a user', async () => {
     const email = `test-create-${Date.now()}@example.com`
     const userData = {

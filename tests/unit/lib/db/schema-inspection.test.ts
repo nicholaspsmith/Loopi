@@ -10,7 +10,6 @@ import { getDbConnection } from '@/lib/db/client'
  */
 
 describe('LanceDB Schema Inspection', () => {
-
   it('should show messages table schema', async () => {
     const db = await getDbConnection()
     const table = await db.openTable('messages')
