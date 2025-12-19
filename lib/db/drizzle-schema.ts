@@ -1,5 +1,4 @@
 import { pgTable, uuid, varchar, text, timestamp, integer, boolean, jsonb, vector } from 'drizzle-orm/pg-core'
-import { sql } from 'drizzle-orm'
 
 /**
  * Drizzle ORM Schema for MemoryLoop with PostgreSQL + pgvector

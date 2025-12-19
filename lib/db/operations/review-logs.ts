@@ -131,7 +131,6 @@ export async function getReviewHistoryWithFlashcards(
   limit: number = 20
 ): Promise<Array<ReviewLog & { flashcardQuestion: string; flashcardAnswer: string }>> {
   const db = await getDbConnection()
-  const reviewLogsTable = await db.openTable('review_logs')
   const flashcardsTable = await db.openTable('flashcards')
 
   // Get recent review logs

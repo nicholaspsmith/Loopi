@@ -113,9 +113,9 @@ export async function generateFlashcardsFromContent(
     console.log('[FlashcardGenerator] Raw response:', rawResponse.substring(0, 200))
 
     // Parse JSON response
-    let flashcards: FlashcardPair[]
+    let flashcards: FlashcardPair[] | undefined
     try {
-      let parsed: any
+      let parsed: unknown
 
       try {
         parsed = JSON.parse(rawResponse)
@@ -129,8 +129,8 @@ export async function generateFlashcardsFromContent(
           const questionMatches = fixed.matchAll(/["{]question["']?\s*:\s*["']([^"']+)["']/g)
           const answerMatches = fixed.matchAll(/["{]answer["']?\s*:\s*["']([^"']+)["']/g)
 
-          const questions = Array.from(questionMatches).map((m) => m[1])
-          const answers = Array.from(answerMatches).map((m) => m[1])
+          const questions = [...questionMatches].map((m) => m[1])
+          const answers = [...answerMatches].map((m) => m[1])
 
           if (questions.length > 0 && questions.length === answers.length) {
             flashcards = questions.map((q, i) => ({
@@ -151,18 +151,21 @@ export async function generateFlashcardsFromContent(
       // Handle different response formats
       if (!flashcards) {
         if (Array.isArray(parsed)) {
-          flashcards = parsed
-        } else if (parsed && Array.isArray(parsed.questions)) {
-          flashcards = parsed.questions
-        } else if (parsed && Array.isArray(parsed.flashcards)) {
-          flashcards = parsed.flashcards
+          flashcards = parsed as FlashcardPair[]
+        } else if (parsed && typeof parsed === 'object' && 'questions' in parsed && Array.isArray((parsed as Record<string, unknown>).questions)) {
+          flashcards = (parsed as Record<string, unknown>).questions as FlashcardPair[]
+        } else if (parsed && typeof parsed === 'object' && 'flashcards' in parsed && Array.isArray((parsed as Record<string, unknown>).flashcards)) {
+          flashcards = (parsed as Record<string, unknown>).flashcards as FlashcardPair[]
         } else if (
           parsed &&
-          typeof parsed.question === 'string' &&
-          typeof parsed.answer === 'string'
+          typeof parsed === 'object' &&
+          'question' in parsed &&
+          'answer' in parsed &&
+          typeof (parsed as Record<string, unknown>).question === 'string' &&
+          typeof (parsed as Record<string, unknown>).answer === 'string'
         ) {
           // Single flashcard object
-          flashcards = [parsed]
+          flashcards = [parsed as FlashcardPair]
         } else {
           console.warn('[FlashcardGenerator] Unexpected JSON format:', parsed)
           flashcards = []
@@ -175,7 +178,7 @@ export async function generateFlashcardsFromContent(
     }
 
     // Validate and filter flashcards
-    const validFlashcards = flashcards
+    const validFlashcards = (flashcards ?? [])
       .filter((fc) => {
         return (
           fc &&

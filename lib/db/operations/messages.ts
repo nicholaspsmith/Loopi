@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 import { create, find, findById, update } from '../queries'
+import { getDbConnection } from '../client'
 import type { Message, MessageRole } from '@/types'
 import { MessageSchema } from '@/types'
 import { incrementMessageCount } from './conversations'
