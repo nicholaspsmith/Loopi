@@ -1,0 +1,59 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Next.js
+.next
+out
+dist
+
+# Testing
+coverage
+.nyc_output
+playwright-report
+test-results
+
+# Environment files
+.env
+.env.local
+.env*.local
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+!README.md
+
+# CI/CD
+.github
+
+# Data directories
+data/
+lancedb/
+
+# Logs
+logs
+*.log
+
+# Debug
+.pnp.*
+.yarn
+
+# TypeScript
+*.tsbuildinfo
+
+# Misc
+.eslintcache
