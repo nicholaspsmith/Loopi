@@ -11,11 +11,7 @@ import Navigation from '@/components/nav/Navigation'
  * Middleware handles redirect if not authenticated.
  */
 
-export default async function ProtectedLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
 
   // Double-check authentication (middleware should handle this)
@@ -31,7 +27,9 @@ export default async function ProtectedLayout({
           <div className="flex flex-col space-y-3 sm:space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">MemoryLoop</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  MemoryLoop
+                </h1>
                 {session.user?.name && (
                   <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
                     Welcome, {session.user.name}

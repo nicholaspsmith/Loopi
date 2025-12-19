@@ -17,10 +17,7 @@ export async function GET(request: NextRequest) {
     // Check authentication
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized', code: 'UNAUTHORIZED' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 })
     }
 
     const userId = session.user.id
@@ -48,9 +45,7 @@ export async function GET(request: NextRequest) {
         return dueA - dueB
       })
 
-      console.log(
-        `[QuizDue] Found ${flashcards.length} due cards for user ${userId}`
-      )
+      console.log(`[QuizDue] Found ${flashcards.length} due cards for user ${userId}`)
     } else if (mode === 'all') {
       // Practice mode - return all cards sorted by creation date
       flashcards = allFlashcards.sort((a, b) => {

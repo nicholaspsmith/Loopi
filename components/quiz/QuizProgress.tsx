@@ -22,8 +22,7 @@ export default function QuizProgress({
   showPercentage = false,
 }: QuizProgressProps) {
   // Calculate percentage (handle edge cases)
-  const percentage =
-    total > 0 ? Math.round((current / total) * 100) : 0
+  const percentage = total > 0 ? Math.round((current / total) * 100) : 0
 
   // Calculate progress value for progress bar (0 to 100)
   const progressValue = total > 0 ? (current / total) * 100 : 0
@@ -36,9 +35,7 @@ export default function QuizProgress({
           Card {current} of {total}
         </p>
         {showPercentage && (
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-            {percentage}%
-          </p>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{percentage}%</p>
         )}
       </div>
 

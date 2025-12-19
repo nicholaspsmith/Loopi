@@ -15,10 +15,7 @@ export async function GET() {
     // Check authentication
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized', code: 'UNAUTHORIZED' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 })
     }
 
     const userId = session.user.id
@@ -65,19 +62,15 @@ export async function GET() {
     // Calculate average difficulty
     const avgDifficulty =
       allFlashcards.length > 0
-        ? allFlashcards.reduce(
-            (sum, card) => sum + card.fsrsState.difficulty,
-            0
-          ) / allFlashcards.length
+        ? allFlashcards.reduce((sum, card) => sum + card.fsrsState.difficulty, 0) /
+          allFlashcards.length
         : 0
 
     // Calculate average stability (days)
     const avgStability =
       allFlashcards.length > 0
-        ? allFlashcards.reduce(
-            (sum, card) => sum + card.fsrsState.stability,
-            0
-          ) / allFlashcards.length
+        ? allFlashcards.reduce((sum, card) => sum + card.fsrsState.stability, 0) /
+          allFlashcards.length
         : 0
 
     console.log(`[QuizStats] Retrieved stats for user ${userId}`)

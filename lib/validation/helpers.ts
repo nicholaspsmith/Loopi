@@ -17,10 +17,7 @@ export function validate<T>(schema: ZodSchema<T>, data: unknown): T {
 /**
  * Validate partial data against a Zod schema (for updates)
  */
-export function validatePartial<T extends ZodRawShape>(
-  schema: ZodObject<T>,
-  data: unknown
-) {
+export function validatePartial<T extends ZodRawShape>(schema: ZodObject<T>, data: unknown) {
   const partialSchema = schema.partial()
   const result = partialSchema.safeParse(data)
 

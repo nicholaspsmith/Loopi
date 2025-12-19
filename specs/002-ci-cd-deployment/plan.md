@@ -11,22 +11,26 @@ Implement automated CI/CD pipeline and production deployment infrastructure for 
 ## Technical Stack
 
 ### CI/CD
+
 - **GitHub Actions**: Automation platform (free for public repos)
 - **Docker**: Containerization (v24+)
 - **Docker Compose**: Multi-container orchestration (v2+)
 
 ### Infrastructure
+
 - **VPS**: Hetzner CX22 or DigitalOcean Droplet (4GB RAM, 2 vCPU, Ubuntu 22.04)
 - **Nginx**: Reverse proxy and web server (v1.24+)
 - **Let's Encrypt**: Free SSL certificates via Certbot
 - **UFW**: Uncomplicated Firewall for security
 
 ### Monitoring
+
 - **UptimeRobot**: Uptime monitoring (free tier)
 - **Sentry** (optional): Error tracking
 - **Structured Logging**: JSON logs to stdout
 
 ### Backup & Storage
+
 - **Backblaze B2** or **AWS S3**: Database backup storage
 - **Docker volumes**: Persistent data storage
 
@@ -47,6 +51,7 @@ VPS Deployment
 ```
 
 **Production Stack on VPS:**
+
 - Nginx (reverse proxy, SSL termination)
 - Next.js application (Docker container)
 - LanceDB (persistent volume)
@@ -107,7 +112,7 @@ VPS Deployment
    - Resource limits
 
 4. Create `.dockerignore`:
-   - Exclude: node_modules, .git, .next, tests, docs, *.md
+   - Exclude: node_modules, .git, .next, tests, docs, \*.md
    - Include: package.json, package-lock.json, public, app
 
 5. Create `app/api/health/route.ts`:
@@ -139,6 +144,7 @@ VPS Deployment
    - Copy SSH keys: `rsync --archive --chown=deploy:deploy ~/.ssh /home/deploy`
 
 3. Install Docker:
+
    ```bash
    curl -fsSL https://get.docker.com -o get-docker.sh
    sh get-docker.sh
@@ -146,12 +152,14 @@ VPS Deployment
    ```
 
 4. Install Docker Compose:
+
    ```bash
    curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
    chmod +x /usr/local/bin/docker-compose
    ```
 
 5. Configure UFW firewall:
+
    ```bash
    ufw allow 22/tcp
    ufw allow 80/tcp
@@ -179,11 +187,13 @@ VPS Deployment
 **Goal**: HTTPS access with automatic SSL renewal
 
 1. Install Nginx on VPS:
+
    ```bash
    apt install nginx
    ```
 
 2. Create Nginx config `nginx/memoryloop.conf`:
+
    ```nginx
    server {
        listen 80;
@@ -209,6 +219,7 @@ VPS Deployment
    ```
 
 3. Copy config to VPS:
+
    ```bash
    scp nginx/memoryloop.conf deploy@<vps-ip>:/etc/nginx/sites-available/
    ssh deploy@<vps-ip> "ln -s /etc/nginx/sites-available/memoryloop.conf /etc/nginx/sites-enabled/"
@@ -220,6 +231,7 @@ VPS Deployment
    - Wait for DNS propagation (use `dig` to verify)
 
 5. Install Certbot and obtain SSL certificate:
+
    ```bash
    apt install certbot python3-certbot-nginx
    certbot --nginx -d memoryloop.nicholaspsmith.com
@@ -247,6 +259,7 @@ VPS Deployment
      - Send notification (Discord/Slack webhook)
 
 2. Create `scripts/deploy.sh` (runs on VPS):
+
    ```bash
    #!/bin/bash
    set -e
@@ -371,33 +384,39 @@ VPS Deployment
 ## Constitution Check
 
 ### ✅ Documentation-First Development
+
 - Specification complete before implementation (spec.md exists)
 - All user stories documented with acceptance criteria
 - Operations runbook planned
 
 ### ✅ Test-First Development (TDD)
+
 - Health check endpoint testable
 - CI pipeline validates all code changes
 - Integration tests run before merge
 
 ### ✅ Modularity & Composability
+
 - Docker services are independent (app, ollama, nginx)
 - Scripts are single-purpose (deploy.sh, rollback.sh, backup.sh)
 - Monitoring is modular (can add/remove services)
 
 ### ✅ Simplicity (YAGNI)
+
 - Single-server deployment (no premature scaling)
 - Docker Compose (no Kubernetes complexity)
 - Manual provisioning acceptable initially
 - No advanced deployment strategies (blue-green, canary)
 
 ### ✅ Observability & Debugging
+
 - Structured JSON logging
 - Health check endpoint for diagnostics
 - Monitoring dashboard script
 - Error tracking optional but available
 
 ### ✅ Atomic Commits & Version Control Discipline
+
 - Each phase can be committed independently
 - Clear commit messages per constitution
 - One logical change per commit

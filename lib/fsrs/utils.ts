@@ -122,7 +122,7 @@ export function formatInterval(days: number): string {
     const months = Math.round(days / 30)
     return `${months}mo`
   }
-  const years = Math.round(days / 365 * 10) / 10
+  const years = Math.round((days / 365) * 10) / 10
   return `${years}y`
 }
 

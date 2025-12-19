@@ -51,13 +51,10 @@ describe('Message Component', () => {
     it('should display timestamp', () => {
       render(<Message message={mockUserMessage} />)
 
-      const timestamp = new Date(mockUserMessage.createdAt).toLocaleTimeString(
-        [],
-        {
-          hour: '2-digit',
-          minute: '2-digit',
-        }
-      )
+      const timestamp = new Date(mockUserMessage.createdAt).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
 
       expect(screen.getByText(timestamp)).toBeInTheDocument()
     })
@@ -67,9 +64,7 @@ describe('Message Component', () => {
     it('should render assistant message with correct content', () => {
       render(<Message message={mockAssistantMessage} />)
 
-      expect(
-        screen.getByText('Of course! How can I assist you today?')
-      ).toBeInTheDocument()
+      expect(screen.getByText('Of course! How can I assist you today?')).toBeInTheDocument()
       expect(screen.getByText('Claude')).toBeInTheDocument()
     })
 

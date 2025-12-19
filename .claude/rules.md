@@ -40,6 +40,7 @@ Added ARIA labels, keyboard navigation, and documentation.
 
 Co-Authored-By: Claude <noreply@anthropic.com>
 ```
+
 (Bad because: Multiple responsibilities, extra text in body, AI attribution)
 
 ```
@@ -47,6 +48,7 @@ Implement embeddings, fix async generation, add tests
 
 Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 ```
+
 (Bad because: Multiple responsibilities in one commit)
 
 ## Remember

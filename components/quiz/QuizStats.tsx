@@ -49,9 +49,7 @@ export default function QuizStats({ stats }: QuizStatsProps) {
 
   return (
     <div className="w-full max-w-4xl p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-        Quiz Statistics
-      </h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Quiz Statistics</h2>
 
       {/* Primary Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -63,9 +61,7 @@ export default function QuizStats({ stats }: QuizStatsProps) {
           <p className="text-3xl font-bold text-blue-900 dark:text-blue-100 mt-1">
             {formatNumber(stats.dueFlashcards)}
           </p>
-          <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-            Flashcards ready
-          </p>
+          <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">Flashcards ready</p>
         </div>
 
         {/* Reviews Today */}
@@ -76,9 +72,7 @@ export default function QuizStats({ stats }: QuizStatsProps) {
           <p className="text-3xl font-bold text-green-900 dark:text-green-100 mt-1">
             {formatNumber(stats.reviewsToday)}
           </p>
-          <p className="text-xs text-green-700 dark:text-green-300 mt-1">
-            Reviews completed
-          </p>
+          <p className="text-xs text-green-700 dark:text-green-300 mt-1">Reviews completed</p>
         </div>
 
         {/* Retention Rate */}
@@ -89,9 +83,7 @@ export default function QuizStats({ stats }: QuizStatsProps) {
           <p className="text-3xl font-bold text-purple-900 dark:text-purple-100 mt-1">
             {formatRetentionRate(stats.retentionRate)}%
           </p>
-          <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
-            Success rate
-          </p>
+          <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">Success rate</p>
         </div>
 
         {/* Total Flashcards */}
@@ -102,23 +94,17 @@ export default function QuizStats({ stats }: QuizStatsProps) {
           <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
             {formatNumber(stats.totalFlashcards)}
           </p>
-          <p className="text-xs text-gray-700 dark:text-gray-300 mt-1">
-            Cards in collection
-          </p>
+          <p className="text-xs text-gray-700 dark:text-gray-300 mt-1">Cards in collection</p>
         </div>
       </div>
 
       {/* State Breakdown */}
       <div className="mb-8">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-          Card States
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Card States</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                New
-              </p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">New</p>
               <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 {formatNumber(stats.stateBreakdown.new)}
               </p>
@@ -127,9 +113,7 @@ export default function QuizStats({ stats }: QuizStatsProps) {
 
           <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Learning
-              </p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Learning</p>
               <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 {formatNumber(stats.stateBreakdown.learning)}
               </p>
@@ -138,9 +122,7 @@ export default function QuizStats({ stats }: QuizStatsProps) {
 
           <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Review
-              </p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Review</p>
               <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 {formatNumber(stats.stateBreakdown.review)}
               </p>
@@ -149,9 +131,7 @@ export default function QuizStats({ stats }: QuizStatsProps) {
 
           <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Relearning
-              </p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Relearning</p>
               <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 {formatNumber(stats.stateBreakdown.relearning)}
               </p>
@@ -183,9 +163,7 @@ export default function QuizStats({ stats }: QuizStatsProps) {
 
             {stats.reviewsThisWeek !== undefined && (
               <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  This Week
-                </p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">This Week</p>
                 <p className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1">
                   {formatNumber(stats.reviewsThisWeek)}
                 </p>

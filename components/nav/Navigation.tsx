@@ -24,7 +24,11 @@ export default function Navigation() {
   const pathname = usePathname()
 
   return (
-    <nav className="flex space-x-1 border-b border-gray-200 dark:border-gray-700 -mb-px" role="navigation" aria-label="Main navigation">
+    <nav
+      className="flex space-x-1 border-b border-gray-200 dark:border-gray-700 -mb-px"
+      role="navigation"
+      aria-label="Main navigation"
+    >
       {navLinks.map((link) => {
         const isActive = pathname === link.href
         return (

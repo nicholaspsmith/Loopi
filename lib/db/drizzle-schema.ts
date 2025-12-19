@@ -1,4 +1,14 @@
-import { pgTable, uuid, varchar, text, timestamp, integer, boolean, jsonb, vector } from 'drizzle-orm/pg-core'
+import {
+  pgTable,
+  uuid,
+  varchar,
+  text,
+  timestamp,
+  integer,
+  boolean,
+  jsonb,
+  vector,
+} from 'drizzle-orm/pg-core'
 
 /**
  * Drizzle ORM Schema for MemoryLoop with PostgreSQL + pgvector
@@ -25,7 +35,9 @@ export const users = pgTable('users', {
 
 export const conversations = pgTable('conversations', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   title: varchar('title', { length: 200 }),
   messageCount: integer('message_count').notNull().default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -38,8 +50,12 @@ export const conversations = pgTable('conversations', {
 
 export const messages = pgTable('messages', {
   id: uuid('id').primaryKey().defaultRandom(),
-  conversationId: uuid('conversation_id').notNull().references(() => conversations.id, { onDelete: 'cascade' }),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  conversationId: uuid('conversation_id')
+    .notNull()
+    .references(() => conversations.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   role: varchar('role', { length: 20 }).notNull(), // 'user' | 'assistant'
   content: text('content').notNull(),
   // pgvector column for semantic search (768 dimensions for nomic-embed-text)
@@ -54,9 +70,15 @@ export const messages = pgTable('messages', {
 
 export const flashcards = pgTable('flashcards', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  conversationId: uuid('conversation_id').notNull().references(() => conversations.id, { onDelete: 'cascade' }),
-  messageId: uuid('message_id').notNull().references(() => messages.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  conversationId: uuid('conversation_id')
+    .notNull()
+    .references(() => conversations.id, { onDelete: 'cascade' }),
+  messageId: uuid('message_id')
+    .notNull()
+    .references(() => messages.id, { onDelete: 'cascade' }),
   question: varchar('question', { length: 1000 }).notNull(),
   answer: text('answer').notNull(),
   // pgvector column for semantic search
@@ -72,8 +94,12 @@ export const flashcards = pgTable('flashcards', {
 
 export const reviewLogs = pgTable('review_logs', {
   id: uuid('id').primaryKey().defaultRandom(),
-  flashcardId: uuid('flashcard_id').notNull().references(() => flashcards.id, { onDelete: 'cascade' }),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  flashcardId: uuid('flashcard_id')
+    .notNull()
+    .references(() => flashcards.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   rating: integer('rating').notNull(), // 1=Again, 2=Hard, 3=Good, 4=Easy
   state: integer('state').notNull(), // 0=New, 1=Learning, 2=Review, 3=Relearning
   due: timestamp('due').notNull(),

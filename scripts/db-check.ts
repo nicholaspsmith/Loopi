@@ -30,7 +30,9 @@ async function checkConnection() {
     console.error('   - Copy the "Direct Connection" string')
     console.error('')
     console.error('3. Add it to .env.local:')
-    console.error('   DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/postgres')
+    console.error(
+      '   DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/postgres'
+    )
     console.error('')
     process.exit(1)
   }
@@ -70,7 +72,6 @@ async function checkConnection() {
     console.log('')
     console.log('✨ Your database is ready!')
     console.log('Next step: npm run db:migrate')
-
   } catch (error: any) {
     console.error('❌ Connection failed:', error.message)
     console.error('')

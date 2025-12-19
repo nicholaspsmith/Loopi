@@ -345,13 +345,10 @@ describe('Quiz API Contract Tests', () => {
   describe('GET /api/quiz/history (FR-021)', () => {
     it('should return review history with flashcard details', async () => {
       // TODO: Add authentication headers
-      const response = await fetch(
-        'http://localhost:3000/api/quiz/history?limit=20',
-        {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      const response = await fetch('http://localhost:3000/api/quiz/history?limit=20', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      })
 
       // Expect 401 without auth
       if (response.status === 401) {
@@ -393,13 +390,10 @@ describe('Quiz API Contract Tests', () => {
 
     it('should respect limit parameter', async () => {
       // TODO: Add authentication headers
-      const response = await fetch(
-        'http://localhost:3000/api/quiz/history?limit=5',
-        {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      const response = await fetch('http://localhost:3000/api/quiz/history?limit=5', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      })
 
       // Skip if not authenticated
       if (response.status === 401) {

@@ -7,13 +7,16 @@ This document describes how to configure GitHub Actions secrets for the CI/CD pi
 Navigate to: **Settings → Secrets and variables → Actions → New repository secret**
 
 ### 1. `CODECOV_TOKEN` (Optional)
+
 - **Description**: Token for uploading test coverage reports to Codecov
 - **How to obtain**: Sign up at [codecov.io](https://codecov.io), add your repository, copy the upload token
 - **Used in**: `.github/workflows/ci.yml` (coverage upload step)
 
 ### 2. `VPS_SSH_KEY`
+
 - **Description**: Private SSH key for deploying to the VPS
 - **How to generate**:
+
   ```bash
   # On your local machine
   ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/memoryloop_deploy
@@ -24,25 +27,30 @@ Navigate to: **Settings → Secrets and variables → Actions → New repository
   # Copy private key content for GitHub secret
   cat ~/.ssh/memoryloop_deploy
   ```
+
 - **Value**: Paste the entire private key content (including `-----BEGIN OPENSSH PRIVATE KEY-----` and `-----END OPENSSH PRIVATE KEY-----`)
 - **Used in**: `.github/workflows/deploy.yml` (SSH connection to VPS)
 
 ### 3. `VPS_HOST`
+
 - **Description**: IP address or hostname of your VPS
 - **Example**: `123.456.789.012` or `memoryloop.nicholaspsmith.com`
 - **Used in**: `.github/workflows/deploy.yml` (SSH target)
 
 ### 4. `VPS_USER`
+
 - **Description**: Username for SSH connection to VPS
 - **Example**: `deploy` or `memoryloop`
 - **Used in**: `.github/workflows/deploy.yml` (SSH user)
 
 ### 5. `NEXT_PUBLIC_APP_URL` (Optional)
+
 - **Description**: Public URL of the deployed application
 - **Example**: `https://memoryloop.nicholaspsmith.com`
 - **Used in**: `.github/workflows/deploy.yml` (build-time environment variable)
 
 ### 6. `DEPLOYMENT_WEBHOOK_URL` (Optional)
+
 - **Description**: Discord or Slack webhook URL for deployment notifications
 - **How to obtain**:
   - **Discord**: Server Settings → Integrations → Webhooks → New Webhook
@@ -55,6 +63,7 @@ After adding secrets, verify they appear in:
 **Settings → Secrets and variables → Actions → Repository secrets**
 
 You should see:
+
 - `VPS_SSH_KEY`
 - `VPS_HOST`
 - `VPS_USER`

@@ -43,15 +43,12 @@ export default function QuizError({
         </div>
 
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Quiz Error
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Quiz Error</h2>
           <p className="text-gray-600">
-            {error.message || 'Unable to load the quiz interface. This might be due to a problem loading your flashcards or review progress.'}
+            {error.message ||
+              'Unable to load the quiz interface. This might be due to a problem loading your flashcards or review progress.'}
           </p>
-          {error.digest && (
-            <p className="text-xs text-gray-500 mt-2">Error ID: {error.digest}</p>
-          )}
+          {error.digest && <p className="text-xs text-gray-500 mt-2">Error ID: {error.digest}</p>}
         </div>
 
         <div className="flex flex-col gap-3">

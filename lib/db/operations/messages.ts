@@ -67,10 +67,7 @@ export async function createMessage(data: {
  * This runs in the background and doesn't block message creation.
  * Failures are logged but don't affect the message.
  */
-async function generateMessageEmbeddingAsync(
-  messageId: string,
-  content: string
-): Promise<void> {
+async function generateMessageEmbeddingAsync(messageId: string, content: string): Promise<void> {
   try {
     const embedding = await generateEmbedding(content)
 
@@ -93,9 +90,7 @@ export async function getMessageById(id: string): Promise<Message | null> {
 /**
  * Get all messages for a conversation
  */
-export async function getMessagesByConversationId(
-  conversationId: string
-): Promise<Message[]> {
+export async function getMessagesByConversationId(conversationId: string): Promise<Message[]> {
   const messages = await find<Message>(
     MESSAGES_TABLE,
     `\`conversationId\` = '${conversationId}'`,
@@ -122,10 +117,7 @@ export async function getRecentMessages(
 /**
  * Update message
  */
-export async function updateMessage(
-  id: string,
-  updates: Partial<Message>
-): Promise<Message> {
+export async function updateMessage(id: string, updates: Partial<Message>): Promise<Message> {
   await update<Message>(MESSAGES_TABLE, id, updates)
 
   const updatedMessage = await getMessageById(id)
@@ -157,11 +149,13 @@ export async function markMessageWithFlashcards(messageId: string): Promise<void
   await table.delete(`id = '${messageId}'`)
 
   // Re-add with updated hasFlashcards, but without embedding to avoid schema issues
-  await table.add([{
-    ...message,
-    hasFlashcards: true,
-    embedding: null, // Reset embedding to null to avoid LanceDB type issues
-  }])
+  await table.add([
+    {
+      ...message,
+      hasFlashcards: true,
+      embedding: null, // Reset embedding to null to avoid LanceDB type issues
+    },
+  ])
 }
 
 /**
@@ -177,9 +171,7 @@ export async function searchMessages(
   const messages = await find<Message>(MESSAGES_TABLE, `\`userId\` = '${userId}'`, 10000)
 
   // Filter by content matching
-  const filtered = messages.filter((msg) =>
-    msg.content.toLowerCase().includes(query.toLowerCase())
-  )
+  const filtered = messages.filter((msg) => msg.content.toLowerCase().includes(query.toLowerCase()))
 
   return filtered.slice(0, limit)
 }

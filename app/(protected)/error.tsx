@@ -43,19 +43,13 @@ export default function ProtectedError({
             </svg>
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Oops! Something went wrong
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Oops! Something went wrong</h1>
 
           <p className="text-gray-600 mb-2">
             {error.message || 'An unexpected error occurred while loading this page.'}
           </p>
 
-          {error.digest && (
-            <p className="text-sm text-gray-500 mb-8">
-              Error ID: {error.digest}
-            </p>
-          )}
+          {error.digest && <p className="text-sm text-gray-500 mb-8">Error ID: {error.digest}</p>}
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button
@@ -74,9 +68,7 @@ export default function ProtectedError({
           </div>
 
           <div className="mt-8 text-sm text-gray-500">
-            <p>
-              If this problem persists, please try logging out and back in, or contact support.
-            </p>
+            <p>If this problem persists, please try logging out and back in, or contact support.</p>
           </div>
         </div>
       </div>

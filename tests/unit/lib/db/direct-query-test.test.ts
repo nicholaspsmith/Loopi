@@ -116,10 +116,7 @@ describe('Direct LanceDB Query', () => {
     // Test 4: Query by ID (we know this works)
     console.log('\nTest 4: Query by id (unquoted)')
     try {
-      const results4 = await table
-        .query()
-        .where(`id = '${messageId}'`)
-        .toArray()
+      const results4 = await table.query().where(`id = '${messageId}'`).toArray()
       console.log('  Results:', results4.length)
       if (results4.length > 0) {
         console.log('  Found message:', results4[0])

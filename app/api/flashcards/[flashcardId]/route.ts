@@ -19,10 +19,7 @@ export async function GET(
     // Check authentication
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized', code: 'UNAUTHORIZED' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 })
     }
 
     const userId = session.user.id
@@ -40,10 +37,7 @@ export async function GET(
 
     // Verify ownership
     if (flashcard.userId !== userId) {
-      return NextResponse.json(
-        { error: 'Forbidden', code: 'FORBIDDEN' },
-        { status: 403 }
-      )
+      return NextResponse.json({ error: 'Forbidden', code: 'FORBIDDEN' }, { status: 403 })
     }
 
     return NextResponse.json({
@@ -76,10 +70,7 @@ export async function DELETE(
     // Check authentication
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized', code: 'UNAUTHORIZED' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 })
     }
 
     const userId = session.user.id
@@ -97,10 +88,7 @@ export async function DELETE(
           { status: 404 }
         )
       } else {
-        return NextResponse.json(
-          { error: 'Forbidden', code: 'FORBIDDEN' },
-          { status: 403 }
-        )
+        return NextResponse.json({ error: 'Forbidden', code: 'FORBIDDEN' }, { status: 403 })
       }
     }
 

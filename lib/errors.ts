@@ -15,7 +15,10 @@ export class AppError extends Error {
 }
 
 export class ValidationError extends AppError {
-  constructor(message: string, public details?: unknown) {
+  constructor(
+    message: string,
+    public details?: unknown
+  ) {
     super(message, 400, 'VALIDATION_ERROR')
   }
 }
@@ -65,9 +68,7 @@ export function formatError(error: unknown): {
       error: error.message,
       code: error.code,
       statusCode: error.statusCode,
-      ...(error instanceof ValidationError && error.details
-        ? { details: error.details }
-        : {}),
+      ...(error instanceof ValidationError && error.details ? { details: error.details } : {}),
     }
   }
 

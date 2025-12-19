@@ -39,6 +39,7 @@ This guide will help you set up a Supabase PostgreSQL database with pgvector for
 ## Step 4: Configure Environment Variables
 
 1. Copy `.env.example` to `.env.local`:
+
    ```bash
    cp .env.example .env.local
    ```
@@ -57,6 +58,7 @@ npm run db:check
 ```
 
 This will:
+
 - ✅ Test the connection to your Supabase database
 - ✅ Verify pgvector extension is installed
 - ✅ Show your PostgreSQL version
@@ -72,6 +74,7 @@ npm run db:migrate
 ```
 
 This script will:
+
 - Create all tables (users, conversations, messages, flashcards, review_logs)
 - Enable pgvector extension
 - Create indexes for fast queries
@@ -111,6 +114,7 @@ These use HNSW indexes for fast approximate nearest neighbor (ANN) search.
 ### Connection Issues
 
 If you get connection errors:
+
 1. Check your password is correct in DATABASE_URL
 2. Verify your IP is allowed (Supabase allows all IPs by default)
 3. Make sure you're using the **Direct Connection** string, not Pooler
@@ -118,12 +122,14 @@ If you get connection errors:
 ### pgvector Not Working
 
 If vector searches fail:
+
 1. Verify pgvector extension is enabled in Supabase dashboard
 2. Re-run the migration: `psql $DATABASE_URL < drizzle/0000_initial.sql`
 
 ### Migration Errors
 
 If migrations fail:
+
 1. Drop and recreate your database in Supabase dashboard
 2. Re-enable pgvector extension
 3. Re-run migrations
@@ -148,6 +154,7 @@ For production:
 ## Cost
 
 Supabase's free tier includes:
+
 - 500 MB database storage
 - 1 GB file storage
 - 50 MB file uploads

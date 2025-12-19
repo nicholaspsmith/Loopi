@@ -42,9 +42,7 @@ interface QuizInterfaceProps {
   initialFlashcards?: Flashcard[]
 }
 
-export default function QuizInterface({
-  initialFlashcards = [],
-}: QuizInterfaceProps) {
+export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceProps) {
   const [flashcards, setFlashcards] = useState<Flashcard[]>(initialFlashcards)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(!initialFlashcards.length)
@@ -146,9 +144,7 @@ export default function QuizInterface({
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">
-            Loading flashcards...
-          </p>
+          <p className="text-gray-600 dark:text-gray-400">Loading flashcards...</p>
         </div>
       </div>
     )
@@ -302,20 +298,12 @@ export default function QuizInterface({
 
       {/* Progress indicator */}
       <div className="mb-8">
-        <QuizProgress
-          current={currentIndex + 1}
-          total={flashcards.length}
-          showPercentage
-        />
+        <QuizProgress current={currentIndex + 1} total={flashcards.length} showPercentage />
       </div>
 
       {/* Current flashcard */}
       <div className="mb-8">
-        <QuizCard
-          key={currentFlashcard.id}
-          flashcard={currentFlashcard}
-          onRate={handleRate}
-        />
+        <QuizCard key={currentFlashcard.id} flashcard={currentFlashcard} onRate={handleRate} />
       </div>
 
       {/* Submitting indicator */}

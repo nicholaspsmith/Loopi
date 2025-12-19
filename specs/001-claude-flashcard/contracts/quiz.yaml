@@ -99,7 +99,7 @@ paths:
                         question: What is spaced repetition?
                         answer: A learning technique...
                         fsrsState:
-                          due: "2025-12-14T08:00:00.000Z"
+                          due: '2025-12-14T08:00:00.000Z'
                           state: 2
                           reps: 3
                     count: 15
@@ -175,7 +175,7 @@ paths:
                   nextReviewDate:
                     type: string
                     format: date-time
-                    example: "2025-12-21T10:00:00.000Z"
+                    example: '2025-12-21T10:00:00.000Z'
                     description: When this card is due next
                   interval:
                     type: integer
@@ -319,7 +319,7 @@ components:
         due:
           type: string
           format: date-time
-          example: "2025-12-20T10:00:00.000Z"
+          example: '2025-12-20T10:00:00.000Z'
           description: Next review date
         stability:
           type: number
@@ -366,7 +366,7 @@ components:
           type: string
           format: date-time
           nullable: true
-          example: "2025-12-18T10:00:00.000Z"
+          example: '2025-12-18T10:00:00.000Z'
 
     QuizStats:
       type: object
@@ -417,7 +417,7 @@ components:
               date:
                 type: string
                 format: date
-                example: "2025-12-15"
+                example: '2025-12-15'
               count:
                 type: integer
                 example: 18
@@ -467,7 +467,7 @@ components:
         due:
           type: string
           format: date-time
-          example: "2025-12-14T10:00:00.000Z"
+          example: '2025-12-14T10:00:00.000Z'
           description: When card was due
         stability:
           type: number
@@ -492,7 +492,7 @@ components:
         review:
           type: string
           format: date-time
-          example: "2025-12-14T10:15:30.000Z"
+          example: '2025-12-14T10:15:30.000Z'
           description: Timestamp of review event
 
     Error:
@@ -593,28 +593,28 @@ x-contract-tests:
     steps:
       - request: POST /quiz/rate
         body:
-          rating: 1  # Again
+          rating: 1 # Again
         expect:
           status: 200
           body:
             updatedCard.fsrsState.lapses: incremented
       - request: POST /quiz/rate
         body:
-          rating: 2  # Hard
+          rating: 2 # Hard
         expect:
           status: 200
           body:
             interval: lessThan good_interval
       - request: POST /quiz/rate
         body:
-          rating: 3  # Good
+          rating: 3 # Good
         expect:
           status: 200
           body:
             interval: greaterThan 0
       - request: POST /quiz/rate
         body:
-          rating: 4  # Easy
+          rating: 4 # Easy
         expect:
           status: 200
           body:
@@ -659,7 +659,7 @@ x-contract-tests:
           rating: 3
         expect:
           status: 200
-          duration: lessThan 50  # milliseconds
+          duration: lessThan 50 # milliseconds
 
   - name: Navigation under 100ms (SC-004)
     description: Quiz card transitions meet performance target
@@ -667,4 +667,4 @@ x-contract-tests:
       - request: GET /quiz/due?limit=1
         expect:
           status: 200
-          duration: lessThan 100  # milliseconds
+          duration: lessThan 100 # milliseconds

@@ -14,6 +14,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 ## Overview
 
 This command creates a two-tier issue tracking system:
+
 - **GitHub Issues**: High-level parent issues for phases/features (e.g., "Phase 3: Implement User Interface for AI Chat")
 - **Beads Issues**: Detailed, actionable tasks tracked locally with `bd`
 
@@ -50,9 +51,11 @@ git config --get remote.origin.url
    - Labels: Add appropriate labels (phase, feature, etc.) if available
 
 6. **For each individual task**, create a bd issue:
+
    ```bash
    bd create "Task title" --json --priority <0-4> --type <task|bug|feature>
    ```
+
    - Parse the JSON output to get the issue ID (e.g., `memoryloop-1`)
    - Store the mapping between task number and bd issue ID
 
@@ -75,11 +78,14 @@ git config --get remote.origin.url
 **Title:** Phase 3: User Authentication (US1)
 
 **Body:**
+
 ```markdown
 ## Overview
+
 Implement user authentication system with login, signup, and session management.
 
 ## Tasks
+
 - [ ] T032 [P] [US1] Contract test for POST /api/auth/signin in tests/contract/auth.test.ts
 - [ ] T033 [P] [US1] Contract test for POST /api/auth/signup in tests/contract/auth.test.ts
 - [ ] T034 [P] [US1] Create LoginForm component in components/auth/LoginForm.tsx
@@ -89,7 +95,9 @@ Implement user authentication system with login, signup, and session management.
 **Status:** 0/5 tasks completed
 
 ## Local Task Tracking
+
 These tasks are tracked locally with beads. Run:
+
 - `bd list` - View all tasks
 - `bd ready` - View ready-to-work tasks
 - `bd show memoryloop-<id>` - View task details
@@ -101,6 +109,7 @@ These tasks are tracked locally with beads. Run:
 ## Important Notes
 
 > [!IMPORTANT]
+>
 > - GitHub issues are **high-level tracking** only - don't create individual GitHub issues for each task
 > - Beads (bd) issues are the **source of truth** for task details and status
 > - Update GitHub issue checklists when bd tasks are completed

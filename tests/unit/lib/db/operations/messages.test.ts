@@ -84,11 +84,11 @@ describe('Message Database Operations', () => {
         conversationId: testConversationId,
         userId: testUserId,
         role: 'assistant',
-        content: 'Of course! I\'d be happy to help.',
+        content: "Of course! I'd be happy to help.",
       })
 
       expect(message.role).toBe('assistant')
-      expect(message.content).toBe('Of course! I\'d be happy to help.')
+      expect(message.content).toBe("Of course! I'd be happy to help.")
     })
 
     it('should generate unique IDs for each message', async () => {
@@ -189,7 +189,7 @@ describe('Message Database Operations', () => {
         content: 'Oldest',
       })
 
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await new Promise((resolve) => setTimeout(resolve, 10))
 
       const message2 = await createMessage({
         conversationId: testConversationId,
@@ -198,7 +198,7 @@ describe('Message Database Operations', () => {
         content: 'Middle',
       })
 
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await new Promise((resolve) => setTimeout(resolve, 10))
 
       const message3 = await createMessage({
         conversationId: testConversationId,
@@ -355,7 +355,10 @@ describe('Message Database Operations', () => {
       console.log('[TEST] Fetching messages after both created...')
       const after = await getMessagesByConversationId(testConversationId)
       console.log('[TEST] Messages after:', after.length)
-      console.log('[TEST] Message IDs:', after.map(m => m.id))
+      console.log(
+        '[TEST] Message IDs:',
+        after.map((m) => m.id)
+      )
 
       // THIS IS THE CRITICAL TEST - it should find both messages
       expect(after).toHaveLength(2)

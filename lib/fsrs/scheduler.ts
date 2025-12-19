@@ -26,10 +26,7 @@ export function initializeCard(): Card {
  * @param rating - User's rating (Again=1, Hard=2, Good=3, Easy=4)
  * @returns Updated card and scheduling record
  */
-export function scheduleCard(
-  card: Card,
-  rating: Grade
-): { card: Card; log: ReviewLog } {
+export function scheduleCard(card: Card, rating: Grade): { card: Card; log: ReviewLog } {
   const now = new Date()
 
   // Use FSRS algorithm to calculate next review

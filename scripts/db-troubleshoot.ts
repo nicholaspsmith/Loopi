@@ -41,7 +41,7 @@ try {
 
   // Check port
   if (url.port === '5432') {
-    console.log('⚠️  You\'re using port 5432 (Direct Connection)')
+    console.log("⚠️  You're using port 5432 (Direct Connection)")
     console.log('   This uses IPv6 and may not work on all networks.')
     console.log('')
     console.log('💡 RECOMMENDED FIX:')
@@ -56,7 +56,7 @@ try {
     console.log('   The pooler URL uses port 6543 and works with IPv4.')
     console.log('')
   } else if (url.port === '6543') {
-    console.log('✅ You\'re using port 6543 (Connection Pooler)')
+    console.log("✅ You're using port 6543 (Connection Pooler)")
     console.log('   This should work on all networks.')
     console.log('')
   } else {
@@ -69,7 +69,7 @@ try {
 
   // Check hostname format
   if (!url.hostname.includes('supabase.co')) {
-    console.log('⚠️  Hostname doesn\'t look like a Supabase URL')
+    console.log("⚠️  Hostname doesn't look like a Supabase URL")
     console.log('   Expected format: db.xxxxx.supabase.co')
     console.log('')
   }
@@ -80,7 +80,6 @@ try {
     console.log('   Did you forget to replace [YOUR-PASSWORD]?')
     console.log('')
   }
-
 } catch (error: any) {
   console.error('❌ Invalid DATABASE_URL format:', error.message)
   console.log('')
@@ -90,6 +89,6 @@ try {
 }
 
 console.log('Next steps:')
-console.log('1. If you\'re using port 5432, switch to the Connection Pooler (6543)')
+console.log("1. If you're using port 5432, switch to the Connection Pooler (6543)")
 console.log('2. Make sure your Supabase project is active (not paused)')
 console.log('3. After updating, run: npm run db:check')

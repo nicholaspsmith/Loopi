@@ -165,6 +165,7 @@
 ### Recommended Execution Order
 
 **Sequential (single developer):**
+
 1. Phase 1: GitHub Actions CI (automated testing foundation)
 2. Phase 2: Docker Configuration (local testing of containers)
 3. Phase 3: VPS Setup (provision and secure server)
@@ -174,6 +175,7 @@
 7. Phase 7: Documentation (capture operational knowledge)
 
 **Parallel (multiple developers or concurrent work):**
+
 - Developer A: Phase 1 + Phase 2 (CI and Docker setup)
 - Developer B: Phase 3 + Phase 4 (VPS and SSL setup)
 - Developer C: Phase 7 (Documentation drafts)
@@ -184,28 +186,35 @@
 ## Parallel Opportunities
 
 **Phase 1**:
+
 - T001-T003 (GitHub Actions workflows can be created independently)
 - T004 (Build caching is independent modification)
 
 **Phase 2**:
+
 - T010 (. dockerignore is independent)
 - T011 (Health endpoint is independent)
 - T012 (Entrypoint script is independent)
 
 **Phase 3**:
+
 - T019 (Setup script can be created in parallel with manual setup)
 
 **Phase 4**:
+
 - T020 (Nginx config can be created locally)
 - T024 (SSL settings can be prepared in advance)
 
 **Phase 5**:
+
 - T026, T028, T029, T030 (All scripts can be created in parallel)
 
 **Phase 6**:
+
 - T032-T034, T036 (Logging, monitoring, and dashboard can be set up independently)
 
 **Phase 7**:
+
 - T037-T039 (All documentation can be written in parallel)
 
 ---
@@ -225,6 +234,7 @@
 **Parallel Opportunities**: 19 tasks marked [P] can run in parallel within their phases
 
 **Success Criteria**:
+
 - ✅ CI pipeline completes in under 10 minutes
 - ✅ Docker builds successfully on local and VPS
 - ✅ HTTPS site accessible with valid SSL certificate

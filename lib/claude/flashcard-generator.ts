@@ -152,9 +152,19 @@ export async function generateFlashcardsFromContent(
       if (!flashcards) {
         if (Array.isArray(parsed)) {
           flashcards = parsed as FlashcardPair[]
-        } else if (parsed && typeof parsed === 'object' && 'questions' in parsed && Array.isArray((parsed as Record<string, unknown>).questions)) {
+        } else if (
+          parsed &&
+          typeof parsed === 'object' &&
+          'questions' in parsed &&
+          Array.isArray((parsed as Record<string, unknown>).questions)
+        ) {
           flashcards = (parsed as Record<string, unknown>).questions as FlashcardPair[]
-        } else if (parsed && typeof parsed === 'object' && 'flashcards' in parsed && Array.isArray((parsed as Record<string, unknown>).flashcards)) {
+        } else if (
+          parsed &&
+          typeof parsed === 'object' &&
+          'flashcards' in parsed &&
+          Array.isArray((parsed as Record<string, unknown>).flashcards)
+        ) {
           flashcards = (parsed as Record<string, unknown>).flashcards as FlashcardPair[]
         } else if (
           parsed &&

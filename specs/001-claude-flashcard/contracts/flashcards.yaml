@@ -305,7 +305,7 @@ components:
         due:
           type: string
           format: date-time
-          example: "2025-12-20T10:00:00.000Z"
+          example: '2025-12-20T10:00:00.000Z'
           description: Next review date
         stability:
           type: number
@@ -356,7 +356,7 @@ components:
           type: string
           format: date-time
           nullable: true
-          example: "2025-12-18T10:00:00.000Z"
+          example: '2025-12-18T10:00:00.000Z'
           description: Date of last review (null if never reviewed)
 
     Error:
@@ -448,7 +448,7 @@ x-contract-tests:
             flashcards: array
             flashcards[0].question: notEmpty
             flashcards[0].answer: notEmpty
-            flashcards[0].fsrsState.state: 0  # New
+            flashcards[0].fsrsState.state: 0 # New
             sourceMessage.hasFlashcards: true
 
   - name: Prevent duplicate flashcard generation (FR-017)
@@ -482,8 +482,7 @@ x-contract-tests:
         expect:
           status: 200
           body:
-            flashcards: array
-            flashcards: is_sorted_by_createdAt_ascending
+            flashcards: array_sorted_by_createdAt_ascending
 
   - name: Flashcard generation performance (SC-003)
     description: Flashcards generated in under 15 seconds for 1000-word response
@@ -493,7 +492,7 @@ x-contract-tests:
           messageId: long-message-id
         expect:
           status: 201
-          duration: lessThan 15000  # milliseconds
+          duration: lessThan 15000 # milliseconds
 
   - name: Flashcard density (SC-006)
     description: Generates average of 1 flashcard per 100-150 words
@@ -504,4 +503,4 @@ x-contract-tests:
         expect:
           status: 201
           body:
-            count: between 7 and 10  # 1000 words / 100-150
+            count: between 7 and 10 # 1000 words / 100-150

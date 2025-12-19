@@ -49,10 +49,7 @@ export async function streamChatCompletion(params: {
 
   try {
     // Format messages for Ollama
-    const ollamaMessages = [
-      { role: 'system', content: systemPrompt },
-      ...messages,
-    ]
+    const ollamaMessages = [{ role: 'system', content: systemPrompt }, ...messages]
 
     const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
       method: 'POST',
@@ -130,10 +127,7 @@ export async function getChatCompletion(params: {
   const { messages, systemPrompt } = params
 
   // Format messages for Ollama
-  const ollamaMessages = [
-    { role: 'system', content: systemPrompt },
-    ...messages,
-  ]
+  const ollamaMessages = [{ role: 'system', content: systemPrompt }, ...messages]
 
   const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
     method: 'POST',
@@ -168,8 +162,6 @@ export async function validateOllamaConnection(): Promise<void> {
       throw new Error(`Ollama not accessible at ${OLLAMA_BASE_URL}`)
     }
   } catch (error) {
-    throw new Error(
-      `Ollama is not running. Start it with: brew services start ollama`
-    )
+    throw new Error(`Ollama is not running. Start it with: brew services start ollama`)
   }
 }

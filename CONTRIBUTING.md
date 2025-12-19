@@ -47,6 +47,7 @@ Thank you for your interest in contributing to MemoryLoop! This document provide
 ### Making Changes
 
 1. Create a new branch:
+
    ```bash
    git checkout -b 123-add-new-feature
    ```
@@ -56,12 +57,14 @@ Thank you for your interest in contributing to MemoryLoop! This document provide
 3. Write or update tests for your changes
 
 4. Run tests locally:
+
    ```bash
    npm test
    npm run test:integration
    ```
 
 5. Run linting and type checking:
+
    ```bash
    npm run lint
    npm run type-check
@@ -70,6 +73,7 @@ Thank you for your interest in contributing to MemoryLoop! This document provide
 6. Commit your changes following commit conventions (see below)
 
 7. Push to your fork:
+
    ```bash
    git push origin 123-add-new-feature
    ```
@@ -130,6 +134,7 @@ Co-Authored-By: Your Name <your.email@example.com>
 ### Examples
 
 **Good:**
+
 ```
 Add ARIA labels to quiz interface
 
@@ -137,6 +142,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 **Bad:**
+
 ```
 Added ARIA labels, fixed keyboard navigation, and updated docs
 
@@ -197,6 +203,7 @@ describe('FSRS Scheduler', () => {
 ### PR Description
 
 Include:
+
 1. **What**: Brief description of changes
 2. **Why**: Reason for the changes
 3. **How**: Technical approach
@@ -216,7 +223,7 @@ Include:
 
 - Be respectful and constructive
 - Focus on code quality, not personal preferences
-- Explain *why* changes are needed
+- Explain _why_ changes are needed
 - Approve when satisfied, request changes if needed
 
 ### As an Author
@@ -269,6 +276,7 @@ By contributing, you agree that your contributions will be licensed under the MI
 ## Recognition
 
 Contributors will be recognized in:
+
 - GitHub contributors list
 - Release notes (for significant contributions)
 - Project documentation (for major features)

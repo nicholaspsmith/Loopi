@@ -152,7 +152,7 @@ describe('User Database Operations', () => {
         email: 'invalid-uuid@example.com',
         passwordHash: '$2b$10$n0.ChK4kNntDZE1yNFNs3ufwt2FyPZ7Pf9h8Do24W8M/wkdKznMa.',
         name: 'Invalid',
-      }),
+      })
     ).resolves.toBeDefined() // Should create with auto-generated UUID
 
     // The createUser function generates UUIDs, so this should succeed

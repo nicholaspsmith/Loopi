@@ -6,7 +6,7 @@ import type { Table } from '@lancedb/lancedb'
  */
 export async function getTable(tableName: string): Promise<Table> {
   const db = await getDbConnection()
-  return await db.openTable(tableName) as Table
+  return (await db.openTable(tableName)) as Table
 }
 
 /**
@@ -36,11 +36,7 @@ export async function findById<T extends { id: string }>(
 /**
  * Generic find with filter operation
  */
-export async function find<T>(
-  tableName: string,
-  filter: string,
-  limit?: number
-): Promise<T[]> {
+export async function find<T>(tableName: string, filter: string, limit?: number): Promise<T[]> {
   const table = await getTable(tableName)
   let query = table.query().where(filter)
 
@@ -68,7 +64,7 @@ export async function update<T extends { id: string }>(
   }
 
   // Insert updated record - exclude embedding from existing to avoid LanceDB type issues
-  const { embedding: _, ...existingWithoutEmbedding} = existing as any
+  const { embedding: _, ...existingWithoutEmbedding } = existing as any
   const updated = { ...existingWithoutEmbedding, ...updates }
 
   // Only add embedding field if it existed in the original record (e.g., messages have it, conversations don't)
@@ -87,7 +83,10 @@ export async function update<T extends { id: string }>(
     console.error(`[DB] Failed to add updated record for ${id}, attempting to restore:`, addError)
     try {
       // Restore with embedding set to null to avoid type issues
-      const restore = { ...existingWithoutEmbedding, embedding: 'embedding' in existing ? null : undefined }
+      const restore = {
+        ...existingWithoutEmbedding,
+        embedding: 'embedding' in existing ? null : undefined,
+      }
       if (restore.embedding === undefined) {
         delete restore.embedding
       }

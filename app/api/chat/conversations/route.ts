@@ -1,10 +1,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { auth } from '@/auth'
-import {
-  createConversation,
-  getConversationsByUserId,
-} from '@/lib/db/operations/conversations'
+import { createConversation, getConversationsByUserId } from '@/lib/db/operations/conversations'
 import { success, error as errorResponse } from '@/lib/api/response'
 import { validate } from '@/lib/validation/helpers'
 import { AuthenticationError } from '@/lib/errors'

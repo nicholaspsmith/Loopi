@@ -17,10 +17,7 @@ export async function GET(request: NextRequest) {
     // Check authentication
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized', code: 'UNAUTHORIZED' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 })
     }
 
     const userId = session.user.id
@@ -28,16 +25,12 @@ export async function GET(request: NextRequest) {
     // Parse query parameters
     const { searchParams } = new URL(request.url)
     const limitParam = searchParams.get('limit')
-    const limit = limitParam
-      ? Math.min(parseInt(limitParam, 10), 100)
-      : 20
+    const limit = limitParam ? Math.min(parseInt(limitParam, 10), 100) : 20
 
     // Get review history with flashcard details
     const history = await getReviewHistoryWithFlashcards(userId, limit)
 
-    console.log(
-      `[QuizHistory] Retrieved ${history.length} review logs for user ${userId}`
-    )
+    console.log(`[QuizHistory] Retrieved ${history.length} review logs for user ${userId}`)
 
     return NextResponse.json({
       success: true,

@@ -43,9 +43,7 @@ function transformFlashcardFromDB(raw: any): any {
     fsrsState: {
       ...raw.fsrsState,
       due: new Date(raw.fsrsState.due),
-      last_review: raw.fsrsState.last_review
-        ? new Date(raw.fsrsState.last_review)
-        : undefined,
+      last_review: raw.fsrsState.last_review ? new Date(raw.fsrsState.last_review) : undefined,
     },
   }
 }
@@ -53,9 +51,7 @@ function transformFlashcardFromDB(raw: any): any {
 /**
  * Create a new flashcard with initial FSRS state
  */
-export async function createFlashcard(
-  data: CreateFlashcardInput
-): Promise<Flashcard> {
+export async function createFlashcard(data: CreateFlashcardInput): Promise<Flashcard> {
   const db = await getDbConnection()
 
   // Initialize FSRS card (new card state)
@@ -87,17 +83,11 @@ export async function createFlashcard(
 /**
  * Get flashcard by ID
  */
-export async function getFlashcardById(
-  flashcardId: string
-): Promise<Flashcard | null> {
+export async function getFlashcardById(flashcardId: string): Promise<Flashcard | null> {
   const db = await getDbConnection()
 
   const table = await db.openTable('flashcards')
-  const results = await table
-    .query()
-    .where(`id = '${flashcardId}'`)
-    .limit(1)
-    .toArray()
+  const results = await table.query().where(`id = '${flashcardId}'`).limit(1).toArray()
 
   if (results.length === 0) {
     return null
@@ -110,21 +100,14 @@ export async function getFlashcardById(
 /**
  * Get all flashcards for a user in chronological order (FR-024)
  */
-export async function getFlashcardsByUserId(
-  userId: string
-): Promise<Flashcard[]> {
+export async function getFlashcardsByUserId(userId: string): Promise<Flashcard[]> {
   const db = await getDbConnection()
 
   const table = await db.openTable('flashcards')
-  const results = await table
-    .query()
-    .where(`\`userId\` = '${userId}'`)
-    .toArray()
+  const results = await table.query().where(`\`userId\` = '${userId}'`).toArray()
 
   // Sort by createdAt ascending (oldest first)
-  const sorted = results.sort(
-    (a: any, b: any) => a.createdAt - b.createdAt
-  )
+  const sorted = results.sort((a: any, b: any) => a.createdAt - b.createdAt)
 
   return sorted.map((fc: any) => {
     const transformed = transformFlashcardFromDB(fc)
@@ -135,16 +118,11 @@ export async function getFlashcardsByUserId(
 /**
  * Get flashcards by message ID (check if flashcards exist for a message)
  */
-export async function getFlashcardsByMessageId(
-  messageId: string
-): Promise<Flashcard[]> {
+export async function getFlashcardsByMessageId(messageId: string): Promise<Flashcard[]> {
   const db = await getDbConnection()
 
   const table = await db.openTable('flashcards')
-  const results = await table
-    .query()
-    .where(`\`messageId\` = '${messageId}'`)
-    .toArray()
+  const results = await table.query().where(`\`messageId\` = '${messageId}'`).toArray()
 
   return results.map((fc: any) => {
     const transformed = transformFlashcardFromDB(fc)
@@ -155,21 +133,14 @@ export async function getFlashcardsByMessageId(
 /**
  * Get flashcards by conversation ID
  */
-export async function getFlashcardsByConversationId(
-  conversationId: string
-): Promise<Flashcard[]> {
+export async function getFlashcardsByConversationId(conversationId: string): Promise<Flashcard[]> {
   const db = await getDbConnection()
 
   const table = await db.openTable('flashcards')
-  const results = await table
-    .query()
-    .where(`\`conversationId\` = '${conversationId}'`)
-    .toArray()
+  const results = await table.query().where(`\`conversationId\` = '${conversationId}'`).toArray()
 
   // Sort by createdAt ascending
-  const sorted = results.sort(
-    (a: any, b: any) => a.createdAt - b.createdAt
-  )
+  const sorted = results.sort((a: any, b: any) => a.createdAt - b.createdAt)
 
   return sorted.map((fc: any) => {
     const transformed = transformFlashcardFromDB(fc)
@@ -184,10 +155,7 @@ export async function getDueFlashcards(userId: string): Promise<Flashcard[]> {
   const db = await getDbConnection()
 
   const table = await db.openTable('flashcards')
-  const results = await table
-    .query()
-    .where(`\`userId\` = '${userId}'`)
-    .toArray()
+  const results = await table.query().where(`\`userId\` = '${userId}'`).toArray()
 
   // Filter by due date in memory (LanceDB doesn't support date comparison in WHERE)
   const now = new Date()
@@ -212,22 +180,14 @@ export async function getDueFlashcards(userId: string): Promise<Flashcard[]> {
 /**
  * Get flashcards by FSRS state
  */
-export async function getFlashcardsByState(
-  userId: string,
-  state: State
-): Promise<Flashcard[]> {
+export async function getFlashcardsByState(userId: string, state: State): Promise<Flashcard[]> {
   const db = await getDbConnection()
 
   const table = await db.openTable('flashcards')
-  const results = await table
-    .query()
-    .where(`\`userId\` = '${userId}'`)
-    .toArray()
+  const results = await table.query().where(`\`userId\` = '${userId}'`).toArray()
 
   // Filter by state in memory
-  const filtered = results.filter(
-    (fc: any) => fc.fsrsState.state === state
-  )
+  const filtered = results.filter((fc: any) => fc.fsrsState.state === state)
 
   return filtered.map((fc: any) => {
     const transformed = transformFlashcardFromDB(fc)
@@ -341,10 +301,7 @@ export async function countUserFlashcards(userId: string): Promise<number> {
 /**
  * Count user's flashcards by state
  */
-export async function countFlashcardsByState(
-  userId: string,
-  state: State
-): Promise<number> {
+export async function countFlashcardsByState(userId: string, state: State): Promise<number> {
   const flashcards = await getFlashcardsByState(userId, state)
   return flashcards.length
 }

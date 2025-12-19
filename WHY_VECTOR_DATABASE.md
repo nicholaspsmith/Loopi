@@ -16,6 +16,7 @@ With vectors: It finds both because they're semantically similar.
 **Scenario**: You had a conversation about quantum computing 3 months ago. Now you want to find it.
 
 **Traditional SQL Search** (keyword matching):
+
 ```sql
 SELECT * FROM messages
 WHERE content LIKE '%quantum%'
@@ -23,6 +24,7 @@ ORDER BY created_at DESC
 ```
 
 **Problems**:
+
 - ❌ Only finds messages with exact word "quantum"
 - ❌ Misses "Schrödinger's cat", "superposition", "qubit"
 - ❌ Misses typos like "quantam"
@@ -31,6 +33,7 @@ ORDER BY created_at DESC
 ### What We Actually Want
 
 Find messages that are **semantically similar** to:
+
 - "quantum computing concepts"
 - "that conversation about physics and computers"
 - "explain superposition to me"
@@ -59,7 +62,7 @@ Different concepts → Different vectors
 ```typescript
 import { generateEmbedding } from '@/lib/embeddings/ollama'
 
-const text = "How does quantum computing work?"
+const text = 'How does quantum computing work?'
 const embedding = await generateEmbedding(text)
 // → [0.23, -0.45, 0.67, ... 768 numbers]
 ```
@@ -90,6 +93,7 @@ LIMIT 10;
 ```
 
 The `<=>` operator calculates **cosine distance**:
+
 - 0.0 = identical
 - 1.0 = completely different
 - 0.1 = very similar (what we want!)
@@ -103,6 +107,7 @@ The `<=>` operator calculates **cosine distance**:
 **Problem**: You have 500 flashcards. Which ones are similar to the one you're studying?
 
 **Solution**:
+
 ```sql
 -- Find flashcards similar to current question
 SELECT question, answer
@@ -126,15 +131,17 @@ LIMIT 5;
 **Problem**: User accidentally creates similar flashcards
 
 **Solution**:
+
 ```typescript
 // Before creating flashcard, check for similar ones
-const similar = await db.select()
+const similar = await db
+  .select()
   .from(flashcards)
   .orderBy(sql`question_embedding <=> ${newEmbedding}`)
   .limit(3)
 
 if (similar[0].distance < 0.1) {
-  alert("You already have a similar flashcard!")
+  alert('You already have a similar flashcard!')
 }
 ```
 
@@ -147,7 +154,8 @@ When user asks a question, find the most relevant past messages:
 const questionEmbedding = await generateEmbedding(userQuestion)
 
 // Find most relevant past messages
-const relevantMessages = await db.select()
+const relevantMessages = await db
+  .select()
   .from(messages)
   .where(eq(messages.userId, userId))
   .orderBy(sql`embedding <=> ${questionEmbedding}`)
@@ -163,10 +171,12 @@ const relevantMessages = await db.select()
 ### Option 1: Dedicated Vector Database (Pinecone, Weaviate, Milvus)
 
 **Pros**:
+
 - Optimized only for vector search
 - Slightly faster for massive scale
 
 **Cons**:
+
 - ❌ Need 2 databases (Postgres for data + Vector DB for search)
 - ❌ Data can get out of sync
 - ❌ More complex architecture
@@ -176,6 +186,7 @@ const relevantMessages = await db.select()
 ### Option 2: PostgreSQL + pgvector (What We're Using)
 
 **Pros**:
+
 - ✅ Single database for everything
 - ✅ ACID transactions across all data
 - ✅ JOINs between vectors and regular data
@@ -184,6 +195,7 @@ const relevantMessages = await db.select()
 - ✅ Fast enough for most use cases
 
 **Cons**:
+
 - Might be slower than dedicated vector DBs at massive scale (10M+ vectors)
 - For MemoryLoop: Not an issue. We're storing thousands of vectors, not millions.
 
@@ -199,6 +211,7 @@ CREATE INDEX ON messages USING hnsw (embedding vector_cosine_ops);
 ```
 
 **Benchmarks**:
+
 - **1,000 vectors**: <1ms per search
 - **10,000 vectors**: ~5ms per search
 - **100,000 vectors**: ~10ms per search
@@ -210,11 +223,11 @@ CREATE INDEX ON messages USING hnsw (embedding vector_cosine_ops);
 
 ## SQL vs NoSQL vs Vector
 
-| Database Type | Best For | Example |
-|---------------|----------|---------|
-| **SQL (PostgreSQL)** | Structured data, relationships, transactions | User accounts, conversations |
-| **NoSQL (MongoDB)** | Flexible schemas, hierarchical data | Logs, events, documents |
-| **Vector (pgvector)** | Semantic search, similarity | Find similar messages, flashcards |
+| Database Type         | Best For                                     | Example                           |
+| --------------------- | -------------------------------------------- | --------------------------------- |
+| **SQL (PostgreSQL)**  | Structured data, relationships, transactions | User accounts, conversations      |
+| **NoSQL (MongoDB)**   | Flexible schemas, hierarchical data          | Logs, events, documents           |
+| **Vector (pgvector)** | Semantic search, similarity                  | Find similar messages, flashcards |
 
 **Our choice**: PostgreSQL + pgvector gives us all three capabilities in one database!
 
@@ -237,16 +250,17 @@ CREATE INDEX ON messages USING hnsw (embedding vector_cosine_ops);
 
 ```typescript
 // 1. Generate embedding
-const embedding = await generateEmbedding("quantum physics")
+const embedding = await generateEmbedding('quantum physics')
 
 // 2. Store it
 await db.insert(messages).values({
-  content: "quantum physics",
-  embedding
+  content: 'quantum physics',
+  embedding,
 })
 
 // 3. Search by similarity
-const results = await db.select()
+const results = await db
+  .select()
   .from(messages)
   .orderBy(sql`embedding <=> ${queryEmbedding}`)
   .limit(10)
@@ -257,11 +271,13 @@ const results = await db.select()
 ## When Do You NOT Need Vector Search?
 
 You don't need vectors if:
+
 - ✅ Exact keyword search is sufficient
 - ✅ You only query by structured data (dates, IDs, categories)
 - ✅ Your data is small enough to scan everything
 
 You DO need vectors if:
+
 - ✅ Users search by natural language ("find my chemistry notes")
 - ✅ You want to find similar items by meaning
 - ✅ You need semantic understanding
@@ -273,12 +289,14 @@ You DO need vectors if:
 ## Summary
 
 **Why pgvector?**
+
 1. **Semantic search** - Find items by meaning, not keywords
 2. **Similarity detection** - Find related flashcards automatically
 3. **Smart context** - Give Claude relevant past conversations
 4. **Better UX** - Users can search naturally
 
 **Why PostgreSQL + pgvector instead of dedicated vector DB?**
+
 1. **Simplicity** - One database, not two
 2. **ACID guarantees** - Safe transactions
 3. **Fast enough** - Sub-10ms searches even with thousands of vectors
