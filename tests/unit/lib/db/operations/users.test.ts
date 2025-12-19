@@ -12,6 +12,9 @@ import path from 'path'
  */
 
 describe('User Database Operations', () => {
+  // Generate unique timestamp for test emails to prevent duplicates across runs
+  const timestamp = Date.now()
+
   beforeAll(async () => {
     // Ensure test database directory exists
     const dbPath = path.join(process.cwd(), 'data', 'lancedb')
@@ -34,7 +37,7 @@ describe('User Database Operations', () => {
 
   it('should successfully create a user', async () => {
     const userData = {
-      email: 'test-create@example.com',
+      email: `test-create-${timestamp}@example.com`,
       passwordHash: '$2b$10$n0.ChK4kNntDZE1yNFNs3ufwt2FyPZ7Pf9h8Do24W8M/wkdKznMa.', // 60 chars
       name: 'Test Create User',
     }
@@ -43,7 +46,7 @@ describe('User Database Operations', () => {
 
     expect(user).toBeDefined()
     expect(user.id).toBeDefined()
-    expect(user.email).toBe('test-create@example.com')
+    expect(user.email).toBe(`test-create-${timestamp}@example.com`)
     expect(user.name).toBe('Test Create User')
     expect(user.passwordHash).toBe(userData.passwordHash)
     expect(user.createdAt).toBeDefined()
@@ -54,16 +57,16 @@ describe('User Database Operations', () => {
   it('should retrieve user by email', async () => {
     // Create a user first
     await createUser({
-      email: 'test-get-by-email@example.com',
+      email: `test-get-by-email-${timestamp}@example.com`,
       passwordHash: '$2b$10$n0.ChK4kNntDZE1yNFNs3ufwt2FyPZ7Pf9h8Do24W8M/wkdKznMa.',
       name: 'Test Get By Email',
     })
 
     // Retrieve the user
-    const user = await getUserByEmail('test-get-by-email@example.com')
+    const user = await getUserByEmail(`test-get-by-email-${timestamp}@example.com`)
 
     expect(user).toBeDefined()
-    expect(user?.email).toBe('test-get-by-email@example.com')
+    expect(user?.email).toBe(`test-get-by-email-${timestamp}@example.com`)
     expect(user?.name).toBe('Test Get By Email')
   })
 
@@ -75,7 +78,7 @@ describe('User Database Operations', () => {
   it('should retrieve user by ID', async () => {
     // Create a user first
     const createdUser = await createUser({
-      email: 'test-get-by-id@example.com',
+      email: `test-get-by-id-${timestamp}@example.com`,
       passwordHash: '$2b$10$n0.ChK4kNntDZE1yNFNs3ufwt2FyPZ7Pf9h8Do24W8M/wkdKznMa.',
       name: 'Test Get By ID',
     })
@@ -85,7 +88,7 @@ describe('User Database Operations', () => {
 
     expect(user).toBeDefined()
     expect(user?.id).toBe(createdUser.id)
-    expect(user?.email).toBe('test-get-by-id@example.com')
+    expect(user?.email).toBe(`test-get-by-id-${timestamp}@example.com`)
   })
 
   it('should return null for non-existent ID', async () => {
@@ -96,13 +99,13 @@ describe('User Database Operations', () => {
   it('should check if email exists', async () => {
     // Create a user
     await createUser({
-      email: 'test-exists@example.com',
+      email: `test-exists-${timestamp}@example.com`,
       passwordHash: '$2b$10$n0.ChK4kNntDZE1yNFNs3ufwt2FyPZ7Pf9h8Do24W8M/wkdKznMa.',
       name: 'Test Exists',
     })
 
     // Check if exists
-    const exists = await emailExists('test-exists@example.com')
+    const exists = await emailExists(`test-exists-${timestamp}@example.com`)
     expect(exists).toBe(true)
 
     // Check non-existent email
@@ -112,32 +115,32 @@ describe('User Database Operations', () => {
 
   it('should normalize email to lowercase', async () => {
     await createUser({
-      email: 'Test.UPPERCASE@Example.COM',
+      email: `Test.UPPERCASE-${timestamp}@Example.COM`,
       passwordHash: '$2b$10$n0.ChK4kNntDZE1yNFNs3ufwt2FyPZ7Pf9h8Do24W8M/wkdKznMa.',
       name: 'Test Normalize',
     })
 
     // Should find with different casing
-    const user = await getUserByEmail('test.uppercase@example.com')
+    const user = await getUserByEmail(`test.uppercase-${timestamp}@example.com`)
     expect(user).toBeDefined()
-    expect(user?.email).toBe('test.uppercase@example.com')
+    expect(user?.email).toBe(`test.uppercase-${timestamp}@example.com`)
   })
 
   it('should trim whitespace from email', async () => {
     await createUser({
-      email: '  test-trim@example.com  ',
+      email: `  test-trim-${timestamp}@example.com  `,
       passwordHash: '$2b$10$n0.ChK4kNntDZE1yNFNs3ufwt2FyPZ7Pf9h8Do24W8M/wkdKznMa.',
       name: 'Test Trim',
     })
 
-    const user = await getUserByEmail('test-trim@example.com')
+    const user = await getUserByEmail(`test-trim-${timestamp}@example.com`)
     expect(user).toBeDefined()
-    expect(user?.email).toBe('test-trim@example.com')
+    expect(user?.email).toBe(`test-trim-${timestamp}@example.com`)
   })
 
   it('should store null name if not provided', async () => {
     const user = await createUser({
-      email: 'test-no-name@example.com',
+      email: `test-no-name-${timestamp}@example.com`,
       passwordHash: '$2b$10$n0.ChK4kNntDZE1yNFNs3ufwt2FyPZ7Pf9h8Do24W8M/wkdKznMa.',
       name: null,
     })
@@ -149,7 +152,7 @@ describe('User Database Operations', () => {
     // Invalid UUID
     await expect(
       createUser({
-        email: 'invalid-uuid@example.com',
+        email: `invalid-uuid-${timestamp}@example.com`,
         passwordHash: '$2b$10$n0.ChK4kNntDZE1yNFNs3ufwt2FyPZ7Pf9h8Do24W8M/wkdKznMa.',
         name: 'Invalid',
       }),
@@ -157,7 +160,7 @@ describe('User Database Operations', () => {
 
     // The createUser function generates UUIDs, so this should succeed
     const user = await createUser({
-      email: 'valid-auto-uuid@example.com',
+      email: `valid-auto-uuid-${timestamp}@example.com`,
       passwordHash: '$2b$10$n0.ChK4kNntDZE1yNFNs3ufwt2FyPZ7Pf9h8Do24W8M/wkdKznMa.',
       name: 'Valid Auto UUID',
     })

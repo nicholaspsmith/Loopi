@@ -10,11 +10,22 @@ import {
   getConversationById,
   conversationBelongsToUser,
 } from '@/lib/db/operations/conversations'
+import {
+  getUserApiKey,
+  getUserApiKeyRecord,
+  updateApiKeyValidation,
+} from '@/lib/db/operations/api-keys'
 import { success, error as errorResponse } from '@/lib/api/response'
 import { validate } from '@/lib/validation/helpers'
 import { AuthenticationError, AuthorizationError, NotFoundError } from '@/lib/errors'
-import { streamChatCompletion, toClaudeMessages } from '@/lib/claude/client'
+import {
+  streamChatCompletion,
+  toClaudeMessages,
+  type ClassifiedError,
+} from '@/lib/claude/client'
 import { getSystemPrompt } from '@/lib/claude/prompts'
+import { buildRAGContext, shouldUseRAG } from '@/lib/claude/rag'
+import type { AIProvider } from '@/lib/types/api-key'
 
 /**
  * GET /api/chat/conversations/[conversationId]/messages
@@ -101,6 +112,14 @@ export async function POST(
     const body = await request.json()
     const data = validate(SendMessageSchema, body)
 
+    // Fetch user's API key if available (T031)
+    const userApiKey = await getUserApiKey(userId)
+    const apiKeyRecord = await getUserApiKeyRecord(userId)
+
+    // Determine AI provider and API key ID
+    const aiProvider: AIProvider = userApiKey ? 'claude' : 'ollama'
+    const apiKeyId = apiKeyRecord?.id || null
+
     // Create user message
     const userMessage = await createMessage({
       conversationId,
@@ -118,6 +137,24 @@ export async function POST(
     // Convert to Claude format
     const claudeMessages = toClaudeMessages(conversationHistory)
 
+    // Build RAG context from similar past conversations
+    const useRAG = shouldUseRAG(data.content)
+    const ragContext = await buildRAGContext(data.content, userId, {
+      enabled: useRAG,
+      maxMessages: 5,
+      maxTokens: 2000,
+    })
+
+    // Combine base system prompt with RAG context
+    const baseSystemPrompt = getSystemPrompt('chat')
+    const systemPrompt = ragContext.context
+      ? `${baseSystemPrompt}\n\n${ragContext.context}`
+      : baseSystemPrompt
+
+    if (ragContext.enabled && ragContext.sourceMessages.length > 0) {
+      console.log(`[RAG] Using context from ${ragContext.sourceMessages.length} similar messages`)
+    }
+
     // Create a readable stream for SSE
     const encoder = new TextEncoder()
 
@@ -126,7 +163,8 @@ export async function POST(
         try {
           await streamChatCompletion({
             messages: claudeMessages,
-            systemPrompt: getSystemPrompt('chat'),
+            systemPrompt,
+            userApiKey, // Pass user's API key to route to Claude or Ollama
             onChunk: (text) => {
               // Send text chunk via SSE
               controller.enqueue(
@@ -134,12 +172,14 @@ export async function POST(
               )
             },
             onComplete: async (text) => {
-              // Save assistant message to database
+              // Save assistant message to database with provider info (T034)
               const assistantMessage = await createMessage({
                 conversationId,
                 userId,
                 role: 'assistant',
                 content: text,
+                aiProvider,
+                apiKeyId,
               })
 
               // Send completion event
@@ -155,16 +195,30 @@ export async function POST(
               controller.close()
             },
             onError: (error) => {
-              // Send error event
+              // Handle classified errors from Claude API (T060)
+              const isClassifiedError = 'type' in error && 'shouldInvalidateKey' in error
+              const classifiedError = error as ClassifiedError
+
+              // Send error event with appropriate message
+              const errorMessage = isClassifiedError
+                ? classifiedError.message
+                : error.message
+
               controller.enqueue(
                 encoder.encode(
                   `data: ${JSON.stringify({
                     type: 'error',
-                    error: error.message,
+                    error: errorMessage,
+                    errorType: isClassifiedError ? classifiedError.type : 'unknown',
                   })}\n\n`
                 )
               )
               controller.close()
+            },
+            // Handle API key invalidation mid-conversation (T060)
+            onApiKeyInvalid: async () => {
+              console.log('[API Key] Invalidating API key due to authentication failure')
+              await updateApiKeyValidation(userId, false)
             },
           })
         } catch (error) {

@@ -1,15 +1,13 @@
-import { v4 as uuidv4 } from 'uuid'
-import { create, find, findById, update } from '../queries'
+import { getDb } from '@/lib/db/pg-client'
+import { users } from '@/lib/db/drizzle-schema'
+import { eq } from 'drizzle-orm'
 import type { User, PublicUser } from '@/types'
-import { UserSchema } from '@/types'
 
 /**
  * User Database Operations
  *
- * Provides CRUD operations for users in LanceDB.
+ * Provides CRUD operations for users in PostgreSQL.
  */
-
-const USERS_TABLE = 'users'
 
 /**
  * Create a new user
@@ -19,61 +17,110 @@ export async function createUser(data: {
   passwordHash: string
   name?: string | null
 }): Promise<User> {
-  const now = Date.now()
+  const db = getDb()
 
-  const user: User = {
-    id: uuidv4(),
-    email: data.email.toLowerCase().trim(),
-    passwordHash: data.passwordHash,
-    name: data.name || null,
-    createdAt: now,
-    updatedAt: now,
+  const [user] = await db
+    .insert(users)
+    .values({
+      email: data.email.toLowerCase().trim(),
+      passwordHash: data.passwordHash,
+      name: data.name || null,
+    })
+    .returning()
+
+  return {
+    id: user.id,
+    email: user.email,
+    passwordHash: user.passwordHash,
+    name: user.name,
+    createdAt: user.createdAt.getTime(),
+    updatedAt: user.updatedAt.getTime(),
   }
-
-  // Validate before inserting
-  UserSchema.parse(user)
-
-  await create(USERS_TABLE, [user])
-
-  return user
 }
 
 /**
  * Get user by email
  */
 export async function getUserByEmail(email: string): Promise<User | null> {
+  const db = getDb()
   const normalizedEmail = email.toLowerCase().trim()
 
-  const users = await find<User>(USERS_TABLE, `\`email\` = '${normalizedEmail}'`, 1)
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, normalizedEmail))
+    .limit(1)
 
-  return users.length > 0 ? users[0] : null
+  if (!user) {
+    return null
+  }
+
+  return {
+    id: user.id,
+    email: user.email,
+    passwordHash: user.passwordHash,
+    name: user.name,
+    createdAt: user.createdAt.getTime(),
+    updatedAt: user.updatedAt.getTime(),
+  }
 }
 
 /**
  * Get user by ID
  */
 export async function getUserById(id: string): Promise<User | null> {
-  return await findById<User>(USERS_TABLE, id)
+  const db = getDb()
+
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, id))
+    .limit(1)
+
+  if (!user) {
+    return null
+  }
+
+  return {
+    id: user.id,
+    email: user.email,
+    passwordHash: user.passwordHash,
+    name: user.name,
+    createdAt: user.createdAt.getTime(),
+    updatedAt: user.updatedAt.getTime(),
+  }
 }
 
 /**
  * Update user
  */
-export async function updateUser(id: string, updates: Partial<User>): Promise<User> {
-  const now = Date.now()
+export async function updateUser(
+  id: string,
+  updates: Partial<Pick<User, 'email' | 'name' | 'passwordHash'>>
+): Promise<User> {
+  const db = getDb()
 
-  await update<User>(USERS_TABLE, id, {
-    ...updates,
-    updatedAt: now,
-  })
-
-  const updatedUser = await getUserById(id)
+  const [updatedUser] = await db
+    .update(users)
+    .set({
+      ...updates,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, id))
+    .returning()
 
   if (!updatedUser) {
-    throw new Error(`User not found after update: ${id}`)
+    throw new Error(`User not found: ${id}`)
   }
 
-  return updatedUser
+  return {
+    id: updatedUser.id,
+    email: updatedUser.email,
+    passwordHash: updatedUser.passwordHash,
+    name: updatedUser.name,
+    createdAt: updatedUser.createdAt.getTime(),
+    updatedAt: updatedUser.updatedAt.getTime(),
+  }
 }
 
 /**

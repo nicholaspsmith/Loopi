@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import MessageList from './MessageList'
 import MessageInput from './MessageInput'
+import FallbackNotice from './FallbackNotice'
 import type { Message, Conversation } from '@/types'
 
 /**
@@ -23,6 +24,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
   const [isSending, setIsSending] = useState(false)
   const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [hasApiKey, setHasApiKey] = useState<boolean | null>(null)
 
   // Initialize conversation on mount
   useEffect(() => {
@@ -35,6 +37,25 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
       fetchMessages()
     }
   }, [conversation])
+
+  // Check if user has API key
+  useEffect(() => {
+    checkApiKey()
+  }, [])
+
+  const checkApiKey = async () => {
+    try {
+      const response = await fetch('/api/settings/api-key')
+      if (response.ok) {
+        const data = await response.json()
+        setHasApiKey(data.data?.exists || false)
+      } else {
+        setHasApiKey(false)
+      }
+    } catch (err) {
+      setHasApiKey(false)
+    }
+  }
 
   /**
    * Initialize or get existing conversation
@@ -241,6 +262,13 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Show fallback notice if user doesn't have API key */}
+      {hasApiKey === false && (
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <FallbackNotice />
+        </div>
+      )}
+
       <MessageList
         messages={messages}
         streamingMessageId={streamingMessageId}

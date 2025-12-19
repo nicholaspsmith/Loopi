@@ -38,7 +38,7 @@ describe('Message Database Operations', () => {
 
     // Create a test user for all tests
     const testUser = await createUser({
-      email: 'message-test@example.com',
+      email: `message-test-${Date.now()}@example.com`,
       passwordHash: '$2b$10$n0.ChK4kNntDZE1yNFNs3ufwt2FyPZ7Pf9h8Do24W8M/wkdKznMa.',
       name: 'Message Test User',
     })

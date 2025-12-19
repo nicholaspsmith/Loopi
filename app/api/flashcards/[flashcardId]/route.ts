@@ -13,7 +13,7 @@ import {
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { flashcardId: string } }
+  { params }: { params: Promise<{ flashcardId: string }> }
 ) {
   try {
     // Check authentication
@@ -26,7 +26,7 @@ export async function GET(
     }
 
     const userId = session.user.id
-    const { flashcardId } = params
+    const { flashcardId } = await params
 
     // Get flashcard
     const flashcard = await getFlashcardById(flashcardId)
@@ -70,7 +70,7 @@ export async function GET(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { flashcardId: string } }
+  { params }: { params: Promise<{ flashcardId: string }> }
 ) {
   try {
     // Check authentication
@@ -83,7 +83,7 @@ export async function DELETE(
     }
 
     const userId = session.user.id
-    const { flashcardId } = params
+    const { flashcardId } = await params
 
     // Check if flashcard exists and belongs to user
     const belongs = await flashcardBelongsToUser(flashcardId, userId)

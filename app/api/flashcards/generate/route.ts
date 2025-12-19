@@ -7,6 +7,7 @@ import {
   createFlashcard,
   getFlashcardsByMessageId,
 } from '@/lib/db/operations/flashcards'
+import { getUserApiKey } from '@/lib/db/operations/api-keys'
 import { generateEmbedding } from '@/lib/embeddings/ollama'
 
 /**
@@ -85,10 +86,13 @@ export async function POST(request: NextRequest) {
       `[FlashcardGenerate] Generating flashcards from message ${messageId}`
     )
 
+    // Fetch user's API key if available (T033)
+    const userApiKey = await getUserApiKey(userId)
+
     // Generate flashcards using Claude/Ollama (FR-009)
     const flashcardPairs = await generateFlashcardsFromContent(
       message.content,
-      { maxFlashcards }
+      { maxFlashcards, userApiKey }
     )
 
     // Check for insufficient content (FR-019)

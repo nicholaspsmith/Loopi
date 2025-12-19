@@ -33,7 +33,7 @@ describe('Direct LanceDB Query', () => {
 
     // Create a test user
     const testUser = await createUser({
-      email: 'direct-test@example.com',
+      email: `direct-test-${Date.now()}@example.com`,
       passwordHash: '$2b$10$n0.ChK4kNntDZE1yNFNs3ufwt2FyPZ7Pf9h8Do24W8M/wkdKznMa.',
       name: 'Direct Test User',
     })

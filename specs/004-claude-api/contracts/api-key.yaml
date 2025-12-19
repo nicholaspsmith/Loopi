@@ -1,0 +1,368 @@
+openapi: 3.1.0
+info:
+  title: MemoryLoop API Key Management API
+  description: API endpoints for managing user Claude API keys with encryption
+  version: 1.0.0
+  contact:
+    name: MemoryLoop API Support
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development
+  - url: https://memoryloop.nicholaspsmith.com/api
+    description: Production
+
+security:
+  - sessionAuth: []
+
+paths:
+  /settings/api-key:
+    get:
+      summary: Get current user's API key (masked)
+      description: |
+        Retrieve the currently saved API key for the authenticated user.
+        Returns masked version (first 7 + last 4 characters) for security.
+        Maps to FR-001 (view masked API key).
+      operationId: getApiKey
+      tags:
+        - API Key Management
+      responses:
+        '200':
+          description: API key found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyResponse'
+              examples:
+                withKey:
+                  summary: User has API key saved
+                  value:
+                    success: true
+                    data:
+                      id: "550e8400-e29b-41d4-a716-446655440000"
+                      keyPreview: "sk-ant-...xyz123"
+                      isValid: true
+                      lastValidatedAt: "2025-12-17T10:30:00Z"
+                      createdAt: "2025-12-15T14:22:00Z"
+                      updatedAt: "2025-12-17T09:15:00Z"
+        '404':
+          description: No API key found for user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "No API key found"
+        '401':
+          description: Unauthorized - user not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Unauthorized"
+
+    post:
+      summary: Create or update API key
+      description: |
+        Save a new Claude API key or update existing one for authenticated user.
+        Performs format validation and optional real-time validation via Claude API.
+        Maps to FR-001 (enter/update API key), FR-005 (format validation), FR-006 (real-time validation).
+      operationId: saveApiKey
+      tags:
+        - API Key Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveApiKeyRequest'
+            examples:
+              withValidation:
+                summary: Save key with validation
+                value:
+                  apiKey: "sk-ant-api03-1234567890abcdef"
+                  validate: true
+              withoutValidation:
+                summary: Save key without validation (faster)
+                value:
+                  apiKey: "sk-ant-api03-1234567890abcdef"
+                  validate: false
+      responses:
+        '200':
+          description: API key saved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyResponse'
+              example:
+                success: true
+                data:
+                  id: "550e8400-e29b-41d4-a716-446655440000"
+                  keyPreview: "sk-ant-...cdef"
+                  isValid: true
+                  lastValidatedAt: "2025-12-17T10:35:00Z"
+                  createdAt: "2025-12-17T10:35:00Z"
+                  updatedAt: "2025-12-17T10:35:00Z"
+        '400':
+          description: Invalid API key format or validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidFormat:
+                  summary: Invalid format
+                  value:
+                    success: false
+                    error: "Invalid API key format. Must start with 'sk-ant-'"
+                validationFailed:
+                  summary: Validation failed
+                  value:
+                    success: false
+                    error: "API key validation failed: Authentication error"
+                    details:
+                      validationError: "invalid_api_key"
+                      message: "The API key provided is invalid"
+        '401':
+          description: Unauthorized - user not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete user's API key
+      description: |
+        Permanently remove the API key for authenticated user.
+        User will fall back to Ollama for future requests.
+        Maps to FR-011 (allow users to delete API key).
+      operationId: deleteApiKey
+      tags:
+        - API Key Management
+      responses:
+        '200':
+          description: API key deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                message: "API key deleted successfully"
+        '404':
+          description: No API key found to delete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "No API key found"
+        '401':
+          description: Unauthorized - user not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /settings/api-key/validate:
+    post:
+      summary: Validate API key without saving
+      description: |
+        Test an API key by making a minimal Claude API request.
+        Used for pre-save validation in UI.
+        Maps to FR-006 (real-time API key validation).
+      operationId: validateApiKey
+      tags:
+        - API Key Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateApiKeyRequest'
+            example:
+              apiKey: "sk-ant-api03-1234567890abcdef"
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+              examples:
+                valid:
+                  summary: Valid API key
+                  value:
+                    success: true
+                    valid: true
+                    message: "API key is valid"
+                invalid:
+                  summary: Invalid API key
+                  value:
+                    success: true
+                    valid: false
+                    message: "Authentication failed"
+                    error: "invalid_api_key"
+        '400':
+          description: Invalid request format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - user not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: authjs.session-token
+      description: NextAuth.js session cookie (JWT)
+
+  schemas:
+    ApiKeyResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          description: Whether the request succeeded
+          example: true
+        data:
+          type: object
+          required:
+            - id
+            - keyPreview
+            - isValid
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Unique identifier for the API key record
+            keyPreview:
+              type: string
+              pattern: '^sk-ant-\.\.\..{4}$'
+              description: Masked API key showing first 7 and last 4 characters
+              example: "sk-ant-...xyz123"
+            isValid:
+              type: boolean
+              description: Whether the key is currently valid (not failed auth)
+              example: true
+            lastValidatedAt:
+              type: string
+              format: date-time
+              nullable: true
+              description: When the key was last successfully validated
+              example: "2025-12-17T10:30:00Z"
+            createdAt:
+              type: string
+              format: date-time
+              description: When the key was first saved
+              example: "2025-12-15T14:22:00Z"
+            updatedAt:
+              type: string
+              format: date-time
+              description: When the key was last updated
+              example: "2025-12-17T09:15:00Z"
+
+    SaveApiKeyRequest:
+      type: object
+      required:
+        - apiKey
+      properties:
+        apiKey:
+          type: string
+          pattern: '^sk-ant-'
+          minLength: 20
+          description: Claude API key to save (must start with 'sk-ant-')
+          example: "sk-ant-api03-1234567890abcdef"
+        validate:
+          type: boolean
+          default: true
+          description: Whether to validate the key with Claude API before saving
+          example: true
+
+    ValidateApiKeyRequest:
+      type: object
+      required:
+        - apiKey
+      properties:
+        apiKey:
+          type: string
+          pattern: '^sk-ant-'
+          minLength: 20
+          description: Claude API key to validate
+          example: "sk-ant-api03-1234567890abcdef"
+
+    ValidationResponse:
+      type: object
+      required:
+        - success
+        - valid
+      properties:
+        success:
+          type: boolean
+          description: Whether the validation request succeeded
+          example: true
+        valid:
+          type: boolean
+          description: Whether the API key is valid
+          example: true
+        message:
+          type: string
+          description: Human-readable validation result
+          example: "API key is valid"
+        error:
+          type: string
+          nullable: true
+          description: Error code if validation failed
+          example: "invalid_api_key"
+
+    SuccessResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          description: Success message
+          example: "Operation completed successfully"
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          description: Error message
+          example: "Invalid API key format"
+        details:
+          type: object
+          nullable: true
+          description: Additional error details
+          additionalProperties: true
+
+tags:
+  - name: API Key Management
+    description: Endpoints for managing user Claude API keys
