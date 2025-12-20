@@ -3,7 +3,11 @@ import { auth } from '@/auth'
 import { z } from 'zod'
 import { getMessageById } from '@/lib/db/operations/messages'
 import { generateFlashcardsFromContent } from '@/lib/claude/flashcard-generator'
-import { createFlashcard, getFlashcardsByMessageId } from '@/lib/db/operations/flashcards'
+import {
+  createFlashcard,
+  getFlashcardsByMessageId,
+} from '@/lib/db/operations/flashcards'
+import { getUserApiKey } from '@/lib/db/operations/api-keys'
 import { generateEmbedding } from '@/lib/embeddings/ollama'
 
 /**
@@ -24,7 +28,10 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 })
+      return NextResponse.json(
+        { error: 'Unauthorized', code: 'UNAUTHORIZED' },
+        { status: 401 }
+      )
     }
 
     const userId = session.user.id
@@ -45,7 +52,10 @@ export async function POST(request: NextRequest) {
 
     // Verify message belongs to user
     if (message.userId !== userId) {
-      return NextResponse.json({ error: 'Forbidden', code: 'FORBIDDEN' }, { status: 403 })
+      return NextResponse.json(
+        { error: 'Forbidden', code: 'FORBIDDEN' },
+        { status: 403 }
+      )
     }
 
     // Verify message is from assistant (FR-008)
@@ -72,16 +82,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`[FlashcardGenerate] Generating flashcards from message ${messageId}`)
+    console.log(
+      `[FlashcardGenerate] Generating flashcards from message ${messageId}`
+    )
+
+    // Fetch user's API key if available (T033)
+    const userApiKey = await getUserApiKey(userId)
 
     // Generate flashcards using Claude/Ollama (FR-009)
-    const flashcardPairs = await generateFlashcardsFromContent(message.content, { maxFlashcards })
+    const flashcardPairs = await generateFlashcardsFromContent(
+      message.content,
+      { maxFlashcards, userApiKey }
+    )
 
     // Check for insufficient content (FR-019)
     if (flashcardPairs.length === 0) {
       return NextResponse.json(
         {
-          error: 'Insufficient educational content for flashcard generation',
+          error:
+            'Insufficient educational content for flashcard generation',
           code: 'INSUFFICIENT_CONTENT',
           details:
             'The message contains only conversational content without factual information suitable for flashcards.',
@@ -104,12 +123,14 @@ export async function POST(request: NextRequest) {
         // Generate question embedding asynchronously (fire and forget)
         // Skip in test environment to avoid race conditions
         if (process.env.NODE_ENV !== 'test') {
-          generateQuestionEmbeddingAsync(flashcard.id, pair.question).catch((error) => {
-            console.error(
-              `[FlashcardGenerate] Failed to generate embedding for flashcard ${flashcard.id}:`,
-              error
-            )
-          })
+          generateQuestionEmbeddingAsync(flashcard.id, pair.question).catch(
+            (error) => {
+              console.error(
+                `[FlashcardGenerate] Failed to generate embedding for flashcard ${flashcard.id}:`,
+                error
+              )
+            }
+          )
         }
 
         return flashcard
@@ -147,7 +168,7 @@ export async function POST(request: NextRequest) {
         {
           error: 'Invalid request data',
           code: 'VALIDATION_ERROR',
-          details: error.issues,
+          details: error.errors,
         },
         { status: 400 }
       )
@@ -173,13 +194,17 @@ async function generateQuestionEmbeddingAsync(
   question: string
 ): Promise<void> {
   try {
-    const { updateFlashcardEmbedding } = await import('@/lib/db/operations/flashcards')
+    const { updateFlashcardEmbedding } = await import(
+      '@/lib/db/operations/flashcards'
+    )
 
     const embedding = await generateEmbedding(question)
 
     if (embedding) {
       await updateFlashcardEmbedding(flashcardId, embedding)
-      console.log(`[FlashcardGenerate] Generated embedding for flashcard ${flashcardId}`)
+      console.log(
+        `[FlashcardGenerate] Generated embedding for flashcard ${flashcardId}`
+      )
     }
   } catch (error) {
     console.error(

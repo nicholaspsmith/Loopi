@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import RatingButtons from './RatingButtons'
 
 /**
@@ -38,12 +38,18 @@ interface Flashcard {
 interface QuizCardProps {
   flashcard: Flashcard
   onRate: (flashcardId: string, rating: number) => void
+  onDelete?: (flashcardId: string) => void
 }
 
-export default function QuizCard({ flashcard, onRate }: QuizCardProps) {
-  // Use key prop pattern instead of useEffect to reset state when flashcard changes
-  // The parent component should pass key={flashcard.id} to this component
+export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps) {
   const [isAnswerRevealed, setIsAnswerRevealed] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
+  // Reset answer visibility and delete confirmation when flashcard changes
+  useEffect(() => {
+    setIsAnswerRevealed(false)
+    setShowDeleteConfirm(false)
+  }, [flashcard.id])
 
   const handleRevealAnswer = () => {
     setIsAnswerRevealed(true)
@@ -51,6 +57,20 @@ export default function QuizCard({ flashcard, onRate }: QuizCardProps) {
 
   const handleRating = (rating: number) => {
     onRate(flashcard.id, rating)
+  }
+
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (onDelete) {
+      onDelete(flashcard.id)
+    }
+  }
+
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirm(false)
   }
 
   return (
@@ -94,6 +114,44 @@ export default function QuizCard({ flashcard, onRate }: QuizCardProps) {
           >
             {flashcard.answer}
           </p>
+
+          {/* Delete button - only show if onDelete is provided */}
+          {/* {onDelete && !showDeleteConfirm && ( */}
+          {/*   <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"> */}
+          {/*     <button */}
+          {/*       onClick={handleDeleteClick} */}
+          {/*       className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200" */}
+          {/*       aria-label="Delete this flashcard" */}
+          {/*     > */}
+          {/*       Delete Flashcard */}
+          {/*     </button> */}
+          {/*   </div> */}
+          {/* )} */}
+
+          {/* Delete confirmation */}
+          {showDeleteConfirm && (
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                Are you sure you want to delete this flashcard? This action cannot be undone.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDeleteConfirm}
+                  className="px-3 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white font-medium rounded transition-colors duration-200"
+                  aria-label="Confirm delete flashcard"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={handleDeleteCancel}
+                  className="px-3 py-1.5 text-sm bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-medium rounded transition-colors duration-200"
+                  aria-label="Cancel delete"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

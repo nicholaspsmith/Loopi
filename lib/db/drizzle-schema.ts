@@ -7,13 +7,13 @@ import {
   integer,
   boolean,
   jsonb,
-  vector,
 } from 'drizzle-orm/pg-core'
+import { sql } from 'drizzle-orm'
 
 /**
- * Drizzle ORM Schema for MemoryLoop with PostgreSQL + pgvector
+ * Drizzle ORM Schema for MemoryLoop with PostgreSQL
  *
- * This schema replaces the LanceDB schema with proper relational database structure
+ * Note: Vector embeddings are stored in LanceDB for efficient semantic search
  */
 
 // ============================================================================
@@ -25,6 +25,24 @@ export const users = pgTable('users', {
   email: varchar('email', { length: 255 }).notNull().unique(),
   name: varchar('name', { length: 100 }),
   passwordHash: varchar('password_hash', { length: 60 }).notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+// ============================================================================
+// API Keys Table (Claude API Integration)
+// ============================================================================
+
+export const apiKeys = pgTable('api_keys', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  encryptedKey: text('encrypted_key').notNull(),
+  keyPreview: varchar('key_preview', { length: 20 }).notNull(),
+  isValid: boolean('is_valid').notNull().default(true),
+  lastValidatedAt: timestamp('last_validated_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
@@ -45,7 +63,7 @@ export const conversations = pgTable('conversations', {
 })
 
 // ============================================================================
-// Messages Table (with vector embedding)
+// Messages Table
 // ============================================================================
 
 export const messages = pgTable('messages', {
@@ -58,15 +76,20 @@ export const messages = pgTable('messages', {
     .references(() => users.id, { onDelete: 'cascade' }),
   role: varchar('role', { length: 20 }).notNull(), // 'user' | 'assistant'
   content: text('content').notNull(),
-  // pgvector column for semantic search (768 dimensions for nomic-embed-text)
-  embedding: vector('embedding', { dimensions: 768 }),
+  // Note: Embeddings stored in LanceDB for efficient vector search
   hasFlashcards: boolean('has_flashcards').notNull().default(false),
+  // AI provider tracking (Claude API Integration)
+  aiProvider: varchar('ai_provider', { length: 20 }), // 'claude' | 'ollama' | null
+  apiKeyId: uuid('api_key_id').references(() => apiKeys.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 
 // ============================================================================
-// Flashcards Table (with vector embedding and FSRS state)
+// Flashcards Table (with FSRS state)
 // ============================================================================
+// Note: Flashcards are stored in LanceDB, not PostgreSQL
+// This table exists in the schema but is not used by the application
+// Keeping it for potential future migration or reference
 
 export const flashcards = pgTable('flashcards', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -81,8 +104,7 @@ export const flashcards = pgTable('flashcards', {
     .references(() => messages.id, { onDelete: 'cascade' }),
   question: varchar('question', { length: 1000 }).notNull(),
   answer: text('answer').notNull(),
-  // pgvector column for semantic search
-  questionEmbedding: vector('question_embedding', { dimensions: 768 }),
+  // Note: Question embeddings stored in LanceDB for efficient vector search
   // FSRS state stored as JSONB
   fsrsState: jsonb('fsrs_state').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -118,6 +140,9 @@ export const reviewLogs = pgTable('review_logs', {
 
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
+
+export type ApiKey = typeof apiKeys.$inferSelect
+export type NewApiKey = typeof apiKeys.$inferInsert
 
 export type Conversation = typeof conversations.$inferSelect
 export type NewConversation = typeof conversations.$inferInsert

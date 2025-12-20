@@ -51,6 +51,8 @@ export const MessageSchema = z.object({
   embedding: z.array(z.number()).length(768).nullable(), // Ollama nomic-embed-text
   createdAt: z.number().int().positive(),
   hasFlashcards: z.boolean().default(false),
+  aiProvider: z.enum(['claude', 'ollama']).nullable().optional(),
+  apiKeyId: z.string().uuid().nullable().optional(),
 })
 
 export type Message = z.infer<typeof MessageSchema>

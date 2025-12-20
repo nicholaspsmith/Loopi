@@ -2,6 +2,7 @@
 
 import type { Message as MessageType } from '@/types'
 import GenerateFlashcardsButton from './GenerateFlashcardsButton'
+import ProviderBadge from '@/components/settings/ProviderBadge'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -50,45 +51,26 @@ export default function Message({ message, isStreaming = false }: MessageProps) 
               // Customize rendering for better styling
               p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
               ul: ({ children }) => <ul className="mb-2 ml-4 list-disc space-y-1">{children}</ul>,
-              ol: ({ children }) => (
-                <ol className="mb-2 ml-4 list-decimal space-y-1">{children}</ol>
-              ),
+              ol: ({ children }) => <ol className="mb-2 ml-4 list-decimal space-y-1">{children}</ol>,
               li: ({ children }) => <li>{children}</li>,
               code: ({ inline, children, ...props }: any) =>
                 inline ? (
-                  <code
-                    className="px-1.5 py-0.5 rounded text-sm font-mono bg-black/10 dark:bg-white/10"
-                    {...props}
-                  >
+                  <code className="px-1.5 py-0.5 rounded text-sm font-mono bg-black/10 dark:bg-white/10" {...props}>
                     {children}
                   </code>
                 ) : (
-                  <code
-                    className="block p-3 my-2 rounded text-sm font-mono bg-black/10 dark:bg-white/10 overflow-x-auto"
-                    {...props}
-                  >
+                  <code className="block p-3 my-2 rounded text-sm font-mono bg-black/10 dark:bg-white/10 overflow-x-auto" {...props}>
                     {children}
                   </code>
                 ),
               pre: ({ children }) => <>{children}</>,
-              h1: ({ children }) => (
-                <h1 className="text-xl font-bold mb-3 mt-4 first:mt-0">{children}</h1>
-              ),
-              h2: ({ children }) => (
-                <h2 className="text-lg font-bold mb-2 mt-3 first:mt-0">{children}</h2>
-              ),
-              h3: ({ children }) => (
-                <h3 className="text-base font-bold mb-2 mt-2 first:mt-0">{children}</h3>
-              ),
+              h1: ({ children }) => <h1 className="text-xl font-bold mb-3 mt-4 first:mt-0">{children}</h1>,
+              h2: ({ children }) => <h2 className="text-lg font-bold mb-2 mt-3 first:mt-0">{children}</h2>,
+              h3: ({ children }) => <h3 className="text-base font-bold mb-2 mt-2 first:mt-0">{children}</h3>,
               strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
               em: ({ children }) => <em className="italic">{children}</em>,
               a: ({ children, href }) => (
-                <a
-                  href={href}
-                  className="text-blue-400 hover:text-blue-300 underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href={href} className="text-blue-400 hover:text-blue-300 underline" target="_blank" rel="noopener noreferrer">
                   {children}
                 </a>
               ),
@@ -119,23 +101,22 @@ export default function Message({ message, isStreaming = false }: MessageProps) 
             {message.content}
           </ReactMarkdown>
           {isStreaming && (
-            <span
-              className="inline-block w-2 h-4 ml-1 bg-current animate-pulse"
-              aria-label="Message is being typed"
-            />
+            <span className="inline-block w-2 h-4 ml-1 bg-current animate-pulse" aria-label="Message is being typed" />
           )}
         </div>
 
-        {/* Timestamp */}
-        <time
-          className="text-xs mt-2 opacity-60 block"
-          dateTime={new Date(message.createdAt).toISOString()}
-        >
-          {new Date(message.createdAt).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        </time>
+        {/* Timestamp and Provider Badge */}
+        <div className="flex items-center gap-2 mt-2">
+          <time className="text-xs opacity-60" dateTime={new Date(message.createdAt).toISOString()}>
+            {new Date(message.createdAt).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </time>
+          {isAssistant && message.aiProvider && (
+            <ProviderBadge provider={message.aiProvider} size="sm" showTooltip />
+          )}
+        </div>
 
         {/* Generate Flashcards Button (FR-008: only for assistant messages) */}
         {isAssistant && !isStreaming && (

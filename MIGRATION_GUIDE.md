@@ -1,4 +1,8 @@
-# Migration from LanceDB to PostgreSQL + pgvector
+# Database Architecture: Hybrid System (Intentional)
+
+> **Status:** The hybrid PostgreSQL + LanceDB architecture is **intentional and recommended**. This is not an incomplete migration.
+>
+> See [ARCHITECTURE.md](ARCHITECTURE.md) for the full design rationale.
 
 ## What We've Set Up
 
@@ -23,7 +27,21 @@
 - `SUPABASE_SETUP.md` - Complete setup guide
 - `.env.example` - Updated with DATABASE_URL
 
-## Next Steps to Complete Migration
+## Current Architecture
+
+### PostgreSQL Tables (via Drizzle ORM)
+- ✅ users
+- ✅ conversations
+- ✅ messages
+- ✅ api_keys
+
+### LanceDB Tables (vector-optimized)
+- ✅ flashcards
+- ✅ review_logs
+
+## If You Want to Complete Migration to PostgreSQL-Only
+
+**Warning:** This is NOT recommended for MemoryLoop. The hybrid architecture provides better cost/performance. Only proceed if you have specific requirements for PostgreSQL-only deployment.
 
 ### 1. Set up Supabase (5 minutes)
 

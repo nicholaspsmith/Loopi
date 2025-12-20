@@ -42,7 +42,9 @@ interface QuizInterfaceProps {
   initialFlashcards?: Flashcard[]
 }
 
-export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceProps) {
+export default function QuizInterface({
+  initialFlashcards = [],
+}: QuizInterfaceProps) {
   const [flashcards, setFlashcards] = useState<Flashcard[]>(initialFlashcards)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(!initialFlashcards.length)
@@ -138,13 +140,51 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
     fetchFlashcards('all')
   }
 
+  const handleDelete = async (flashcardId: string) => {
+    try {
+      setError(null)
+
+      const response = await fetch(`/api/flashcards/${flashcardId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete flashcard')
+      }
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Remove flashcard from state
+        const updatedFlashcards = flashcards.filter((f) => f.id !== flashcardId)
+        setFlashcards(updatedFlashcards)
+
+        // Update current index if needed
+        if (updatedFlashcards.length === 0) {
+          // No more flashcards
+          setIsCompleted(true)
+        } else if (currentIndex >= updatedFlashcards.length) {
+          // Current index is out of bounds, go to last card
+          setCurrentIndex(updatedFlashcards.length - 1)
+        }
+        // If currentIndex < updatedFlashcards.length, it will automatically show the next card
+      } else {
+        throw new Error(data.error || 'Failed to delete flashcard')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    }
+  }
+
   // Loading state
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading flashcards...</p>
+          <p className="text-gray-600 dark:text-gray-400">
+            Loading flashcards...
+          </p>
         </div>
       </div>
     )
@@ -258,7 +298,7 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
             {mode === 'due' ? 'Quiz Complete!' : 'Practice Session Complete!'}
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            You&apos;ve reviewed all {flashcards.length} flashcard
+            You've reviewed all {flashcards.length} flashcard
             {flashcards.length !== 1 ? 's' : ''}. Great work!
           </p>
           <div className="flex gap-3 justify-center">
@@ -298,12 +338,20 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
 
       {/* Progress indicator */}
       <div className="mb-8">
-        <QuizProgress current={currentIndex + 1} total={flashcards.length} showPercentage />
+        <QuizProgress
+          current={currentIndex + 1}
+          total={flashcards.length}
+          showPercentage
+        />
       </div>
 
       {/* Current flashcard */}
       <div className="mb-8">
-        <QuizCard key={currentFlashcard.id} flashcard={currentFlashcard} onRate={handleRate} />
+        <QuizCard
+          flashcard={currentFlashcard}
+          onRate={handleRate}
+          onDelete={handleDelete}
+        />
       </div>
 
       {/* Submitting indicator */}
