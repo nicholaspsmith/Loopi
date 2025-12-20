@@ -23,14 +23,14 @@ Implement a complete CI/CD pipeline and production deployment infrastructure for
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Evidence |
-|-----------|--------|----------|
-| I. Documentation-First | PASS | Feature spec complete with 6 user stories, 38 functional requirements, acceptance criteria |
-| II. Test-First (TDD) | PASS | CI pipeline enforces tests before merge; infrastructure tests via scripts |
-| III. Modularity | PASS | User stories are independently testable (P1→P2→P3→P4→P5→P6 progression) |
-| IV. Simplicity (YAGNI) | PASS | Single VPS, no K8s, no blue-green, no canary - explicit out of scope |
-| V. Observability | PASS | Structured JSON logs (FR-034), Sentry error tracking (FR-037), UptimeRobot monitoring |
-| VI. Atomic Commits | PASS | Plan follows .claude/rules.md; one logical change per commit |
+| Principle              | Status | Evidence                                                                                   |
+| ---------------------- | ------ | ------------------------------------------------------------------------------------------ |
+| I. Documentation-First | PASS   | Feature spec complete with 6 user stories, 38 functional requirements, acceptance criteria |
+| II. Test-First (TDD)   | PASS   | CI pipeline enforces tests before merge; infrastructure tests via scripts                  |
+| III. Modularity        | PASS   | User stories are independently testable (P1→P2→P3→P4→P5→P6 progression)                    |
+| IV. Simplicity (YAGNI) | PASS   | Single VPS, no K8s, no blue-green, no canary - explicit out of scope                       |
+| V. Observability       | PASS   | Structured JSON logs (FR-034), Sentry error tracking (FR-037), UptimeRobot monitoring      |
+| VI. Atomic Commits     | PASS   | Plan follows .claude/rules.md; one logical change per commit                               |
 
 **Gate Status**: PASS - No violations requiring justification.
 
@@ -114,11 +114,11 @@ Implementation follows the 6 user stories in priority order. See [quickstart.md]
 
 **Implements**: FR-001 to FR-007
 
-| Task | Artifact Reference | Output |
-|------|-------------------|--------|
-| Create CI workflow | [research.md Section 1](./research.md) - Workflow Structure | `.github/workflows/ci.yml` |
-| Configure npm/Next.js caching | [research.md Section 1](./research.md) - Caching Strategy | Workflow cache config |
-| Enable branch protection | [quickstart.md Phase 1.2](./quickstart.md) | GitHub settings |
+| Task                          | Artifact Reference                                          | Output                     |
+| ----------------------------- | ----------------------------------------------------------- | -------------------------- |
+| Create CI workflow            | [research.md Section 1](./research.md) - Workflow Structure | `.github/workflows/ci.yml` |
+| Configure npm/Next.js caching | [research.md Section 1](./research.md) - Caching Strategy   | Workflow cache config      |
+| Enable branch protection      | [quickstart.md Phase 1.2](./quickstart.md)                  | GitHub settings            |
 
 **Parallel Opportunity**: Can run alongside Phase 2 (Docker configuration).
 
@@ -128,11 +128,11 @@ Implementation follows the 6 user stories in priority order. See [quickstart.md]
 
 **Implements**: FR-008 to FR-013
 
-| Task | Artifact Reference | Output |
-|------|-------------------|--------|
-| Verify existing Dockerfile | [research.md Section 2](./research.md) - Three-Stage Build | Validated `Dockerfile` |
-| Create production compose | [data-model.md Section 3](./data-model.md) - Docker Volume Mounts | `docker-compose.prod.yml` |
-| Verify health endpoint | [contracts/health-api.yaml](./contracts/health-api.yaml) | `/api/health` validated |
+| Task                       | Artifact Reference                                                | Output                    |
+| -------------------------- | ----------------------------------------------------------------- | ------------------------- |
+| Verify existing Dockerfile | [research.md Section 2](./research.md) - Three-Stage Build        | Validated `Dockerfile`    |
+| Create production compose  | [data-model.md Section 3](./data-model.md) - Docker Volume Mounts | `docker-compose.prod.yml` |
+| Verify health endpoint     | [contracts/health-api.yaml](./contracts/health-api.yaml)          | `/api/health` validated   |
 
 **Parallel Opportunity**: Can run alongside Phase 1 (CI Pipeline).
 
@@ -142,12 +142,12 @@ Implementation follows the 6 user stories in priority order. See [quickstart.md]
 
 **Implements**: FR-014 to FR-019
 
-| Task | Artifact Reference | Output |
-|------|-------------------|--------|
-| Provision Hetzner CX22 | [research.md Section 5](./research.md) - VPS Infrastructure | VPS instance |
-| Security hardening | [quickstart.md Phase 3.2](./quickstart.md) | UFW, SSH, fail2ban |
-| Create directory structure | [data-model.md Section 3](./data-model.md) - VPS Directory Structure | `/opt/memoryloop/*` |
-| Create deploy user | [data-model.md Section 2](./data-model.md) - Runtime Variables | `deploy` user with SSH key |
+| Task                       | Artifact Reference                                                   | Output                     |
+| -------------------------- | -------------------------------------------------------------------- | -------------------------- |
+| Provision Hetzner CX22     | [research.md Section 5](./research.md) - VPS Infrastructure          | VPS instance               |
+| Security hardening         | [quickstart.md Phase 3.2](./quickstart.md)                           | UFW, SSH, fail2ban         |
+| Create directory structure | [data-model.md Section 3](./data-model.md) - VPS Directory Structure | `/opt/memoryloop/*`        |
+| Create deploy user         | [data-model.md Section 2](./data-model.md) - Runtime Variables       | `deploy` user with SSH key |
 
 **Blocks**: Phase 4 (SSL requires VPS to be provisioned).
 
@@ -157,13 +157,13 @@ Implementation follows the 6 user stories in priority order. See [quickstart.md]
 
 **Implements**: FR-020 to FR-025
 
-| Task | Artifact Reference | Output |
-|------|-------------------|--------|
-| Configure DNS A record | [quickstart.md Phase 4.1](./quickstart.md) | DNS pointing to VPS |
-| Install Nginx + Certbot | [research.md Section 3](./research.md) - Nginx Reverse Proxy | Nginx configured |
-| Obtain SSL certificate | [research.md Section 3](./research.md) - TLS 1.3 Configuration | Let's Encrypt cert |
-| Configure security headers | [research.md Section 3](./research.md) - Security Headers | HSTS, CSP, etc. |
-| Verify auto-renewal | [data-model.md Section 4](./data-model.md) - Nginx Configuration | Certbot timer active |
+| Task                       | Artifact Reference                                               | Output               |
+| -------------------------- | ---------------------------------------------------------------- | -------------------- |
+| Configure DNS A record     | [quickstart.md Phase 4.1](./quickstart.md)                       | DNS pointing to VPS  |
+| Install Nginx + Certbot    | [research.md Section 3](./research.md) - Nginx Reverse Proxy     | Nginx configured     |
+| Obtain SSL certificate     | [research.md Section 3](./research.md) - TLS 1.3 Configuration   | Let's Encrypt cert   |
+| Configure security headers | [research.md Section 3](./research.md) - Security Headers        | HSTS, CSP, etc.      |
+| Verify auto-renewal        | [data-model.md Section 4](./data-model.md) - Nginx Configuration | Certbot timer active |
 
 **Blocks**: Phase 5 (Deployment requires SSL for production).
 
@@ -173,14 +173,14 @@ Implementation follows the 6 user stories in priority order. See [quickstart.md]
 
 **Implements**: FR-026 to FR-033
 
-| Task | Artifact Reference | Output |
-|------|-------------------|--------|
-| Add GitHub secrets | [research.md Section 1](./research.md) - Secrets Required | Repository secrets |
-| Create deploy workflow | [quickstart.md Phase 5.2](./quickstart.md) | `.github/workflows/deploy.yml` |
-| Create deploy script | [contracts/deployment-contract.md](./contracts/deployment-contract.md) | `scripts/deploy.sh` |
-| Create rollback script | [contracts/deployment-contract.md](./contracts/deployment-contract.md) - Rollback Protocol | `scripts/rollback.sh` |
-| Create backup script | [research.md Section 6](./research.md) - Backblaze B2 Backups | `scripts/backup.sh` |
-| Configure log rotation | [data-model.md Section 6](./data-model.md) - Validation Rules | Docker log config |
+| Task                   | Artifact Reference                                                                         | Output                         |
+| ---------------------- | ------------------------------------------------------------------------------------------ | ------------------------------ |
+| Add GitHub secrets     | [research.md Section 1](./research.md) - Secrets Required                                  | Repository secrets             |
+| Create deploy workflow | [quickstart.md Phase 5.2](./quickstart.md)                                                 | `.github/workflows/deploy.yml` |
+| Create deploy script   | [contracts/deployment-contract.md](./contracts/deployment-contract.md)                     | `scripts/deploy.sh`            |
+| Create rollback script | [contracts/deployment-contract.md](./contracts/deployment-contract.md) - Rollback Protocol | `scripts/rollback.sh`          |
+| Create backup script   | [research.md Section 6](./research.md) - Backblaze B2 Backups                              | `scripts/backup.sh`            |
+| Configure log rotation | [data-model.md Section 6](./data-model.md) - Validation Rules                              | Docker log config              |
 
 **Blocks**: Requires Phases 1-4 complete.
 
@@ -190,12 +190,12 @@ Implementation follows the 6 user stories in priority order. See [quickstart.md]
 
 **Implements**: FR-034 to FR-038
 
-| Task | Artifact Reference | Output |
-|------|-------------------|--------|
-| Integrate Sentry SDK | [research.md Section 4](./research.md) - Sentry Error Tracking | Sentry config files |
-| Configure structured logging | [data-model.md Section 1](./data-model.md) - Health Check entity | JSON log output |
-| Set up UptimeRobot | [quickstart.md Phase 6.2](./quickstart.md) | External monitoring |
-| Create monitoring script | [data-model.md Section 2](./data-model.md) - Environment Variables | `scripts/monitor.sh` |
+| Task                         | Artifact Reference                                                 | Output               |
+| ---------------------------- | ------------------------------------------------------------------ | -------------------- |
+| Integrate Sentry SDK         | [research.md Section 4](./research.md) - Sentry Error Tracking     | Sentry config files  |
+| Configure structured logging | [data-model.md Section 1](./data-model.md) - Health Check entity   | JSON log output      |
+| Set up UptimeRobot           | [quickstart.md Phase 6.2](./quickstart.md)                         | External monitoring  |
+| Create monitoring script     | [data-model.md Section 2](./data-model.md) - Environment Variables | `scripts/monitor.sh` |
 
 **Parallel Opportunity**: Can partially run alongside Phase 5.
 
@@ -205,15 +205,15 @@ Implementation follows the 6 user stories in priority order. See [quickstart.md]
 
 Strategies for edge cases identified in [spec.md](./spec.md):
 
-| Edge Case | Detection | Strategy | Recovery |
-|-----------|-----------|----------|----------|
-| VPS disk space exhausted | Health check fails, df reports >90% | Pre-deployment disk check in deploy.sh | Clean old images, rotate logs |
-| Deployment health check fails | HTTP != 200 within 30s | Auto-rollback per [deployment-contract.md](./contracts/deployment-contract.md) | Previous container restored |
-| SSL certificate renewal fails | Certbot exit code != 0 | UptimeRobot alerts, systemd timer retries | Manual certbot run |
-| Concurrent deployments | Two merges to main | GitHub Actions `concurrency` group, cancel in-progress | Only latest deploy runs |
-| GitHub Actions unavailable | Workflow doesn't trigger | Manual deployment via `scripts/deploy.sh` | SSH to VPS, run deploy |
-| Docker registry unavailable | Image pull fails | Deployment aborts, previous image continues | Retry after registry recovery |
-| VPS network issues | SSH connection fails | GitHub Actions timeout, retry logic | Manual intervention required |
+| Edge Case                     | Detection                           | Strategy                                                                       | Recovery                      |
+| ----------------------------- | ----------------------------------- | ------------------------------------------------------------------------------ | ----------------------------- |
+| VPS disk space exhausted      | Health check fails, df reports >90% | Pre-deployment disk check in deploy.sh                                         | Clean old images, rotate logs |
+| Deployment health check fails | HTTP != 200 within 30s              | Auto-rollback per [deployment-contract.md](./contracts/deployment-contract.md) | Previous container restored   |
+| SSL certificate renewal fails | Certbot exit code != 0              | UptimeRobot alerts, systemd timer retries                                      | Manual certbot run            |
+| Concurrent deployments        | Two merges to main                  | GitHub Actions `concurrency` group, cancel in-progress                         | Only latest deploy runs       |
+| GitHub Actions unavailable    | Workflow doesn't trigger            | Manual deployment via `scripts/deploy.sh`                                      | SSH to VPS, run deploy        |
+| Docker registry unavailable   | Image pull fails                    | Deployment aborts, previous image continues                                    | Retry after registry recovery |
+| VPS network issues            | SSH connection fails                | GitHub Actions timeout, retry logic                                            | Manual intervention required  |
 
 ## Parallel Work Opportunities
 

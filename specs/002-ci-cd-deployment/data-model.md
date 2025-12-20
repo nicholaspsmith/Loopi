@@ -14,14 +14,15 @@ This feature primarily deals with infrastructure configuration rather than tradi
 
 **Entity**: CI Workflow (`ci.yml`)
 
-| Field | Type | Description |
-|-------|------|-------------|
-| name | string | Workflow display name |
-| on | object | Trigger events (push, pull_request) |
-| jobs | object | Job definitions (lint, typecheck, test) |
-| permissions | object | Required permissions |
+| Field       | Type   | Description                             |
+| ----------- | ------ | --------------------------------------- |
+| name        | string | Workflow display name                   |
+| on          | object | Trigger events (push, pull_request)     |
+| jobs        | object | Job definitions (lint, typecheck, test) |
+| permissions | object | Required permissions                    |
 
 **State Transitions**:
+
 - `pending` → `in_progress` → `completed` (success/failure/cancelled)
 
 ---
@@ -30,15 +31,16 @@ This feature primarily deals with infrastructure configuration rather than tradi
 
 **Entity**: Container Image
 
-| Field | Type | Description |
-|-------|------|-------------|
-| repository | string | `ghcr.io/<owner>/<repo>` |
-| tag | string | Commit SHA or `latest` |
-| created | timestamp | Build timestamp |
-| size | integer | Image size in bytes |
-| digest | string | SHA256 content hash |
+| Field      | Type      | Description              |
+| ---------- | --------- | ------------------------ |
+| repository | string    | `ghcr.io/<owner>/<repo>` |
+| tag        | string    | Commit SHA or `latest`   |
+| created    | timestamp | Build timestamp          |
+| size       | integer   | Image size in bytes      |
+| digest     | string    | SHA256 content hash      |
 
 **Lifecycle**:
+
 - Built on merge to main
 - Tagged with commit SHA
 - Latest 5 versions retained
@@ -50,18 +52,19 @@ This feature primarily deals with infrastructure configuration rather than tradi
 
 **Entity**: Deployment Event
 
-| Field | Type | Description |
-|-------|------|-------------|
-| id | string | Unique deployment ID (timestamp-based) |
-| commitSha | string | Git commit being deployed |
-| imageTag | string | Docker image tag |
-| status | enum | pending, in_progress, success, failed, rolled_back |
-| startedAt | timestamp | Deployment start time |
-| completedAt | timestamp | Deployment completion time |
-| healthCheckPassed | boolean | Whether health check succeeded |
-| previousVersion | string | Previous image tag (for rollback) |
+| Field             | Type      | Description                                        |
+| ----------------- | --------- | -------------------------------------------------- |
+| id                | string    | Unique deployment ID (timestamp-based)             |
+| commitSha         | string    | Git commit being deployed                          |
+| imageTag          | string    | Docker image tag                                   |
+| status            | enum      | pending, in_progress, success, failed, rolled_back |
+| startedAt         | timestamp | Deployment start time                              |
+| completedAt       | timestamp | Deployment completion time                         |
+| healthCheckPassed | boolean   | Whether health check succeeded                     |
+| previousVersion   | string    | Previous image tag (for rollback)                  |
 
 **State Machine**:
+
 ```
 pending → in_progress → health_check
                               ↓
@@ -78,18 +81,19 @@ pending → in_progress → health_check
 
 **Entity**: Health Status
 
-| Field | Type | Description |
-|-------|------|-------------|
-| status | enum | healthy, degraded, unhealthy |
-| database | boolean | LanceDB connection status |
-| ollama | boolean | Ollama API availability |
-| anthropic | boolean | Anthropic API key validity |
-| timestamp | timestamp | Check timestamp |
-| responseTimeMs | integer | Health check latency |
+| Field          | Type      | Description                  |
+| -------------- | --------- | ---------------------------- |
+| status         | enum      | healthy, degraded, unhealthy |
+| database       | boolean   | LanceDB connection status    |
+| ollama         | boolean   | Ollama API availability      |
+| anthropic      | boolean   | Anthropic API key validity   |
+| timestamp      | timestamp | Check timestamp              |
+| responseTimeMs | integer   | Health check latency         |
 
 **Endpoint**: `GET /api/health`
 
 **Response Schema**:
+
 ```json
 {
   "status": "healthy",
@@ -109,16 +113,17 @@ pending → in_progress → health_check
 
 **Entity**: Database Backup
 
-| Field | Type | Description |
-|-------|------|-------------|
-| id | string | Backup ID (date-based: `backup-YYYYMMDD`) |
-| createdAt | timestamp | Backup creation time |
-| sizeBytes | integer | Compressed backup size |
-| location | string | B2 bucket path |
-| checksum | string | SHA256 of backup file |
-| retentionDays | integer | Days until auto-deletion (7) |
+| Field         | Type      | Description                               |
+| ------------- | --------- | ----------------------------------------- |
+| id            | string    | Backup ID (date-based: `backup-YYYYMMDD`) |
+| createdAt     | timestamp | Backup creation time                      |
+| sizeBytes     | integer   | Compressed backup size                    |
+| location      | string    | B2 bucket path                            |
+| checksum      | string    | SHA256 of backup file                     |
+| retentionDays | integer   | Days until auto-deletion (7)              |
 
 **Retention Policy**:
+
 - Keep 7 daily backups
 - Auto-delete backups older than 7 days
 - Manual backups can be marked as permanent
@@ -129,30 +134,30 @@ pending → in_progress → health_check
 
 ### Build-Time Variables
 
-| Variable | Scope | Description |
-|----------|-------|-------------|
-| `SENTRY_AUTH_TOKEN` | CI only | Sentry source map upload |
-| `GITHUB_TOKEN` | CI only | Auto-provided by GitHub Actions |
+| Variable            | Scope   | Description                     |
+| ------------------- | ------- | ------------------------------- |
+| `SENTRY_AUTH_TOKEN` | CI only | Sentry source map upload        |
+| `GITHUB_TOKEN`      | CI only | Auto-provided by GitHub Actions |
 
 ### Runtime Variables (VPS)
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `NODE_ENV` | Yes | `production` |
-| `NEXTAUTH_URL` | Yes | `https://memoryloop.nicholaspsmith.com` |
-| `NEXTAUTH_SECRET` | Yes | Session encryption key |
-| `ANTHROPIC_API_KEY` | Yes | Claude API key |
-| `NEXT_PUBLIC_SENTRY_DSN` | Yes | Sentry client DSN |
-| `SENTRY_DSN` | Yes | Sentry server DSN |
-| `OLLAMA_BASE_URL` | No | Ollama API endpoint (if used) |
+| Variable                 | Required | Description                             |
+| ------------------------ | -------- | --------------------------------------- |
+| `NODE_ENV`               | Yes      | `production`                            |
+| `NEXTAUTH_URL`           | Yes      | `https://memoryloop.nicholaspsmith.com` |
+| `NEXTAUTH_SECRET`        | Yes      | Session encryption key                  |
+| `ANTHROPIC_API_KEY`      | Yes      | Claude API key                          |
+| `NEXT_PUBLIC_SENTRY_DSN` | Yes      | Sentry client DSN                       |
+| `SENTRY_DSN`             | Yes      | Sentry server DSN                       |
+| `OLLAMA_BASE_URL`        | No       | Ollama API endpoint (if used)           |
 
 ### Backup Variables (VPS)
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `B2_KEY_ID` | Yes | Backblaze application key ID |
-| `B2_APP_KEY` | Yes | Backblaze application key |
-| `B2_BUCKET` | Yes | Target bucket name |
+| Variable     | Required | Description                  |
+| ------------ | -------- | ---------------------------- |
+| `B2_KEY_ID`  | Yes      | Backblaze application key ID |
+| `B2_APP_KEY` | Yes      | Backblaze application key    |
+| `B2_BUCKET`  | Yes      | Target bucket name           |
 
 ---
 
@@ -175,10 +180,10 @@ pending → in_progress → health_check
 
 ### Docker Volume Mounts
 
-| Container Path | Host Path | Purpose |
-|----------------|-----------|---------|
-| `/app/data` | `/opt/memoryloop/data` | LanceDB persistence |
-| `/app/.env.production` | `/opt/memoryloop/config/.env.production` | Environment config |
+| Container Path         | Host Path                                | Purpose             |
+| ---------------------- | ---------------------------------------- | ------------------- |
+| `/app/data`            | `/opt/memoryloop/data`                   | LanceDB persistence |
+| `/app/.env.production` | `/opt/memoryloop/config/.env.production` | Environment config  |
 
 ---
 

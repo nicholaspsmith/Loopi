@@ -43,7 +43,7 @@ paths:
                         latencyMs: 120
                       anthropic:
                         status: up
-                    version: "abc1234"
+                    version: 'abc1234'
                     uptime: 86400
                 degraded:
                   summary: Non-critical service unavailable
@@ -55,10 +55,10 @@ paths:
                         latencyMs: 5
                       ollama:
                         status: down
-                        error: "Connection refused"
+                        error: 'Connection refused'
                       anthropic:
                         status: up
-                    version: "abc1234"
+                    version: 'abc1234'
                     uptime: 86400
         '503':
           description: Application is unhealthy
@@ -74,12 +74,12 @@ paths:
                     checks:
                       database:
                         status: down
-                        error: "Failed to connect to LanceDB"
+                        error: 'Failed to connect to LanceDB'
                       ollama:
                         status: unknown
                       anthropic:
                         status: unknown
-                    version: "abc1234"
+                    version: 'abc1234'
                     uptime: 86400
 
 components:
@@ -111,7 +111,7 @@ components:
         version:
           type: string
           description: Git commit SHA of deployed version
-          example: "abc1234"
+          example: 'abc1234'
         uptime:
           type: integer
           description: Application uptime in seconds
@@ -132,4 +132,4 @@ components:
         error:
           type: string
           description: Error message if status is down
-          example: "Connection refused"
+          example: 'Connection refused'

@@ -41,10 +41,12 @@ docker pull ghcr.io/<owner>/<repo>:<commit-sha>
 ```
 
 **Success Criteria**:
+
 - Exit code 0
 - Image layers downloaded
 
 **Failure Action**:
+
 - Abort deployment
 - Report failure to CI
 
@@ -59,10 +61,12 @@ docker-compose -f docker-compose.prod.yml up -d --no-deps app-new
 ```
 
 **Success Criteria**:
+
 - Container status: running
 - No immediate crash (wait 5 seconds)
 
 **Failure Action**:
+
 - Remove failed container
 - Abort deployment
 - Report failure to CI
@@ -78,15 +82,18 @@ curl -f http://localhost:3001/api/health
 ```
 
 **Success Criteria**:
+
 - HTTP 200 response within 30 seconds
 - Response body `status` is `healthy` or `degraded`
 - `database.status` is `up`
 
 **Retry Policy**:
+
 - 3 attempts
 - 10 second delay between attempts
 
 **Failure Action**:
+
 - Stop new container
 - Trigger rollback
 - Report failure to CI
@@ -104,10 +111,12 @@ nginx -s reload
 ```
 
 **Success Criteria**:
+
 - Nginx reload successful
 - No active connection errors
 
 **Failure Action**:
+
 - Revert Nginx config
 - Stop new container
 - Report failure to CI
@@ -128,10 +137,12 @@ docker rm memoryloop-app-old
 ```
 
 **Success Criteria**:
+
 - Old container stopped
 - Resources freed
 
 **Failure Action**:
+
 - Log warning (non-blocking)
 - Manual cleanup required
 
@@ -149,10 +160,12 @@ docker images ghcr.io/<owner>/<repo> --format '{{.Tag}}' | \
 ```
 
 **Success Criteria**:
+
 - Disk space freed
 - Last 5 versions retained
 
 **Failure Action**:
+
 - Log warning (non-blocking)
 - Manual cleanup required
 
@@ -187,20 +200,20 @@ docker images ghcr.io/<owner>/<repo> --format '{{.Tag}}' | \
 
 ### Required Secrets (GitHub Actions)
 
-| Secret | Purpose |
-|--------|---------|
-| `VPS_SSH_KEY` | SSH private key for deployment |
-| `VPS_HOST` | VPS IP address or hostname |
-| `VPS_USER` | SSH username (typically `deploy`) |
-| `VPS_PORT` | SSH port (default: 22) |
+| Secret        | Purpose                           |
+| ------------- | --------------------------------- |
+| `VPS_SSH_KEY` | SSH private key for deployment    |
+| `VPS_HOST`    | VPS IP address or hostname        |
+| `VPS_USER`    | SSH username (typically `deploy`) |
+| `VPS_PORT`    | SSH port (default: 22)            |
 
 ### Required Files (VPS)
 
-| Path | Purpose |
-|------|---------|
-| `/opt/memoryloop/config/.env.production` | Environment variables |
-| `/opt/memoryloop/docker-compose.prod.yml` | Production compose file |
-| `/etc/nginx/sites-available/memoryloop.conf` | Nginx site config |
+| Path                                         | Purpose                 |
+| -------------------------------------------- | ----------------------- |
+| `/opt/memoryloop/config/.env.production`     | Environment variables   |
+| `/opt/memoryloop/docker-compose.prod.yml`    | Production compose file |
+| `/etc/nginx/sites-available/memoryloop.conf` | Nginx site config       |
 
 ---
 
@@ -214,12 +227,12 @@ docker images ghcr.io/<owner>/<repo> --format '{{.Tag}}' | \
 
 ### Alert Conditions
 
-| Condition | Action |
-|-----------|--------|
-| Health check fails 3x | Page on-call |
-| Deployment fails | GitHub Action notification |
-| SSL expires in < 14 days | Email notification |
-| Disk usage > 80% | Email notification |
+| Condition                | Action                     |
+| ------------------------ | -------------------------- |
+| Health check fails 3x    | Page on-call               |
+| Deployment fails         | GitHub Action notification |
+| SSL expires in < 14 days | Email notification         |
+| Disk usage > 80%         | Email notification         |
 
 ---
 
@@ -228,6 +241,7 @@ docker images ghcr.io/<owner>/<repo> --format '{{.Tag}}' | \
 ### On Successful Deployment
 
 Report to GitHub Actions:
+
 - Deployment status: success
 - Deployed version: `<commit-sha>`
 - Deployment time: `<duration>`
@@ -236,6 +250,7 @@ Report to GitHub Actions:
 ### On Failed Deployment
 
 Report to GitHub Actions:
+
 - Deployment status: failed
 - Failed at step: `<step-name>`
 - Error message: `<error>`

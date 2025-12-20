@@ -97,13 +97,13 @@ services:
     image: ghcr.io/${GITHUB_REPOSITORY}:${IMAGE_TAG:-latest}
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - ./data:/app/data
     env_file:
       - .env.production
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -171,6 +171,7 @@ systemctl enable fail2ban
 ### 4.1 Configure DNS
 
 Add A record pointing to VPS IP:
+
 ```
 memoryloop.nicholaspsmith.com → <VPS_IP>
 ```
@@ -218,6 +219,7 @@ certbot renew --dry-run
 ### 5.1 Add GitHub Secrets
 
 Go to Settings → Secrets → Actions and add:
+
 - `VPS_SSH_KEY`: Contents of private SSH key
 - `VPS_HOST`: VPS IP address
 - `VPS_USER`: `deploy`
@@ -324,6 +326,7 @@ rclone delete --min-age 7d b2:memoryloop-backups/
 ```
 
 Add cron job:
+
 ```bash
 crontab -e
 # Add: 0 3 * * * /opt/memoryloop/scripts/backup.sh
@@ -334,31 +337,37 @@ crontab -e
 ## Verification Checklist
 
 ### CI Pipeline
+
 - [ ] Push to feature branch triggers CI
 - [ ] Failed lint blocks merge
 - [ ] All checks show in PR
 
 ### Docker
+
 - [ ] `docker build .` succeeds locally
 - [ ] Image size < 500MB
 - [ ] Health check returns 200
 
 ### VPS
+
 - [ ] SSH with key authentication works
 - [ ] Password authentication disabled
 - [ ] UFW shows only 22, 80, 443 open
 
 ### SSL
+
 - [ ] https://memoryloop.nicholaspsmith.com loads
 - [ ] Certificate valid (check with browser)
 - [ ] HTTP redirects to HTTPS
 
 ### Deployment
+
 - [ ] Merge to main triggers deploy
 - [ ] Health check validates deployment
 - [ ] Rollback script works
 
 ### Monitoring
+
 - [ ] Sentry captures test error
 - [ ] UptimeRobot shows site as UP
 - [ ] Backup script runs successfully

@@ -42,8 +42,10 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 - Atomic Commits & Version Control Discipline
 
 ## Active Technologies
+
 - TypeScript 5.x, Node.js 20.x (Next.js 15) + Next.js 15, Docker, Docker Compose, Nginx, Certbot, GitHub Actions (002-ci-cd-deployment)
 - LanceDB (file-based vector database), Backblaze B2 (backups) (002-ci-cd-deployment)
 
 ## Recent Changes
+
 - 002-ci-cd-deployment: Added TypeScript 5.x, Node.js 20.x (Next.js 15) + Next.js 15, Docker, Docker Compose, Nginx, Certbot, GitHub Actions
