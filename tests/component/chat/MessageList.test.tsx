@@ -102,9 +102,7 @@ describe('MessageList Component', () => {
 
   describe('Streaming state', () => {
     it('should mark correct message as streaming', () => {
-      render(
-        <MessageList messages={mockMessages} streamingMessageId="msg-2" />
-      )
+      render(<MessageList messages={mockMessages} streamingMessageId="msg-2" />)
 
       const messages = screen.getAllByTestId('chat-message')
       // Check that the streaming message has the pulse animation
@@ -140,9 +138,7 @@ describe('MessageList Component', () => {
     })
 
     it('should show loading dots with staggered animation', () => {
-      const { container } = render(
-        <MessageList messages={mockMessages} isLoading={true} />
-      )
+      const { container } = render(<MessageList messages={mockMessages} isLoading={true} />)
 
       const loadingDots = container.querySelectorAll('.animate-bounce')
       expect(loadingDots).toHaveLength(3)

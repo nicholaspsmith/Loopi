@@ -1,35 +1,15 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { initializeSchema, isSchemaInitialized } from '@/lib/db/schema'
-import { closeDbConnection, getDbConnection } from '@/lib/db/client'
-import fs from 'fs'
-import path from 'path'
+import { describe, it, expect } from 'vitest'
+import { getDbConnection } from '@/lib/db/client'
 
 /**
  * Schema Inspection Test
  *
  * Inspects the actual LanceDB schema to see what column names exist
+ *
+ * Note: Database setup/teardown is handled by tests/db-setup.ts
  */
 
 describe('LanceDB Schema Inspection', () => {
-  beforeAll(async () => {
-    // Ensure test database directory exists
-    const dbPath = path.join(process.cwd(), 'data', 'lancedb')
-    if (!fs.existsSync(dbPath)) {
-      fs.mkdirSync(dbPath, { recursive: true })
-    }
-
-    // Initialize database schema if not already initialized
-    const initialized = await isSchemaInitialized()
-    if (!initialized) {
-      console.log('Initializing test database schema...')
-      await initializeSchema()
-    }
-  })
-
-  afterAll(async () => {
-    await closeDbConnection()
-  })
-
   it('should show messages table schema', async () => {
     const db = await getDbConnection()
     const table = await db.openTable('messages')

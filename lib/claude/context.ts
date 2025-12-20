@@ -105,10 +105,7 @@ export function getConversationStats(messages: Message[]): {
 } {
   const userMessages = messages.filter((m) => m.role === 'user').length
   const assistantMessages = messages.filter((m) => m.role === 'assistant').length
-  const totalTokens = messages.reduce(
-    (sum, msg) => sum + estimateTokens(msg.content),
-    0
-  )
+  const totalTokens = messages.reduce((sum, msg) => sum + estimateTokens(msg.content), 0)
 
   return {
     totalMessages: messages.length,

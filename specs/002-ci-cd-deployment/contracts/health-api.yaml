@@ -1,0 +1,135 @@
+openapi: 3.0.3
+info:
+  title: MemoryLoop Health API
+  description: Health check endpoint for deployment validation and monitoring
+  version: 1.0.0
+
+servers:
+  - url: https://memoryloop.nicholaspsmith.com
+    description: Production server
+
+paths:
+  /api/health:
+    get:
+      summary: Get application health status
+      description: |
+        Returns the health status of the application and its dependencies.
+        Used by:
+        - Deployment scripts for validation
+        - Docker HEALTHCHECK
+        - UptimeRobot monitoring
+        - Load balancers (if applicable)
+      operationId: getHealth
+      tags:
+        - Monitoring
+      responses:
+        '200':
+          description: Application is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy:
+                  summary: All systems operational
+                  value:
+                    status: healthy
+                    checks:
+                      database:
+                        status: up
+                        latencyMs: 5
+                      ollama:
+                        status: up
+                        latencyMs: 120
+                      anthropic:
+                        status: up
+                    version: 'abc1234'
+                    uptime: 86400
+                degraded:
+                  summary: Non-critical service unavailable
+                  value:
+                    status: degraded
+                    checks:
+                      database:
+                        status: up
+                        latencyMs: 5
+                      ollama:
+                        status: down
+                        error: 'Connection refused'
+                      anthropic:
+                        status: up
+                    version: 'abc1234'
+                    uptime: 86400
+        '503':
+          description: Application is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                unhealthy:
+                  summary: Critical service unavailable
+                  value:
+                    status: unhealthy
+                    checks:
+                      database:
+                        status: down
+                        error: 'Failed to connect to LanceDB'
+                      ollama:
+                        status: unknown
+                      anthropic:
+                        status: unknown
+                    version: 'abc1234'
+                    uptime: 86400
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - checks
+        - version
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+          description: |
+            Overall health status:
+            - healthy: All critical services operational
+            - degraded: Non-critical services unavailable
+            - unhealthy: Critical services unavailable (returns 503)
+        checks:
+          type: object
+          properties:
+            database:
+              $ref: '#/components/schemas/CheckResult'
+            ollama:
+              $ref: '#/components/schemas/CheckResult'
+            anthropic:
+              $ref: '#/components/schemas/CheckResult'
+        version:
+          type: string
+          description: Git commit SHA of deployed version
+          example: 'abc1234'
+        uptime:
+          type: integer
+          description: Application uptime in seconds
+          example: 86400
+
+    CheckResult:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [up, down, unknown]
+        latencyMs:
+          type: integer
+          description: Check latency in milliseconds
+          example: 5
+        error:
+          type: string
+          description: Error message if status is down
+          example: 'Connection refused'

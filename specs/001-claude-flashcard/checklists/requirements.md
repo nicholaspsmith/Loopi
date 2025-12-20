@@ -34,6 +34,7 @@
 **Status**: ✅ PASSED - All quality checks passed
 **Validated**: 2025-12-14
 **Clarifications Resolved**: 2
+
 - FR-023: Conversation history will persist across sessions indefinitely
 - FR-024: Flashcards presented as single chronological collection (MVP)
 

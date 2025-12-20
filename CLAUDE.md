@@ -42,14 +42,17 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 - Atomic Commits & Version Control Discipline. Adhere to .claude/rules.md
 
 ## Active Technologies
+
+- TypeScript 5.x, Node.js 20.x (Next.js 15) + Next.js 15, Docker, Docker Compose, Nginx, Certbot, GitHub Actions (002-ci-cd-deployment)
+- LanceDB (file-based vector database), Backblaze B2 (backups) (002-ci-cd-deployment)
 - TypeScript 5.7 / Node.js (Next.js 16.0.10) + Next.js 16, @anthropic-ai/sdk 0.71, @lancedb/lancedb 0.22, Ollama (nomic-embed-text) (005-rag-integration)
 - PostgreSQL (drizzle-orm, metadata), LanceDB (vectors/embeddings) (005-rag-integration)
-
 - TypeScript 5.7 (strict mode), Next.js 16.0.10 App Router (004-claude-api)
 - PostgreSQL on Supabase with pgvector (0.2.1) for vector embeddings (768 dimensions) (004-claude-api)
 
 ## Recent Changes
 
+- 002-ci-cd-deployment: Added TypeScript 5.x, Node.js 20.x (Next.js 15) + Next.js 15, Docker, Docker Compose, Nginx, Certbot, GitHub Actions
 - 004-claude-api: Added TypeScript 5.7 (strict mode), Next.js 16.0.10 App Router
 
 ## Feature Implementation Notes (T065)

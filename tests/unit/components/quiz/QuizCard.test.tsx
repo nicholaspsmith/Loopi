@@ -17,8 +17,7 @@ describe('QuizCard', () => {
   const mockFlashcard = {
     id: 'test-flashcard-id',
     question: 'What is spaced repetition?',
-    answer:
-      'A learning technique that reviews information at increasing intervals.',
+    answer: 'A learning technique that reviews information at increasing intervals.',
     fsrsState: {
       due: new Date(),
       stability: 2.5,
@@ -42,9 +41,7 @@ describe('QuizCard', () => {
     it('should render the flashcard question', () => {
       render(<QuizCard flashcard={mockFlashcard} onRate={mockOnRate} />)
 
-      expect(
-        screen.getByText('What is spaced repetition?')
-      ).toBeInTheDocument()
+      expect(screen.getByText('What is spaced repetition?')).toBeInTheDocument()
     })
 
     it('should NOT show the answer initially', () => {
@@ -52,35 +49,23 @@ describe('QuizCard', () => {
 
       // Answer should not be visible initially
       expect(
-        screen.queryByText(
-          'A learning technique that reviews information at increasing intervals.'
-        )
+        screen.queryByText('A learning technique that reviews information at increasing intervals.')
       ).not.toBeInTheDocument()
     })
 
     it('should show a button to reveal the answer', () => {
       render(<QuizCard flashcard={mockFlashcard} onRate={mockOnRate} />)
 
-      expect(
-        screen.getByRole('button', { name: /show answer|reveal/i })
-      ).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /show answer|reveal/i })).toBeInTheDocument()
     })
 
     it('should NOT show rating buttons initially', () => {
       render(<QuizCard flashcard={mockFlashcard} onRate={mockOnRate} />)
 
-      expect(
-        screen.queryByRole('button', { name: /again/i })
-      ).not.toBeInTheDocument()
-      expect(
-        screen.queryByRole('button', { name: /hard/i })
-      ).not.toBeInTheDocument()
-      expect(
-        screen.queryByRole('button', { name: /good/i })
-      ).not.toBeInTheDocument()
-      expect(
-        screen.queryByRole('button', { name: /easy/i })
-      ).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /again/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /hard/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /good/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /easy/i })).not.toBeInTheDocument()
     })
   })
 
@@ -95,9 +80,7 @@ describe('QuizCard', () => {
       await user.click(revealButton)
 
       expect(
-        screen.getByText(
-          'A learning technique that reviews information at increasing intervals.'
-        )
+        screen.getByText('A learning technique that reviews information at increasing intervals.')
       ).toBeInTheDocument()
     })
 
@@ -110,9 +93,7 @@ describe('QuizCard', () => {
       })
       await user.click(revealButton)
 
-      expect(
-        screen.queryByRole('button', { name: /show answer|reveal/i })
-      ).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /show answer|reveal/i })).not.toBeInTheDocument()
     })
 
     it('should show all 4 rating buttons after answer is revealed', async () => {
@@ -139,9 +120,7 @@ describe('QuizCard', () => {
       })
       await user.click(revealButton)
 
-      expect(
-        screen.getByText('What is spaced repetition?')
-      ).toBeInTheDocument()
+      expect(screen.getByText('What is spaced repetition?')).toBeInTheDocument()
     })
   })
 
@@ -232,9 +211,7 @@ describe('QuizCard', () => {
           'This is a very long question that might span multiple lines and should be displayed properly without breaking the layout or causing any visual issues in the quiz interface component.',
       }
 
-      render(
-        <QuizCard flashcard={longQuestionFlashcard} onRate={mockOnRate} />
-      )
+      render(<QuizCard flashcard={longQuestionFlashcard} onRate={mockOnRate} />)
 
       expect(screen.getByText(longQuestionFlashcard.question)).toBeInTheDocument()
     })
@@ -254,9 +231,7 @@ describe('QuizCard', () => {
       })
       await user.click(revealButton)
 
-      expect(
-        screen.getByText(longAnswerFlashcard.answer)
-      ).toBeInTheDocument()
+      expect(screen.getByText(longAnswerFlashcard.answer)).toBeInTheDocument()
     })
 
     it('should handle questions with special characters', () => {
@@ -265,9 +240,7 @@ describe('QuizCard', () => {
         question: 'What is the time complexity of O(n²) vs O(log n)?',
       }
 
-      render(
-        <QuizCard flashcard={specialCharsFlashcard} onRate={mockOnRate} />
-      )
+      render(<QuizCard flashcard={specialCharsFlashcard} onRate={mockOnRate} />)
 
       expect(
         screen.getByText('What is the time complexity of O(n²) vs O(log n)?')
@@ -288,9 +261,7 @@ describe('QuizCard', () => {
       })
       await user.click(revealButton)
 
-      expect(
-        screen.getByText(/const result = array\.map\(x => x \* 2\)/)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/const result = array\.map\(x => x \* 2\)/)).toBeInTheDocument()
     })
   })
 
@@ -329,9 +300,7 @@ describe('QuizCard', () => {
       fireEvent.click(revealButton)
 
       expect(
-        screen.getByText(
-          'A learning technique that reviews information at increasing intervals.'
-        )
+        screen.getByText('A learning technique that reviews information at increasing intervals.')
       ).toBeInTheDocument()
     })
   })
@@ -343,14 +312,10 @@ describe('QuizCard', () => {
         question: '',
       }
 
-      render(
-        <QuizCard flashcard={emptyQuestionFlashcard} onRate={mockOnRate} />
-      )
+      render(<QuizCard flashcard={emptyQuestionFlashcard} onRate={mockOnRate} />)
 
       // Component should still render
-      expect(
-        screen.getByRole('button', { name: /show answer|reveal/i })
-      ).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /show answer|reveal/i })).toBeInTheDocument()
     })
 
     it('should handle empty answer gracefully', async () => {
@@ -360,9 +325,7 @@ describe('QuizCard', () => {
         answer: '',
       }
 
-      render(
-        <QuizCard flashcard={emptyAnswerFlashcard} onRate={mockOnRate} />
-      )
+      render(<QuizCard flashcard={emptyAnswerFlashcard} onRate={mockOnRate} />)
 
       const revealButton = screen.getByRole('button', {
         name: /show answer|reveal/i,

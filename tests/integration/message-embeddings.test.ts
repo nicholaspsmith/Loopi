@@ -63,9 +63,7 @@ describe('Message Embedding Generation Integration', () => {
   it('should generate and update embedding asynchronously', async () => {
     // Mock successful embedding generation
     const mockEmbedding = new Array(768).fill(0.5)
-    vi.spyOn(embeddingsClient, 'generateEmbedding').mockResolvedValue(
-      mockEmbedding
-    )
+    vi.spyOn(embeddingsClient, 'generateEmbedding').mockResolvedValue(mockEmbedding)
 
     const message = await createMessage({
       conversationId: testConversationId,
@@ -121,9 +119,7 @@ describe('Message Embedding Generation Integration', () => {
   it('should generate embeddings for assistant messages', async () => {
     // Mock successful embedding generation
     const mockEmbedding = new Array(768).fill(0.7)
-    vi.spyOn(embeddingsClient, 'generateEmbedding').mockResolvedValue(
-      mockEmbedding
-    )
+    vi.spyOn(embeddingsClient, 'generateEmbedding').mockResolvedValue(mockEmbedding)
 
     const message = await createMessage({
       conversationId: testConversationId,
@@ -194,9 +190,7 @@ describe('Message Embedding Generation Integration', () => {
     const longContent = 'a'.repeat(5000)
     const mockEmbedding = new Array(768).fill(0.9)
 
-    vi.spyOn(embeddingsClient, 'generateEmbedding').mockResolvedValue(
-      mockEmbedding
-    )
+    vi.spyOn(embeddingsClient, 'generateEmbedding').mockResolvedValue(mockEmbedding)
 
     const message = await createMessage({
       conversationId: testConversationId,

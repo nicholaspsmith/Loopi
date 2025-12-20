@@ -38,19 +38,19 @@ Represents an authenticated user with access to the application.
 
 ```typescript
 interface User {
-  id: string;           // UUIDv4
-  email: string;        // Unique email address
-  name: string | null;  // Display name (optional)
-  passwordHash: string; // Hashed password (bcrypt)
-  createdAt: number;    // Unix timestamp (ms)
-  updatedAt: number;    // Unix timestamp (ms)
+  id: string // UUIDv4
+  email: string // Unique email address
+  name: string | null // Display name (optional)
+  passwordHash: string // Hashed password (bcrypt)
+  createdAt: number // Unix timestamp (ms)
+  updatedAt: number // Unix timestamp (ms)
 }
 ```
 
 #### Zod Validation Schema
 
 ```typescript
-import { z } from 'zod';
+import { z } from 'zod'
 
 export const UserSchema = z.object({
   id: z.string().uuid(),
@@ -59,13 +59,13 @@ export const UserSchema = z.object({
   passwordHash: z.string().min(60).max(60), // bcrypt hash is exactly 60 chars
   createdAt: z.number().int().positive(),
   updatedAt: z.number().int().positive(),
-});
+})
 
-export type User = z.infer<typeof UserSchema>;
+export type User = z.infer<typeof UserSchema>
 
 // Public-facing user (no password hash)
-export const PublicUserSchema = UserSchema.omit({ passwordHash: true });
-export type PublicUser = z.infer<typeof PublicUserSchema>;
+export const PublicUserSchema = UserSchema.omit({ passwordHash: true })
+export type PublicUser = z.infer<typeof PublicUserSchema>
 ```
 
 #### Indexes
@@ -90,12 +90,12 @@ Represents a chat session between a user and Claude.
 
 ```typescript
 interface Conversation {
-  id: string;           // UUIDv4
-  userId: string;       // FK to users.id
-  title: string | null; // Auto-generated from first message content
-  createdAt: number;    // Unix timestamp (ms)
-  updatedAt: number;    // Unix timestamp (ms) - updated when messages added
-  messageCount: number; // Cached count of messages
+  id: string // UUIDv4
+  userId: string // FK to users.id
+  title: string | null // Auto-generated from first message content
+  createdAt: number // Unix timestamp (ms)
+  updatedAt: number // Unix timestamp (ms) - updated when messages added
+  messageCount: number // Cached count of messages
 }
 ```
 
@@ -109,9 +109,9 @@ export const ConversationSchema = z.object({
   createdAt: z.number().int().positive(),
   updatedAt: z.number().int().positive(),
   messageCount: z.number().int().nonnegative().default(0),
-});
+})
 
-export type Conversation = z.infer<typeof ConversationSchema>;
+export type Conversation = z.infer<typeof ConversationSchema>
 ```
 
 #### Indexes
@@ -143,22 +143,22 @@ Represents a single message in a conversation (from user or Claude).
 
 ```typescript
 interface Message {
-  id: string;                  // UUIDv4
-  conversationId: string;      // FK to conversations.id
-  userId: string;              // FK to users.id (owner)
-  role: 'user' | 'assistant';  // Message sender
-  content: string;             // Message text
-  embedding: number[] | null;  // Vector embedding (1536 dims) - nullable for graceful degradation
-  createdAt: number;           // Unix timestamp (ms)
-  hasFlashcards: boolean;      // Flag indicating flashcards were generated from this message
+  id: string // UUIDv4
+  conversationId: string // FK to conversations.id
+  userId: string // FK to users.id (owner)
+  role: 'user' | 'assistant' // Message sender
+  content: string // Message text
+  embedding: number[] | null // Vector embedding (1536 dims) - nullable for graceful degradation
+  createdAt: number // Unix timestamp (ms)
+  hasFlashcards: boolean // Flag indicating flashcards were generated from this message
 }
 ```
 
 #### Zod Validation Schema
 
 ```typescript
-export const MessageRoleSchema = z.enum(['user', 'assistant']);
-export type MessageRole = z.infer<typeof MessageRoleSchema>;
+export const MessageRoleSchema = z.enum(['user', 'assistant'])
+export type MessageRole = z.infer<typeof MessageRoleSchema>
 
 export const MessageSchema = z.object({
   id: z.string().uuid(),
@@ -169,9 +169,9 @@ export const MessageSchema = z.object({
   embedding: z.array(z.number()).length(768).nullable(), // Ollama nomic-embed-text
   createdAt: z.number().int().positive(),
   hasFlashcards: z.boolean().default(false),
-});
+})
 
-export type Message = z.infer<typeof MessageSchema>;
+export type Message = z.infer<typeof MessageSchema>
 ```
 
 #### Indexes
@@ -205,40 +205,40 @@ Represents a question-answer pair for study purposes with FSRS scheduling state.
 #### LanceDB Table: `flashcards`
 
 ```typescript
-import { Card as FSRSCard } from 'ts-fsrs';
+import { Card as FSRSCard } from 'ts-fsrs'
 
 interface Flashcard {
-  id: string;                    // UUIDv4
-  userId: string;                // FK to users.id (owner)
-  conversationId: string;        // FK to conversations.id (source conversation)
-  messageId: string;             // FK to messages.id (source Claude response)
-  question: string;              // Flashcard front (question)
-  answer: string;                // Flashcard back (answer)
-  questionEmbedding: number[] | null; // Vector for semantic search (1536 dims)
-  createdAt: number;             // Unix timestamp (ms)
+  id: string // UUIDv4
+  userId: string // FK to users.id (owner)
+  conversationId: string // FK to conversations.id (source conversation)
+  messageId: string // FK to messages.id (source Claude response)
+  question: string // Flashcard front (question)
+  answer: string // Flashcard back (answer)
+  questionEmbedding: number[] | null // Vector for semantic search (1536 dims)
+  createdAt: number // Unix timestamp (ms)
 
   // FSRS Scheduling State (stored as JSON)
-  fsrsState: FSRSCard;           // Complete FSRS Card object
+  fsrsState: FSRSCard // Complete FSRS Card object
 }
 
 // FSRS Card structure (from ts-fsrs library)
 interface FSRSCard {
-  due: Date;              // Next review date
-  stability: number;      // Memory stability (days)
-  difficulty: number;     // Item difficulty (0-10)
-  elapsed_days: number;   // Days since last review
-  scheduled_days: number; // Days until next review
-  reps: number;          // Total review count
-  lapses: number;        // Number of "Again" ratings
-  state: State;          // 0=New, 1=Learning, 2=Review, 3=Relearning
-  last_review?: Date;    // Date of last review (optional)
+  due: Date // Next review date
+  stability: number // Memory stability (days)
+  difficulty: number // Item difficulty (0-10)
+  elapsed_days: number // Days since last review
+  scheduled_days: number // Days until next review
+  reps: number // Total review count
+  lapses: number // Number of "Again" ratings
+  state: State // 0=New, 1=Learning, 2=Review, 3=Relearning
+  last_review?: Date // Date of last review (optional)
 }
 ```
 
 #### Zod Validation Schema
 
 ```typescript
-import { State } from 'ts-fsrs';
+import { State } from 'ts-fsrs'
 
 // FSRS Card schema
 export const FSRSCardSchema = z.object({
@@ -251,9 +251,9 @@ export const FSRSCardSchema = z.object({
   lapses: z.number().int().nonnegative(),
   state: z.nativeEnum(State), // 0=New, 1=Learning, 2=Review, 3=Relearning
   last_review: z.date().optional(),
-});
+})
 
-export type FSRSCard = z.infer<typeof FSRSCardSchema>;
+export type FSRSCard = z.infer<typeof FSRSCardSchema>
 
 // Flashcard schema
 export const FlashcardSchema = z.object({
@@ -266,9 +266,9 @@ export const FlashcardSchema = z.object({
   questionEmbedding: z.array(z.number()).length(1536).nullable(),
   createdAt: z.number().int().positive(),
   fsrsState: FSRSCardSchema,
-});
+})
 
-export type Flashcard = z.infer<typeof FlashcardSchema>;
+export type Flashcard = z.infer<typeof FlashcardSchema>
 ```
 
 #### Indexes
@@ -307,35 +307,35 @@ Represents a historical record of a single flashcard review event (for analytics
 #### LanceDB Table: `review_logs`
 
 ```typescript
-import { Rating, State, ReviewLog as FSRSReviewLog } from 'ts-fsrs';
+import { Rating, State, ReviewLog as FSRSReviewLog } from 'ts-fsrs'
 
 interface ReviewLog {
-  id: string;              // UUIDv4
-  flashcardId: string;     // FK to flashcards.id
-  userId: string;          // FK to users.id
-  rating: Rating;          // 1=Again, 2=Hard, 3=Good, 4=Easy
-  state: State;            // State before review (0-3)
-  due: Date;               // When card was due
-  stability: number;       // Stability before review
-  difficulty: number;      // Difficulty before review
-  elapsed_days: number;    // Days since last review
-  last_elapsed_days: number; // Previous elapsed days
-  scheduled_days: number;  // Days until next review (interval)
-  review: Date;            // Timestamp of review event
+  id: string // UUIDv4
+  flashcardId: string // FK to flashcards.id
+  userId: string // FK to users.id
+  rating: Rating // 1=Again, 2=Hard, 3=Good, 4=Easy
+  state: State // State before review (0-3)
+  due: Date // When card was due
+  stability: number // Stability before review
+  difficulty: number // Difficulty before review
+  elapsed_days: number // Days since last review
+  last_elapsed_days: number // Previous elapsed days
+  scheduled_days: number // Days until next review (interval)
+  review: Date // Timestamp of review event
 }
 ```
 
 #### Zod Validation Schema
 
 ```typescript
-import { Rating, State } from 'ts-fsrs';
+import { Rating, State } from 'ts-fsrs'
 
 export const ReviewLogSchema = z.object({
   id: z.string().uuid(),
   flashcardId: z.string().uuid(),
   userId: z.string().uuid(),
   rating: z.nativeEnum(Rating), // 1=Again, 2=Hard, 3=Good, 4=Easy
-  state: z.nativeEnum(State),   // 0=New, 1=Learning, 2=Review, 3=Relearning
+  state: z.nativeEnum(State), // 0=New, 1=Learning, 2=Review, 3=Relearning
   due: z.date(),
   stability: z.number().nonnegative(),
   difficulty: z.number().min(0).max(10),
@@ -343,9 +343,9 @@ export const ReviewLogSchema = z.object({
   last_elapsed_days: z.number().nonnegative(),
   scheduled_days: z.number().nonnegative(),
   review: z.date(),
-});
+})
 
-export type ReviewLog = z.infer<typeof ReviewLogSchema>;
+export type ReviewLog = z.infer<typeof ReviewLogSchema>
 ```
 
 #### Indexes
@@ -378,95 +378,123 @@ export type ReviewLog = z.infer<typeof ReviewLogSchema>;
 
 ```typescript
 // lib/db/schema.ts
-import { getDbConnection } from './client';
-import { createEmptyCard } from 'ts-fsrs';
+import { getDbConnection } from './client'
+import { createEmptyCard } from 'ts-fsrs'
 
 export async function initializeSchema() {
-  const db = await getDbConnection();
+  const db = await getDbConnection()
 
   // 1. Users table
-  await db.createTable('users', [
-    {
-      id: '00000000-0000-0000-0000-000000000000',
-      email: 'init@example.com',
-      name: 'Init User',
-      passwordHash: '$2b$10$INIT_PLACEHOLDER_HASH_FOR_SCHEMA_CREATION_ONLY',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    }
-  ], { mode: 'create' });
+  await db.createTable(
+    'users',
+    [
+      {
+        id: '00000000-0000-0000-0000-000000000000',
+        email: 'init@example.com',
+        name: 'Init User',
+        passwordHash: '$2b$10$INIT_PLACEHOLDER_HASH_FOR_SCHEMA_CREATION_ONLY',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+    ],
+    { mode: 'create' }
+  )
 
   // 2. Conversations table
-  await db.createTable('conversations', [
-    {
-      id: '00000000-0000-0000-0000-000000000000',
-      userId: '00000000-0000-0000-0000-000000000000',
-      title: 'Init Conversation',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      messageCount: 0,
-    }
-  ], { mode: 'create' });
+  await db.createTable(
+    'conversations',
+    [
+      {
+        id: '00000000-0000-0000-0000-000000000000',
+        userId: '00000000-0000-0000-0000-000000000000',
+        title: 'Init Conversation',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        messageCount: 0,
+      },
+    ],
+    { mode: 'create' }
+  )
 
   // 3. Messages table (with vector column)
-  await db.createTable('messages', [
-    {
-      id: '00000000-0000-0000-0000-000000000000',
-      conversationId: '00000000-0000-0000-0000-000000000000',
-      userId: '00000000-0000-0000-0000-000000000000',
-      role: 'user',
-      content: 'Init message for schema creation',
-      embedding: new Array(768).fill(0), // Ollama nomic-embed-text
-      createdAt: Date.now(),
-      hasFlashcards: false,
-    }
-  ], { mode: 'create' });
+  await db.createTable(
+    'messages',
+    [
+      {
+        id: '00000000-0000-0000-0000-000000000000',
+        conversationId: '00000000-0000-0000-0000-000000000000',
+        userId: '00000000-0000-0000-0000-000000000000',
+        role: 'user',
+        content: 'Init message for schema creation',
+        embedding: new Array(768).fill(0), // Ollama nomic-embed-text
+        createdAt: Date.now(),
+        hasFlashcards: false,
+      },
+    ],
+    { mode: 'create' }
+  )
 
   // 4. Flashcards table (with vector column and FSRS state)
-  const emptyFSRSCard = createEmptyCard();
+  const emptyFSRSCard = createEmptyCard()
 
-  await db.createTable('flashcards', [
-    {
-      id: '00000000-0000-0000-0000-000000000000',
-      userId: '00000000-0000-0000-0000-000000000000',
-      conversationId: '00000000-0000-0000-0000-000000000000',
-      messageId: '00000000-0000-0000-0000-000000000000',
-      question: 'Init question',
-      answer: 'Init answer',
-      questionEmbedding: new Array(1536).fill(0),
-      createdAt: Date.now(),
-      fsrsState: emptyFSRSCard, // FSRS Card object stored as JSON
-    }
-  ], { mode: 'create' });
+  await db.createTable(
+    'flashcards',
+    [
+      {
+        id: '00000000-0000-0000-0000-000000000000',
+        userId: '00000000-0000-0000-0000-000000000000',
+        conversationId: '00000000-0000-0000-0000-000000000000',
+        messageId: '00000000-0000-0000-0000-000000000000',
+        question: 'Init question',
+        answer: 'Init answer',
+        questionEmbedding: new Array(1536).fill(0),
+        createdAt: Date.now(),
+        fsrsState: emptyFSRSCard, // FSRS Card object stored as JSON
+      },
+    ],
+    { mode: 'create' }
+  )
 
   // 5. ReviewLogs table
-  await db.createTable('review_logs', [
-    {
-      id: '00000000-0000-0000-0000-000000000000',
-      flashcardId: '00000000-0000-0000-0000-000000000000',
-      userId: '00000000-0000-0000-0000-000000000000',
-      rating: 3, // Rating.Good
-      state: 0,  // State.New
-      due: new Date(),
-      stability: 0,
-      difficulty: 0,
-      elapsed_days: 0,
-      last_elapsed_days: 0,
-      scheduled_days: 0,
-      review: new Date(),
-    }
-  ], { mode: 'create' });
+  await db.createTable(
+    'review_logs',
+    [
+      {
+        id: '00000000-0000-0000-0000-000000000000',
+        flashcardId: '00000000-0000-0000-0000-000000000000',
+        userId: '00000000-0000-0000-0000-000000000000',
+        rating: 3, // Rating.Good
+        state: 0, // State.New
+        due: new Date(),
+        stability: 0,
+        difficulty: 0,
+        elapsed_days: 0,
+        last_elapsed_days: 0,
+        scheduled_days: 0,
+        review: new Date(),
+      },
+    ],
+    { mode: 'create' }
+  )
 
-  console.log('✅ Database schema initialized successfully');
+  console.log('✅ Database schema initialized successfully')
 
   // Cleanup init rows (optional - LanceDB requires at least one row for schema creation)
-  await db.openTable('users').then(t => t.delete("id = '00000000-0000-0000-0000-000000000000'"));
-  await db.openTable('conversations').then(t => t.delete("id = '00000000-0000-0000-0000-000000000000'"));
-  await db.openTable('messages').then(t => t.delete("id = '00000000-0000-0000-0000-000000000000'"));
-  await db.openTable('flashcards').then(t => t.delete("id = '00000000-0000-0000-0000-000000000000'"));
-  await db.openTable('review_logs').then(t => t.delete("id = '00000000-0000-0000-0000-000000000000'"));
+  await db.openTable('users').then((t) => t.delete("id = '00000000-0000-0000-0000-000000000000'"))
+  await db
+    .openTable('conversations')
+    .then((t) => t.delete("id = '00000000-0000-0000-0000-000000000000'"))
+  await db
+    .openTable('messages')
+    .then((t) => t.delete("id = '00000000-0000-0000-0000-000000000000'"))
+  await db
+    .openTable('flashcards')
+    .then((t) => t.delete("id = '00000000-0000-0000-0000-000000000000'"))
+  await db
+    .openTable('review_logs')
+    .then((t) => t.delete("id = '00000000-0000-0000-0000-000000000000'"))
 
-  console.log('✅ Init rows cleaned up');
+  console.log('✅ Init rows cleaned up')
 }
 ```
 
@@ -506,6 +534,7 @@ export async function initializeSchema() {
 ```
 
 **Relationships**:
+
 - User → Conversations (1:N)
 - User → Messages (1:N)
 - User → Flashcards (1:N)
@@ -524,33 +553,26 @@ export async function initializeSchema() {
 
 ```typescript
 async function getUserConversations(userId: string, limit: number = 20) {
-  const conversations = await getTable<Conversation>('conversations');
+  const conversations = await getTable<Conversation>('conversations')
 
-  const results = await conversations
-    .filter(`userId = '${userId}'`)
-    .limit(limit)
-    .execute();
+  const results = await conversations.filter(`userId = '${userId}'`).limit(limit).execute()
 
-  return results.sort((a, b) => b.updatedAt - a.updatedAt);
+  return results.sort((a, b) => b.updatedAt - a.updatedAt)
 }
 ```
 
 #### 2. Get conversation messages (chronological)
 
 ```typescript
-async function getConversationMessages(
-  conversationId: string,
-  userId: string,
-  limit: number = 50
-) {
-  const messages = await getTable<Message>('messages');
+async function getConversationMessages(conversationId: string, userId: string, limit: number = 50) {
+  const messages = await getTable<Message>('messages')
 
   const results = await messages
     .filter(`conversationId = '${conversationId}' AND userId = '${userId}'`)
     .limit(limit)
-    .execute();
+    .execute()
 
-  return results.sort((a, b) => a.createdAt - b.createdAt);
+  return results.sort((a, b) => a.createdAt - b.createdAt)
 }
 ```
 
@@ -558,18 +580,18 @@ async function getConversationMessages(
 
 ```typescript
 async function getDueFlashcards(userId: string, limit: number = 20) {
-  const flashcards = await getTable<Flashcard>('flashcards');
-  const now = new Date();
+  const flashcards = await getTable<Flashcard>('flashcards')
+  const now = new Date()
 
   const results = await flashcards
     .filter(`userId = '${userId}' AND fsrsState.due <= ${now.getTime()}`)
     .limit(limit)
-    .execute();
+    .execute()
 
   // Sort by due date (oldest first)
-  return results.sort((a, b) =>
-    new Date(a.fsrsState.due).getTime() - new Date(b.fsrsState.due).getTime()
-  );
+  return results.sort(
+    (a, b) => new Date(a.fsrsState.due).getTime() - new Date(b.fsrsState.due).getTime()
+  )
 }
 ```
 
@@ -577,15 +599,12 @@ async function getDueFlashcards(userId: string, limit: number = 20) {
 
 ```typescript
 async function getUserFlashcards(userId: string, limit: number = 100) {
-  const flashcards = await getTable<Flashcard>('flashcards');
+  const flashcards = await getTable<Flashcard>('flashcards')
 
-  const results = await flashcards
-    .filter(`userId = '${userId}'`)
-    .limit(limit)
-    .execute();
+  const results = await flashcards.filter(`userId = '${userId}'`).limit(limit).execute()
 
   // Sort by creation date (chronological order for MVP)
-  return results.sort((a, b) => a.createdAt - b.createdAt);
+  return results.sort((a, b) => a.createdAt - b.createdAt)
 }
 ```
 
@@ -593,14 +612,11 @@ async function getUserFlashcards(userId: string, limit: number = 100) {
 
 ```typescript
 async function hasFlashcardsForMessage(messageId: string): Promise<boolean> {
-  const messages = await getTable<Message>('messages');
+  const messages = await getTable<Message>('messages')
 
-  const result = await messages
-    .filter(`id = '${messageId}'`)
-    .limit(1)
-    .execute();
+  const result = await messages.filter(`id = '${messageId}'`).limit(1).execute()
 
-  return result.length > 0 && result[0].hasFlashcards;
+  return result.length > 0 && result[0].hasFlashcards
 }
 ```
 
@@ -608,36 +624,32 @@ async function hasFlashcardsForMessage(messageId: string): Promise<boolean> {
 
 ```typescript
 async function getUserReviewStats(userId: string) {
-  const now = new Date();
-  const todayStart = new Date(now.setHours(0, 0, 0, 0));
+  const now = new Date()
+  const todayStart = new Date(now.setHours(0, 0, 0, 0))
 
-  const flashcards = await getTable<Flashcard>('flashcards');
-  const reviewLogs = await getTable<ReviewLog>('review_logs');
+  const flashcards = await getTable<Flashcard>('flashcards')
+  const reviewLogs = await getTable<ReviewLog>('review_logs')
 
   // Total flashcards
-  const allCards = await flashcards
-    .filter(`userId = '${userId}'`)
-    .execute();
+  const allCards = await flashcards.filter(`userId = '${userId}'`).execute()
 
   // Due today
-  const dueToday = allCards.filter(c =>
-    new Date(c.fsrsState.due) <= now
-  );
+  const dueToday = allCards.filter((c) => new Date(c.fsrsState.due) <= now)
 
   // Reviews today
   const reviewsToday = await reviewLogs
     .filter(`userId = '${userId}' AND review >= ${todayStart.getTime()}`)
-    .execute();
+    .execute()
 
   return {
     total: allCards.length,
     dueToday: dueToday.length,
     reviewedToday: reviewsToday.length,
-    newCards: allCards.filter(c => c.fsrsState.state === 0).length,      // State.New
-    learning: allCards.filter(c => c.fsrsState.state === 1).length,      // State.Learning
-    review: allCards.filter(c => c.fsrsState.state === 2).length,        // State.Review
-    relearning: allCards.filter(c => c.fsrsState.state === 3).length,    // State.Relearning
-  };
+    newCards: allCards.filter((c) => c.fsrsState.state === 0).length, // State.New
+    learning: allCards.filter((c) => c.fsrsState.state === 1).length, // State.Learning
+    review: allCards.filter((c) => c.fsrsState.state === 2).length, // State.Review
+    relearning: allCards.filter((c) => c.fsrsState.state === 3).length, // State.Relearning
+  }
 }
 ```
 
@@ -651,23 +663,23 @@ All API endpoints must validate input data using Zod schemas before database ope
 
 ```typescript
 // Example: Create flashcard endpoint
-import { FlashcardSchema } from '@/types/db';
+import { FlashcardSchema } from '@/types/db'
 
 export async function POST(req: Request) {
-  const body = await req.json();
+  const body = await req.json()
 
   // Validate input against schema
-  const validation = FlashcardSchema.safeParse(body);
+  const validation = FlashcardSchema.safeParse(body)
 
   if (!validation.success) {
     return Response.json(
       { error: 'Invalid flashcard data', details: validation.error },
       { status: 400 }
-    );
+    )
   }
 
   // Proceed with validated data
-  const flashcard = validation.data;
+  const flashcard = validation.data
   // ... insert into database
 }
 ```
@@ -678,11 +690,11 @@ All queries must filter by `userId` for multi-tenancy isolation:
 
 ```typescript
 // ALWAYS filter by authenticated user ID
-const userId = session.user.id; // from authentication
+const userId = session.user.id // from authentication
 
 const results = await table
   .filter(`userId = '${userId}'`) // Critical security check
-  .execute();
+  .execute()
 ```
 
 ### FSRS State Validation
@@ -690,28 +702,28 @@ const results = await table
 Flashcard FSRS state must be validated before and after scheduling:
 
 ```typescript
-import { FSRS, Rating, createEmptyCard } from 'ts-fsrs';
-import { FSRSCardSchema } from '@/types/db';
+import { FSRS, Rating, createEmptyCard } from 'ts-fsrs'
+import { FSRSCardSchema } from '@/types/db'
 
 // Validate FSRS state from database
-const flashcard = await getFlashcard(id);
-const validation = FSRSCardSchema.safeParse(flashcard.fsrsState);
+const flashcard = await getFlashcard(id)
+const validation = FSRSCardSchema.safeParse(flashcard.fsrsState)
 
 if (!validation.success) {
-  throw new Error('Corrupted FSRS state');
+  throw new Error('Corrupted FSRS state')
 }
 
 // Use validated state for scheduling
-const fsrs = new FSRS();
-const outcome = fsrs.repeat(validation.data, new Date())[Rating.Good];
+const fsrs = new FSRS()
+const outcome = fsrs.repeat(validation.data, new Date())[Rating.Good]
 
 // Validate outcome before persisting
-const outcomeValidation = FSRSCardSchema.safeParse(outcome.card);
+const outcomeValidation = FSRSCardSchema.safeParse(outcome.card)
 if (!outcomeValidation.success) {
-  throw new Error('Invalid FSRS scheduling result');
+  throw new Error('Invalid FSRS scheduling result')
 }
 
-await updateFlashcard(id, { fsrsState: outcomeValidation.data });
+await updateFlashcard(id, { fsrsState: outcomeValidation.data })
 ```
 
 ---
@@ -722,47 +734,49 @@ await updateFlashcard(id, { fsrsState: outcomeValidation.data });
 
 ```typescript
 interface SchemaVersion {
-  version: number;
-  appliedAt: number;
-  description: string;
+  version: number
+  appliedAt: number
+  description: string
 }
 
 // Track schema migrations
-const CURRENT_SCHEMA_VERSION = 1;
+const CURRENT_SCHEMA_VERSION = 1
 
 export async function getSchemaVersion(): Promise<number> {
   // Check if schema_versions table exists
   try {
-    const versions = await getTable<SchemaVersion>('schema_versions');
-    const results = await versions.execute();
+    const versions = await getTable<SchemaVersion>('schema_versions')
+    const results = await versions.execute()
 
-    if (results.length === 0) return 0;
+    if (results.length === 0) return 0
 
-    return Math.max(...results.map(v => v.version));
+    return Math.max(...results.map((v) => v.version))
   } catch (error) {
     // Table doesn't exist, schema not initialized
-    return 0;
+    return 0
   }
 }
 
 export async function applyMigrations() {
-  const currentVersion = await getSchemaVersion();
+  const currentVersion = await getSchemaVersion()
 
   if (currentVersion < CURRENT_SCHEMA_VERSION) {
-    console.log(`Migrating schema from v${currentVersion} to v${CURRENT_SCHEMA_VERSION}`);
+    console.log(`Migrating schema from v${currentVersion} to v${CURRENT_SCHEMA_VERSION}`)
 
     // Apply migrations
     if (currentVersion === 0) {
-      await initializeSchema();
+      await initializeSchema()
     }
 
     // Record migration
-    const versions = await getTable<SchemaVersion>('schema_versions');
-    await versions.add([{
-      version: CURRENT_SCHEMA_VERSION,
-      appliedAt: Date.now(),
-      description: 'Initial schema creation'
-    }]);
+    const versions = await getTable<SchemaVersion>('schema_versions')
+    await versions.add([
+      {
+        version: CURRENT_SCHEMA_VERSION,
+        appliedAt: Date.now(),
+        description: 'Initial schema creation',
+      },
+    ])
   }
 }
 ```

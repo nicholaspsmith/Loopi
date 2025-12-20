@@ -75,22 +75,13 @@ export function error(message: string, err?: Error, context?: LogContext): void 
 /**
  * Log API request
  */
-export function logRequest(
-  method: string,
-  path: string,
-  context?: LogContext
-): void {
+export function logRequest(method: string, path: string, context?: LogContext): void {
   info(`${method} ${path}`, context)
 }
 
 /**
  * Log API response
  */
-export function logResponse(
-  method: string,
-  path: string,
-  status: number,
-  duration: number
-): void {
+export function logResponse(method: string, path: string, status: number, duration: number): void {
   info(`${method} ${path} ${status}`, { duration: `${duration}ms` })
 }

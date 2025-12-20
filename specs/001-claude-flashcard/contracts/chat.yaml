@@ -520,8 +520,7 @@ x-contract-tests:
         expect:
           status: 200
           body:
-            messages: array
-            messages: is_sorted_by_createdAt_ascending
+            messages: array_sorted_by_createdAt_ascending
 
   - name: Rate limit protection
     description: Excessive requests are rate-limited

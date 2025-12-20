@@ -89,11 +89,6 @@ describe('QuizProgress', () => {
     it('should display a progress bar', () => {
       render(<QuizProgress current={3} total={10} />)
 
-      // Should have a progress bar element (could be <progress>, role="progressbar", etc.)
-      const progressIndicator =
-        screen.queryByRole('progressbar') ||
-        screen.queryByTestId('progress-bar')
-
       // At minimum, the text should be present even if visual bar isn't implemented yet
       expect(screen.getByText(/3.*of.*10/i)).toBeInTheDocument()
     })
@@ -152,9 +147,7 @@ describe('QuizProgress', () => {
       render(<QuizProgress current={1} total={3} showPercentage />)
 
       // 1/3 = 33.33% -> rounds to 33%
-      expect(
-        screen.getByText(/33%/) || screen.getByText(/34%/)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/33%/) || screen.getByText(/34%/)).toBeInTheDocument()
     })
 
     it('should show 0% at start', () => {
@@ -204,8 +197,7 @@ describe('QuizProgress', () => {
 
       if (progressBar) {
         expect(
-          progressBar.getAttribute('aria-label') ||
-            progressBar.getAttribute('aria-labelledby')
+          progressBar.getAttribute('aria-label') || progressBar.getAttribute('aria-labelledby')
         ).toBeTruthy()
       }
     })

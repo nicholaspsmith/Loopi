@@ -24,9 +24,7 @@ function getOllamaUrl(): string {
  * @param text - Text to generate embedding for
  * @returns Embedding vector (768 dims) or null on error
  */
-export async function generateEmbedding(
-  text: string
-): Promise<number[] | null> {
+export async function generateEmbedding(text: string): Promise<number[] | null> {
   try {
     // Validate input
     const trimmed = text.trim()
@@ -47,9 +45,7 @@ export async function generateEmbedding(
     })
 
     if (!response.ok) {
-      console.error(
-        `[Embeddings] Ollama API error: ${response.status} ${response.statusText}`
-      )
+      console.error(`[Embeddings] Ollama API error: ${response.status} ${response.statusText}`)
       return null
     }
 
@@ -85,9 +81,7 @@ export async function generateEmbedding(
  * @param texts - Array of texts to generate embeddings for
  * @returns Array of embedding vectors or empty array on error
  */
-export async function generateEmbeddings(
-  texts: string[]
-): Promise<number[][]> {
+export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
   try {
     // Filter out empty texts
     const validTexts = texts.map((t) => t.trim()).filter((t) => t.length > 0)

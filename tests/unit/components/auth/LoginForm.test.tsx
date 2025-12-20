@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import LoginForm from '@/components/auth/LoginForm'
 
@@ -63,9 +63,10 @@ describe('LoginForm', () => {
     // Mock successful sign in
     vi.mocked(signIn).mockResolvedValueOnce({
       ok: true,
-      error: null,
+      error: undefined,
       status: 200,
-      url: null,
+      url: '',
+      code: undefined,
     })
 
     render(<LoginForm onSuccess={mockOnSuccess} />)
@@ -92,7 +93,8 @@ describe('LoginForm', () => {
       ok: false,
       error: 'CredentialsSignin',
       status: 401,
-      url: null,
+      url: '',
+      code: 'credentials',
     })
 
     render(<LoginForm onSuccess={mockOnSuccess} />)
@@ -121,7 +123,8 @@ describe('LoginForm', () => {
       ok: false,
       error: 'CredentialsSignin',
       status: 401,
-      url: null,
+      url: '',
+      code: 'credentials',
     })
 
     render(<LoginForm onSuccess={mockOnSuccess} />)

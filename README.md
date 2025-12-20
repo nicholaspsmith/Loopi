@@ -99,7 +99,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Project Structure
 
-```
+````
 memoryloop/
 ├── app/                    # Next.js App Router
 │   ├── (auth)/            # Authentication pages
@@ -162,7 +162,7 @@ npm run test:e2e
 
 # All tests with coverage
 npm run test:coverage
-```
+````
 
 ### Code Quality
 

@@ -15,17 +15,13 @@ describe('MessageInput Component', () => {
       const mockOnSend = vi.fn()
       render(<MessageInput onSend={mockOnSend} />)
 
-      expect(
-        screen.getByPlaceholderText('Type your message...')
-      ).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /send/i })).toBeInTheDocument()
     })
 
     it('should use custom placeholder', () => {
       const mockOnSend = vi.fn()
-      render(
-        <MessageInput onSend={mockOnSend} placeholder="Custom placeholder" />
-      )
+      render(<MessageInput onSend={mockOnSend} placeholder="Custom placeholder" />)
 
       expect(screen.getByPlaceholderText('Custom placeholder')).toBeInTheDocument()
     })
@@ -60,9 +56,7 @@ describe('MessageInput Component', () => {
       const mockOnSend = vi.fn()
       render(<MessageInput onSend={mockOnSend} />)
 
-      const textarea = screen.getByPlaceholderText(
-        'Type your message...'
-      ) as HTMLTextAreaElement
+      const textarea = screen.getByPlaceholderText('Type your message...') as HTMLTextAreaElement
       await user.type(textarea, 'Test message')
       await user.click(screen.getByRole('button', { name: /send/i }))
 
@@ -111,9 +105,7 @@ describe('MessageInput Component', () => {
       const mockOnSend = vi.fn()
       render(<MessageInput onSend={mockOnSend} />)
 
-      const textarea = screen.getByPlaceholderText(
-        'Type your message...'
-      ) as HTMLTextAreaElement
+      const textarea = screen.getByPlaceholderText('Type your message...') as HTMLTextAreaElement
       await user.type(textarea, 'Line 1{Shift>}{Enter}{/Shift}Line 2')
 
       expect(textarea.value).toContain('\n')

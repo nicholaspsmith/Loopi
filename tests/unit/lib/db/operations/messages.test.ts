@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
 import {
   createMessage,
   getMessageById,
@@ -6,16 +6,14 @@ import {
 } from '@/lib/db/operations/messages'
 import { createConversation } from '@/lib/db/operations/conversations'
 import { createUser } from '@/lib/db/operations/users'
-import { initializeSchema, isSchemaInitialized } from '@/lib/db/schema'
-import { closeDbConnection } from '@/lib/db/client'
-import fs from 'fs'
-import path from 'path'
 
 /**
  * Message Database Operations Tests
  *
  * Tests the message CRUD operations with LanceDB.
  * These tests focus on the bug where messages aren't retrieved after creation.
+ *
+ * Note: Database setup/teardown is handled by tests/db-setup.ts
  */
 
 describe('Message Database Operations', () => {
@@ -23,19 +21,6 @@ describe('Message Database Operations', () => {
   let testConversationId: string
 
   beforeAll(async () => {
-    // Ensure test database directory exists
-    const dbPath = path.join(process.cwd(), 'data', 'lancedb')
-    if (!fs.existsSync(dbPath)) {
-      fs.mkdirSync(dbPath, { recursive: true })
-    }
-
-    // Initialize database schema if not already initialized
-    const initialized = await isSchemaInitialized()
-    if (!initialized) {
-      console.log('Initializing test database schema...')
-      await initializeSchema()
-    }
-
     // Create a test user for all tests
     const testUser = await createUser({
       email: `message-test-${Date.now()}@example.com`,
@@ -52,11 +37,6 @@ describe('Message Database Operations', () => {
       title: 'Test Conversation',
     })
     testConversationId = conversation.id
-  })
-
-  afterAll(async () => {
-    // Clean up database connection
-    await closeDbConnection()
   })
 
   describe('createMessage', () => {
@@ -84,11 +64,11 @@ describe('Message Database Operations', () => {
         conversationId: testConversationId,
         userId: testUserId,
         role: 'assistant',
-        content: 'Of course! I\'d be happy to help.',
+        content: "Of course! I'd be happy to help.",
       })
 
       expect(message.role).toBe('assistant')
-      expect(message.content).toBe('Of course! I\'d be happy to help.')
+      expect(message.content).toBe("Of course! I'd be happy to help.")
     })
 
     it('should generate unique IDs for each message', async () => {
@@ -182,25 +162,25 @@ describe('Message Database Operations', () => {
 
     it('should return messages in chronological order (oldest first)', async () => {
       // Create messages with slight delay to ensure different timestamps
-      const message1 = await createMessage({
+      await createMessage({
         conversationId: testConversationId,
         userId: testUserId,
         role: 'user',
         content: 'Oldest',
       })
 
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await new Promise((resolve) => setTimeout(resolve, 10))
 
-      const message2 = await createMessage({
+      await createMessage({
         conversationId: testConversationId,
         userId: testUserId,
         role: 'assistant',
         content: 'Middle',
       })
 
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await new Promise((resolve) => setTimeout(resolve, 10))
 
-      const message3 = await createMessage({
+      await createMessage({
         conversationId: testConversationId,
         userId: testUserId,
         role: 'user',
@@ -355,7 +335,10 @@ describe('Message Database Operations', () => {
       console.log('[TEST] Fetching messages after both created...')
       const after = await getMessagesByConversationId(testConversationId)
       console.log('[TEST] Messages after:', after.length)
-      console.log('[TEST] Message IDs:', after.map(m => m.id))
+      console.log(
+        '[TEST] Message IDs:',
+        after.map((m) => m.id)
+      )
 
       // THIS IS THE CRITICAL TEST - it should find both messages
       expect(after).toHaveLength(2)

@@ -1,0 +1,133 @@
+name: CI
+
+on:
+  push:
+    branches: ['*']
+  pull_request:
+    branches: ['main']
+
+jobs:
+  lint:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check code formatting
+        run: npx prettier --check .
+
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript type check
+        run: npm run typecheck
+
+  test:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: memoryloop_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create test environment file
+        run: |
+          cat > .env.test.local << EOF
+          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/memoryloop_test
+          NEXTAUTH_SECRET=test-secret-key-for-ci-pipeline
+          NEXTAUTH_URL=http://localhost:3000
+          OLLAMA_BASE_URL=http://localhost:11434
+          ENCRYPTION_KEY=test-encryption-key-32-chars-long
+          EOF
+
+      - name: Run database migrations
+        run: npm run db:push
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
+
+      - name: Run unit tests
+        run: npm test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+  build:
+    name: Build Next.js App
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          SKIP_ENV_VALIDATION: true
+
+      - name: Check build output
+        run: |
+          if [ ! -d ".next" ]; then
+            echo "Build failed - .next directory not found"
+            exit 1
+          fi
+          echo "Build successful - .next directory exists"

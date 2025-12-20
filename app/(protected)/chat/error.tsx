@@ -43,15 +43,12 @@ export default function ChatError({
         </div>
 
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Chat Error
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Chat Error</h2>
           <p className="text-gray-600">
-            {error.message || 'Unable to load the chat interface. This might be due to a connection issue or a problem loading your conversation history.'}
+            {error.message ||
+              'Unable to load the chat interface. This might be due to a connection issue or a problem loading your conversation history.'}
           </p>
-          {error.digest && (
-            <p className="text-xs text-gray-500 mt-2">Error ID: {error.digest}</p>
-          )}
+          {error.digest && <p className="text-xs text-gray-500 mt-2">Error ID: {error.digest}</p>}
         </div>
 
         <div className="flex flex-col gap-3">

@@ -224,9 +224,7 @@ describe('GenerateFlashcardsButton', () => {
     fireEvent.click(button)
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/flashcards have already been generated/i)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/flashcards have already been generated/i)).toBeInTheDocument()
     })
   })
 
@@ -254,9 +252,7 @@ describe('GenerateFlashcardsButton', () => {
     fireEvent.click(button)
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/insufficient educational content/i)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/insufficient educational content/i)).toBeInTheDocument()
     })
   })
 
@@ -277,9 +273,7 @@ describe('GenerateFlashcardsButton', () => {
     fireEvent.click(button)
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/failed to generate flashcards/i)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/failed to generate flashcards/i)).toBeInTheDocument()
     })
 
     // Button should be re-enabled to allow retry

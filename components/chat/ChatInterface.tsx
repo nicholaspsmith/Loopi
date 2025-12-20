@@ -106,9 +106,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
     if (!conversation) return
 
     try {
-      const response = await fetch(
-        `/api/chat/conversations/${conversation.id}/messages`
-      )
+      const response = await fetch(`/api/chat/conversations/${conversation.id}/messages`)
       const data = await response.json()
 
       if (!response.ok) {
@@ -147,14 +145,11 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
         setMessages((prev) => [...prev, tempUserMessage])
 
         // Send message to API
-        const response = await fetch(
-          `/api/chat/conversations/${conversation.id}/messages`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content }),
-          }
-        )
+        const response = await fetch(`/api/chat/conversations/${conversation.id}/messages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content }),
+        })
 
         if (!response.ok) {
           throw new Error('Failed to send message')
@@ -214,9 +209,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
                   // Update with real message ID from database
                   setMessages((prev) =>
                     prev.map((msg) =>
-                      msg.id === tempAssistantMessage.id
-                        ? { ...msg, id: data.messageId }
-                        : msg
+                      msg.id === tempAssistantMessage.id ? { ...msg, id: data.messageId } : msg
                     )
                   )
                   setStreamingMessageId(null)
@@ -235,9 +228,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
         console.error('Failed to send message:', err)
         setError(err instanceof Error ? err.message : 'Failed to send message')
         // Remove temporary messages on error
-        setMessages((prev) =>
-          prev.filter((msg) => !msg.id.startsWith('temp-'))
-        )
+        setMessages((prev) => prev.filter((msg) => !msg.id.startsWith('temp-')))
       } finally {
         setIsSending(false)
         setStreamingMessageId(null)

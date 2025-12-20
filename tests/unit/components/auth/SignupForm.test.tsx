@@ -45,7 +45,7 @@ describe('SignupForm', () => {
     const user = userEvent.setup()
 
     // Mock pending API response
-    global.fetch = vi.fn(() => new Promise(() => {}))
+    global.fetch = vi.fn(() => new Promise(() => {})) as typeof fetch
 
     render(<SignupForm onSuccess={mockOnSuccess} />)
 
@@ -80,7 +80,7 @@ describe('SignupForm', () => {
               },
             },
           }),
-      } as Response),
+      } as Response)
     )
 
     render(<SignupForm onSuccess={mockOnSuccess} />)
@@ -112,7 +112,7 @@ describe('SignupForm', () => {
           Promise.resolve({
             error: 'Email already exists',
           }),
-      } as Response),
+      } as Response)
     )
 
     render(<SignupForm onSuccess={mockOnSuccess} />)
@@ -146,7 +146,7 @@ describe('SignupForm', () => {
           Promise.resolve({
             error: 'Internal server error',
           }),
-      } as Response),
+      } as Response)
     )
 
     render(<SignupForm onSuccess={mockOnSuccess} />)
@@ -180,7 +180,7 @@ describe('SignupForm', () => {
           Promise.resolve({
             error: 'Email already exists',
           }),
-      } as Response),
+      } as Response)
     )
 
     render(<SignupForm onSuccess={mockOnSuccess} />)

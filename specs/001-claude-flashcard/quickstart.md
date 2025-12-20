@@ -64,6 +64,7 @@ npm install
 **Expected Installation Time**: 2-3 minutes
 
 **Core Dependencies Installed**:
+
 - Next.js 15.1.x (App Router)
 - React 19.x
 - NextAuth.js 5.x (Auth.js)
@@ -74,6 +75,7 @@ npm install
 - Zod 3.x (schema validation)
 
 **Dev Dependencies**:
+
 - TypeScript 5.7.x
 - Vitest (unit testing)
 - Playwright (E2E testing)
@@ -144,11 +146,13 @@ npm run db:init
 ```
 
 This command:
+
 - Creates LanceDB tables (`users`, `conversations`, `messages`, `flashcards`, `review_logs`)
 - Sets up vector indexes for embeddings
 - Validates schema integrity
 
 **Expected Output**:
+
 ```
 ✅ Database schema initialized successfully
 ✅ Init rows cleaned up
@@ -186,6 +190,7 @@ npm run dev
 **Expected Startup Time**: 3-5 seconds
 
 **Console Output**:
+
 ```
   ▲ Next.js 15.1.0
   - Local:        http://localhost:3000
@@ -204,16 +209,19 @@ npm run dev
 ### Verify Features
 
 **Chat Tab (FR-005, FR-006, FR-007)**:
+
 - Send message to Claude: "What is spaced repetition?"
 - Verify response appears in conversation history
 - Check that context is maintained in follow-up messages
 
 **Flashcard Generation (FR-008, FR-009)**:
+
 - Click "Generate Flashcards" button on Claude's response
 - Verify flashcards are created (should see confirmation)
 - Check that button shows "Flashcards Generated" afterward (FR-017)
 
 **Quiz Tab (FR-011, FR-012, FR-013, FR-014)**:
+
 - Switch to Quiz tab
 - Verify flashcard question is shown (answer hidden)
 - Click "Show Answer" to reveal answer
@@ -255,6 +263,7 @@ npm run test:components
 ```
 
 **Example Component Test Locations**:
+
 - `tests/unit/components/auth/LoginForm.test.tsx`
 - `tests/unit/components/chat/MessageList.test.tsx`
 - `tests/unit/components/quiz/QuizCard.test.tsx`
@@ -274,6 +283,7 @@ npm run test:e2e:ui
 ```
 
 **Example Integration Test Scenarios**:
+
 - `tests/integration/auth-flow.spec.ts` - User authentication journey
 - `tests/integration/chat-to-flashcard.spec.ts` - Complete chat → flashcard → quiz flow
 - `tests/integration/quiz-session.spec.ts` - Full quiz session with FSRS scheduling
@@ -323,6 +333,7 @@ npm run db:seed
 ```
 
 Creates:
+
 - Test user account (email: `dev@memoryloop.com`, password: `DevPassword123!`)
 - Sample conversation with Claude
 - Pre-generated flashcards
@@ -379,6 +390,7 @@ Runs TypeScript compiler without emitting files (catches type errors).
    - File: `middleware.ts`
 
 **Test**:
+
 ```bash
 npm run test:integration -- auth-flow
 ```
@@ -404,6 +416,7 @@ npm run test:integration -- auth-flow
    - File: `components/chat/MessageInput.tsx`
 
 **Test**:
+
 ```bash
 npm run test:integration -- chat-flow
 ```
@@ -426,6 +439,7 @@ npm run test:integration -- chat-flow
    - File: `lib/embeddings/ollama.ts`
 
 **Test**:
+
 ```bash
 npm run test:integration -- flashcard-generation
 ```
@@ -452,6 +466,7 @@ npm run test:integration -- flashcard-generation
    - File: `components/quiz/QuizStats.tsx`
 
 **Test**:
+
 ```bash
 npm run test:integration -- quiz-session
 ```
@@ -467,6 +482,7 @@ npm run test:integration -- quiz-session
 **Error**: `Error: ENOENT: no such file or directory, open './data/lancedb'`
 
 **Solution**:
+
 ```bash
 mkdir -p data/lancedb
 npm run db:init
@@ -479,6 +495,7 @@ npm run db:init
 **Error**: `[auth][error] SessionTokenError: Read more at https://errors.authjs.dev#sessiontokenerror`
 
 **Solution**:
+
 - Verify `AUTH_SECRET` is set in `.env.local`
 - Ensure `AUTH_URL` matches your app URL
 - Clear browser cookies and try again
@@ -490,6 +507,7 @@ npm run db:init
 **Error**: Cannot connect to Ollama
 
 **Solution**:
+
 - Ensure Ollama is installed and running: `ollama serve`
 - Pull required models: `ollama pull nomic-embed-text` and `ollama pull llama3.2`
 - Check OLLAMA_BASE_URL in environment variables
@@ -502,6 +520,7 @@ npm run db:init
 **Error**: `401 Unauthorized` or `403 Forbidden`
 
 **Solution**:
+
 - Verify `ANTHROPIC_API_KEY` in `.env.local`
 - Check API key permissions at https://console.anthropic.com/
 - Ensure billing is set up
@@ -513,6 +532,7 @@ npm run db:init
 **Error**: TypeScript compilation failures
 
 **Solution**:
+
 ```bash
 rm -rf node_modules package-lock.json
 npm install
@@ -526,6 +546,7 @@ npm run type-check
 **Error**: Tests pass locally but fail in GitHub Actions
 
 **Solution**:
+
 - Check Node.js version match (`.nvmrc` and `.github/workflows/test.yml`)
 - Verify all environment variables are set in GitHub Secrets
 - Run tests in CI mode locally:

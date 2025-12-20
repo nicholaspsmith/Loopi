@@ -1,4 +1,4 @@
-import { FSRS, Rating, RecordLog, Card, createEmptyCard } from 'ts-fsrs'
+import { FSRS, Rating, ReviewLog, Card, createEmptyCard, Grade } from 'ts-fsrs'
 
 /**
  * FSRS Scheduler Wrapper
@@ -10,7 +10,7 @@ import { FSRS, Rating, RecordLog, Card, createEmptyCard } from 'ts-fsrs'
  */
 
 // Initialize FSRS with default parameters
-const fsrs = new FSRS()
+const fsrs = new FSRS({})
 
 /**
  * Create a new card with initial FSRS state
@@ -26,10 +26,7 @@ export function initializeCard(): Card {
  * @param rating - User's rating (Again=1, Hard=2, Good=3, Easy=4)
  * @returns Updated card and scheduling record
  */
-export function scheduleCard(
-  card: Card,
-  rating: Rating
-): { card: Card; log: RecordLog } {
+export function scheduleCard(card: Card, rating: Grade): { card: Card; log: ReviewLog } {
   const now = new Date()
 
   // Use FSRS algorithm to calculate next review

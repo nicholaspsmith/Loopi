@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { hashPassword } from '@/lib/auth/helpers'
 import { createUser } from '@/lib/db/operations/users'
 import { createConversation } from '@/lib/db/operations/conversations'
@@ -70,16 +70,13 @@ Applications include quantum computing, quantum cryptography, and quantum telepo
 
   describe('POST /api/flashcards/generate', () => {
     it('should generate flashcards from assistant message', async () => {
-      const response = await fetch(
-        `http://localhost:3000/api/flashcards/generate`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messageId: assistantMessageId,
-          }),
-        }
-      )
+      const response = await fetch(`http://localhost:3000/api/flashcards/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messageId: assistantMessageId,
+        }),
+      })
 
       expect(response.status).toBe(201)
 
@@ -126,17 +123,14 @@ Applications include quantum computing, quantum cryptography, and quantum telepo
         content: 'Test content for max flashcards limit test. '.repeat(100),
       })
 
-      const response = await fetch(
-        `http://localhost:3000/api/flashcards/generate`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messageId: newMessage.id,
-            maxFlashcards: 3,
-          }),
-        }
-      )
+      const response = await fetch(`http://localhost:3000/api/flashcards/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messageId: newMessage.id,
+          maxFlashcards: 3,
+        }),
+      })
 
       expect(response.status).toBe(201)
 
@@ -146,16 +140,13 @@ Applications include quantum computing, quantum cryptography, and quantum telepo
 
     it('should return 409 if flashcards already generated (FR-017)', async () => {
       // Try to generate flashcards again from same message
-      const response = await fetch(
-        `http://localhost:3000/api/flashcards/generate`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messageId: assistantMessageId,
-          }),
-        }
-      )
+      const response = await fetch(`http://localhost:3000/api/flashcards/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messageId: assistantMessageId,
+        }),
+      })
 
       expect(response.status).toBe(409)
 
@@ -167,16 +158,13 @@ Applications include quantum computing, quantum cryptography, and quantum telepo
     })
 
     it('should return 400 for user message (not assistant)', async () => {
-      const response = await fetch(
-        `http://localhost:3000/api/flashcards/generate`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messageId: userMessageId,
-          }),
-        }
-      )
+      const response = await fetch(`http://localhost:3000/api/flashcards/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messageId: userMessageId,
+        }),
+      })
 
       expect(response.status).toBe(400)
 
@@ -194,16 +182,13 @@ Applications include quantum computing, quantum cryptography, and quantum telepo
         content: 'Hello! How are you today?',
       })
 
-      const response = await fetch(
-        `http://localhost:3000/api/flashcards/generate`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messageId: conversationalMessage.id,
-          }),
-        }
-      )
+      const response = await fetch(`http://localhost:3000/api/flashcards/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messageId: conversationalMessage.id,
+        }),
+      })
 
       expect(response.status).toBe(400)
 
@@ -213,31 +198,25 @@ Applications include quantum computing, quantum cryptography, and quantum telepo
     })
 
     it('should return 404 for non-existent message', async () => {
-      const response = await fetch(
-        `http://localhost:3000/api/flashcards/generate`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messageId: '00000000-0000-0000-0000-000000000000',
-          }),
-        }
-      )
+      const response = await fetch(`http://localhost:3000/api/flashcards/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messageId: '00000000-0000-0000-0000-000000000000',
+        }),
+      })
 
       expect(response.status).toBe(404)
     })
 
     it('should return 400 for invalid message ID format', async () => {
-      const response = await fetch(
-        `http://localhost:3000/api/flashcards/generate`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messageId: 'not-a-valid-uuid',
-          }),
-        }
-      )
+      const response = await fetch(`http://localhost:3000/api/flashcards/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messageId: 'not-a-valid-uuid',
+        }),
+      })
 
       expect(response.status).toBe(400)
     })
@@ -267,7 +246,7 @@ Applications include quantum computing, quantum cryptography, and quantum telepo
     it('should return empty array if user has no flashcards', async () => {
       // Create new user with no flashcards
       const passwordHash = await hashPassword('TestPass123!')
-      const newUser = await createUser({
+      await createUser({
         email: `test-no-flashcards-${Date.now()}@example.com`,
         passwordHash,
         name: 'No Flashcards User',
@@ -293,9 +272,7 @@ Applications include quantum computing, quantum cryptography, and quantum telepo
         throw new Error('No flashcards found for test')
       }
 
-      const response = await fetch(
-        `http://localhost:3000/api/flashcards/${flashcardId}`
-      )
+      const response = await fetch(`http://localhost:3000/api/flashcards/${flashcardId}`)
 
       expect(response.status).toBe(200)
 
@@ -324,24 +301,18 @@ Applications include quantum computing, quantum cryptography, and quantum telepo
         content: 'Content for delete test. Educational material here.',
       })
 
-      const generateResponse = await fetch(
-        `http://localhost:3000/api/flashcards/generate`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messageId: newMessage.id }),
-        }
-      )
+      const generateResponse = await fetch(`http://localhost:3000/api/flashcards/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messageId: newMessage.id }),
+      })
       const generateData = await generateResponse.json()
       const flashcardId = generateData.flashcards[0].id
 
       // Delete the flashcard
-      const deleteResponse = await fetch(
-        `http://localhost:3000/api/flashcards/${flashcardId}`,
-        {
-          method: 'DELETE',
-        }
-      )
+      const deleteResponse = await fetch(`http://localhost:3000/api/flashcards/${flashcardId}`, {
+        method: 'DELETE',
+      })
 
       expect(deleteResponse.status).toBe(200)
 
@@ -349,9 +320,7 @@ Applications include quantum computing, quantum cryptography, and quantum telepo
       expect(deleteData).toHaveProperty('success', true)
 
       // Verify flashcard is deleted
-      const getResponse = await fetch(
-        `http://localhost:3000/api/flashcards/${flashcardId}`
-      )
+      const getResponse = await fetch(`http://localhost:3000/api/flashcards/${flashcardId}`)
       expect(getResponse.status).toBe(404)
     })
 

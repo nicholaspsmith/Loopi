@@ -25,9 +25,7 @@ export default function FlashcardPreview({
           <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
             Question
           </h4>
-          <p className="text-base font-medium text-gray-900">
-            {flashcard.question}
-          </p>
+          <p className="text-base font-medium text-gray-900">{flashcard.question}</p>
         </div>
 
         {showFSRSState && (
@@ -46,12 +44,8 @@ export default function FlashcardPreview({
       </div>
 
       <div>
-        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-          Answer
-        </h4>
-        <p className="text-sm text-gray-700 whitespace-pre-wrap">
-          {flashcard.answer}
-        </p>
+        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Answer</h4>
+        <p className="text-sm text-gray-700 whitespace-pre-wrap">{flashcard.answer}</p>
       </div>
 
       {showFSRSState && flashcard.fsrsState.reps > 0 && (

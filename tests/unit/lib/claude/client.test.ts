@@ -378,17 +378,13 @@ describe('Ollama Client', () => {
         ok: false,
       })
 
-      await expect(validateOllamaConnection()).rejects.toThrow(
-        'Ollama is not running'
-      )
+      await expect(validateOllamaConnection()).rejects.toThrow('Ollama is not running')
     })
 
     it('should throw error when fetch fails', async () => {
       global.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
 
-      await expect(validateOllamaConnection()).rejects.toThrow(
-        'Ollama is not running'
-      )
+      await expect(validateOllamaConnection()).rejects.toThrow('Ollama is not running')
     })
 
     it('should call correct endpoint', async () => {
@@ -398,9 +394,7 @@ describe('Ollama Client', () => {
 
       await validateOllamaConnection()
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/tags')
-      )
+      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/tags'))
     })
   })
 })

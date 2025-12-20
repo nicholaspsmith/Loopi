@@ -82,7 +82,10 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     <div className="w-full max-w-md">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             Email
           </label>
           <input
@@ -102,7 +105,10 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             Password
           </label>
           <input
@@ -122,7 +128,10 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         </div>
 
         {error && (
-          <div className="rounded-md bg-red-50 dark:bg-red-900 p-3 text-sm text-red-800 dark:text-red-200" role="alert">
+          <div
+            className="rounded-md bg-red-50 dark:bg-red-900 p-3 text-sm text-red-800 dark:text-red-200"
+            role="alert"
+          >
             {error}
           </div>
         )}
@@ -136,8 +145,11 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         </button>
 
         <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-          Don't have an account?{' '}
-          <Link href="/signup" className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">
+          Don&apos;t have an account?{' '}
+          <Link
+            href="/signup"
+            className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
+          >
             Sign up
           </Link>
         </p>

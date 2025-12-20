@@ -8,12 +8,9 @@ import {
   getFlashcardById,
   getFlashcardsByUserId,
 } from '@/lib/db/operations/flashcards'
-import {
-  createReviewLog,
-  getReviewLogsByUserId,
-} from '@/lib/db/operations/review-logs'
+import { createReviewLog, getReviewLogsByUserId } from '@/lib/db/operations/review-logs'
 import { hashPassword } from '@/lib/auth/helpers'
-import { scheduleCard, initializeCard } from '@/lib/fsrs/scheduler'
+import { scheduleCard } from '@/lib/fsrs/scheduler'
 import { Rating } from 'ts-fsrs'
 
 /**
@@ -32,7 +29,6 @@ describe('Quiz Session Flow Integration', () => {
   let testMessageId: string
   let flashcard1Id: string
   let flashcard2Id: string
-  let flashcard3Id: string
 
   beforeAll(async () => {
     // Create test user
@@ -61,7 +57,7 @@ describe('Quiz Session Flow Integration', () => {
     testMessageId = message.id
 
     // Create flashcards with different due dates
-    const now = new Date()
+    // (timestamp not used but documents when cards are created)
 
     // Flashcard 1: Due now
     const fc1 = await createFlashcard({
@@ -87,14 +83,13 @@ describe('Quiz Session Flow Integration', () => {
     // Note: createFlashcard uses default FSRS state with due = now
     // So we need to create it and then update it, or just accept that
     // for this test we'll create it after the other cards are reviewed
-    const fc3 = await createFlashcard({
+    await createFlashcard({
       userId: testUserId,
       conversationId: testConversationId,
       messageId: testMessageId,
       question: 'What is active recall?',
       answer: 'A study method where you actively retrieve information from memory.',
     })
-    flashcard3Id = fc3.id
 
     // Note: In real usage, this card would be scheduled in the future after review
     // For this test, we'll filter by comparing against a future timestamp in the test
@@ -183,16 +178,11 @@ describe('Quiz Session Flow Integration', () => {
       const initialDue = new Date(flashcard!.fsrsState.due)
 
       // Schedule the card with "Good" rating
-      const { card: updatedCard, log } = scheduleCard(
-        flashcard!.fsrsState,
-        Rating.Good
-      )
+      const { card: updatedCard, log } = scheduleCard(flashcard!.fsrsState, Rating.Good)
 
       // Verify scheduling happened
       expect(updatedCard.reps).toBe(initialReps + 1)
-      expect(new Date(updatedCard.due).getTime()).toBeGreaterThan(
-        initialDue.getTime()
-      )
+      expect(new Date(updatedCard.due).getTime()).toBeGreaterThan(initialDue.getTime())
       expect(log.rating).toBe(Rating.Good)
     })
 
@@ -201,10 +191,7 @@ describe('Quiz Session Flow Integration', () => {
       expect(flashcard).toBeDefined()
 
       // Schedule with "Again" rating
-      const { card: updatedCard, log } = scheduleCard(
-        flashcard!.fsrsState,
-        Rating.Again
-      )
+      const { card: updatedCard, log } = scheduleCard(flashcard!.fsrsState, Rating.Again)
 
       // Should increment reps and potentially update lapses
       expect(updatedCard.reps).toBeGreaterThan(flashcard!.fsrsState.reps)
@@ -218,10 +205,7 @@ describe('Quiz Session Flow Integration', () => {
       expect(flashcard).toBeDefined()
 
       // Schedule with "Easy" rating
-      const { card: updatedCard, log } = scheduleCard(
-        flashcard!.fsrsState,
-        Rating.Easy
-      )
+      const { card: updatedCard, log } = scheduleCard(flashcard!.fsrsState, Rating.Easy)
 
       // Easy should give longer interval
       expect(updatedCard.reps).toBeGreaterThan(flashcard!.fsrsState.reps)
@@ -237,10 +221,7 @@ describe('Quiz Session Flow Integration', () => {
       expect(flashcard).toBeDefined()
 
       // Schedule with "Hard" rating
-      const { card: updatedCard, log } = scheduleCard(
-        flashcard!.fsrsState,
-        Rating.Hard
-      )
+      const { card: updatedCard, log } = scheduleCard(flashcard!.fsrsState, Rating.Hard)
 
       expect(updatedCard.reps).toBeGreaterThan(flashcard!.fsrsState.reps)
       expect(log.rating).toBe(Rating.Hard)
@@ -253,10 +234,7 @@ describe('Quiz Session Flow Integration', () => {
       expect(flashcard).toBeDefined()
 
       // Schedule the card
-      const { card: updatedCard, log } = scheduleCard(
-        flashcard!.fsrsState,
-        Rating.Good
-      )
+      const { card: updatedCard, log } = scheduleCard(flashcard!.fsrsState, Rating.Good)
 
       // Create review log
       const reviewLog = await createReviewLog({
@@ -312,63 +290,56 @@ describe('Quiz Session Flow Integration', () => {
   })
 
   describe('Complete Quiz Session Flow', () => {
-    it(
-      'should complete full quiz session: fetch, rate, log, update',
-      async () => {
-        // 1. Fetch due flashcards
-        const allFlashcards = await getFlashcardsByUserId(testUserId)
-        const now = new Date()
-        const dueCards = allFlashcards
-          .filter((card) => {
-            const dueDate = new Date(card.fsrsState.due)
-            return dueDate <= now
-          })
-          .sort((a, b) => {
-            const aDate = new Date(a.fsrsState.due).getTime()
-            const bDate = new Date(b.fsrsState.due).getTime()
-            return aDate - bDate
-          })
-
-        expect(dueCards.length).toBeGreaterThan(0)
-
-        // 2. Select first flashcard
-        const currentFlashcard = dueCards[0]
-        expect(currentFlashcard).toBeDefined()
-
-        // 3. User rates the flashcard (Good)
-        const { card: updatedCard, log } = scheduleCard(
-          currentFlashcard.fsrsState,
-          Rating.Good
-        )
-
-        // 4. Create review log
-        const reviewLog = await createReviewLog({
-          flashcardId: currentFlashcard.id,
-          userId: testUserId,
-          rating: log.rating,
-          state: log.state,
-          due: updatedCard.due,
-          stability: updatedCard.stability,
-          difficulty: updatedCard.difficulty,
-          elapsed_days: log.elapsed_days,
-          last_elapsed_days: log.last_elapsed_days,
-          scheduled_days: log.scheduled_days,
-          review: log.review,
+    it('should complete full quiz session: fetch, rate, log, update', async () => {
+      // 1. Fetch due flashcards
+      const allFlashcards = await getFlashcardsByUserId(testUserId)
+      const now = new Date()
+      const dueCards = allFlashcards
+        .filter((card) => {
+          const dueDate = new Date(card.fsrsState.due)
+          return dueDate <= now
+        })
+        .sort((a, b) => {
+          const aDate = new Date(a.fsrsState.due).getTime()
+          const bDate = new Date(b.fsrsState.due).getTime()
+          return aDate - bDate
         })
 
-        expect(reviewLog).toBeDefined()
+      expect(dueCards.length).toBeGreaterThan(0)
 
-        // 5. Verify flashcard was updated
-        expect(updatedCard.reps).toBeGreaterThan(currentFlashcard.fsrsState.reps)
-        expect(new Date(updatedCard.due).getTime()).toBeGreaterThan(now.getTime())
+      // 2. Select first flashcard
+      const currentFlashcard = dueCards[0]
+      expect(currentFlashcard).toBeDefined()
 
-        // 6. Verify review log was created
-        const userReviewLogs = await getReviewLogsByUserId(testUserId, 1)
-        expect(userReviewLogs.length).toBeGreaterThan(0)
-        expect(userReviewLogs[0].flashcardId).toBe(currentFlashcard.id)
-      },
-      30000
-    )
+      // 3. User rates the flashcard (Good)
+      const { card: updatedCard, log } = scheduleCard(currentFlashcard.fsrsState, Rating.Good)
+
+      // 4. Create review log
+      const reviewLog = await createReviewLog({
+        flashcardId: currentFlashcard.id,
+        userId: testUserId,
+        rating: log.rating,
+        state: log.state,
+        due: updatedCard.due,
+        stability: updatedCard.stability,
+        difficulty: updatedCard.difficulty,
+        elapsed_days: log.elapsed_days,
+        last_elapsed_days: log.last_elapsed_days,
+        scheduled_days: log.scheduled_days,
+        review: log.review,
+      })
+
+      expect(reviewLog).toBeDefined()
+
+      // 5. Verify flashcard was updated
+      expect(updatedCard.reps).toBeGreaterThan(currentFlashcard.fsrsState.reps)
+      expect(new Date(updatedCard.due).getTime()).toBeGreaterThan(now.getTime())
+
+      // 6. Verify review log was created
+      const userReviewLogs = await getReviewLogsByUserId(testUserId, 1)
+      expect(userReviewLogs.length).toBeGreaterThan(0)
+      expect(userReviewLogs[0].flashcardId).toBe(currentFlashcard.id)
+    }, 30000)
 
     it('should track progress through multiple flashcards', async () => {
       const allFlashcards = await getFlashcardsByUserId(testUserId)
@@ -386,8 +357,6 @@ describe('Quiz Session Flow Integration', () => {
       const maxCardsToReview = Math.min(2, totalCards)
 
       while (currentIndex < maxCardsToReview) {
-        const currentCard = dueCards[currentIndex]
-
         // Progress should be: (currentIndex + 1) / totalCards
         const progress = ((currentIndex + 1) / totalCards) * 100
         expect(progress).toBeGreaterThan(0)
@@ -411,10 +380,7 @@ describe('Quiz Session Flow Integration', () => {
       const totalCards = dueCards.length
 
       // Simulate reviewing all cards
-      let reviewed = 0
-      for (const card of dueCards) {
-        reviewed++
-      }
+      const reviewed = dueCards.length
 
       // Should have reviewed all cards
       expect(reviewed).toBe(totalCards)

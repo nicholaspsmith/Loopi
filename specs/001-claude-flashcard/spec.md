@@ -5,7 +5,7 @@
 **Status**: Draft
 **Input**: User description: "Build a web application (React, TypeScript, Next.js) that will allow me to generate flash cards derived from responses I receive from Claude LLM. The application will be hosted on https://memoryloop.nicholaspsmith.com. When a user opens that url in a browser, the app will check if the user is authenticated. If not, it will show a login screen. If logged in, user will see a 2-tabbed layout. The first tab will be a chat interface where a user can interact with Claude. In this custom chat interface, the user can generate flash cards from responses received from Claude. To do so, they will click a button on the chat interface. When this button is clicked, Claude will break down the content into individual question/answer combos and create a flash card where question is shown on one side, answer on the other. The user can then "quiz" themselves using their generated flashcards. The "quiz" feature will be contained in the second tab of the application."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - User Authentication (Priority: P1)
 
@@ -92,7 +92,7 @@ A user wants to test their knowledge by reviewing previously generated flashcard
 - What happens when a user clicks the flashcard generation button multiple times quickly on the same response?
 - What happens when a user closes the browser in the middle of a conversation or quiz session?
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -134,7 +134,7 @@ A user wants to test their knowledge by reviewing previously generated flashcard
 
 - **Review Session**: Represents an active flashcard review session. Tracks which flashcards are being reviewed, user's progress through the deck, and session state. Belongs to a specific user.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

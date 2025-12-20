@@ -28,12 +28,12 @@
 
 ### Implementation
 
-- [ ] T001 [P] [US1] Create GitHub Actions workflow for CI in .github/workflows/ci.yml (lint, type-check, unit tests)
-- [ ] T002 [P] [US1] Create GitHub Actions workflow for integration tests in .github/workflows/integration.yml (Playwright E2E)
-- [ ] T003 [P] [US1] Create GitHub Actions workflow for deployment in .github/workflows/deploy.yml (build, push Docker image, deploy)
-- [ ] T004 [P] [US1] Add build caching to CI workflow in .github/workflows/ci.yml (npm cache, Docker layer cache)
-- [ ] T005 [US1] Configure GitHub Actions secrets (ANTHROPIC_API_KEY, VPS_SSH_KEY, DOCKER_REGISTRY_TOKEN)
-- [ ] T006 [US1] Add branch protection rules requiring CI checks to pass before merge
+- [x] T001 [P] [US1] Create GitHub Actions workflow for CI in .github/workflows/ci.yml (lint, type-check, unit tests)
+- [x] T002 [P] [US1] Create GitHub Actions workflow for integration tests in .github/workflows/integration.yml (Playwright E2E)
+- [x] T003 [P] [US1] Create GitHub Actions workflow for deployment in .github/workflows/deploy.yml (build, push Docker image, deploy)
+- [x] T004 [P] [US1] Add build caching to CI workflow in .github/workflows/ci.yml (npm cache, Docker layer cache)
+- [x] T005 [US1] Configure GitHub Actions secrets (ANTHROPIC_API_KEY, VPS_SSH_KEY, DOCKER_REGISTRY_TOKEN) - See docs/github-secrets-setup.md
+- [x] T006 [US1] Add branch protection rules requiring CI checks to pass before merge - See docs/github-branch-protection.md
 
 **Checkpoint**: CI pipeline running on all PRs and merges to main
 
@@ -47,12 +47,12 @@
 
 ### Implementation
 
-- [ ] T007 [US2] Create Dockerfile for Next.js production build in repository root (multi-stage build for optimization)
-- [ ] T008 [US2] Create docker-compose.yml for local development in repository root (app, ollama, nginx)
-- [ ] T009 [US2] Create docker-compose.prod.yml for production deployment in repository root (app, ollama, nginx, volumes)
-- [ ] T010 [P] [US2] Create .dockerignore file in repository root (node_modules, .git, .next, tests, etc.)
-- [ ] T011 [P] [US2] Add health check endpoint in app/api/health/route.ts (check DB, Ollama, Anthropic API)
-- [ ] T012 [P] [US2] Create Docker entrypoint script in scripts/docker-entrypoint.sh (DB init, migrations, startup)
+- [x] T007 [US2] Create Dockerfile for Next.js production build in repository root (multi-stage build for optimization)
+- [x] T008 [US2] Create docker-compose.yml for local development in repository root (app, ollama, nginx)
+- [x] T009 [US2] Create docker-compose.prod.yml for production deployment in repository root (app, ollama, nginx, volumes)
+- [x] T010 [P] [US2] Create .dockerignore file in repository root (node_modules, .git, .next, tests, etc.)
+- [x] T011 [P] [US2] Add health check endpoint in app/api/health/route.ts (check DB, Ollama, Anthropic API)
+- [x] T012 [P] [US2] Create Docker entrypoint script in scripts/docker-entrypoint.sh (DB init, migrations, startup)
 
 **Checkpoint**: Docker builds successfully, app runs in container locally
 
@@ -66,12 +66,12 @@
 
 ### Implementation
 
-- [ ] T013 [US3] Provision VPS (Hetzner CX22 or DigitalOcean Droplet - 4GB RAM, 2 vCPU)
-- [ ] T014 [US3] Configure firewall (UFW) - allow ports 22 (SSH), 80 (HTTP), 443 (HTTPS)
-- [ ] T015 [US3] Install Docker and Docker Compose on VPS
-- [ ] T016 [US3] Create deploy user with sudo access and SSH key authentication
-- [ ] T017 [US3] Configure SSH hardening (disable password auth, change port, fail2ban)
-- [ ] T018 [US3] Create directory structure on VPS (/opt/memoryloop, /opt/memoryloop/data, etc.)
+- [x] T013 [US3] Provision VPS (Hetzner CPX21 - 4GB RAM, 3 vCPU, IP: 5.161.53.66)
+- [x] T014 [US3] Configure firewall (UFW) - allow ports 22 (SSH), 80 (HTTP), 443 (HTTPS)
+- [x] T015 [US3] Install Docker and Docker Compose on VPS
+- [x] T016 [US3] Create deploy user with sudo access and SSH key authentication
+- [x] T017 [US3] Configure SSH hardening (disable password auth, fail2ban)
+- [x] T018 [US3] Create directory structure on VPS (/opt/memoryloop, /opt/memoryloop/data, etc.)
 - [ ] T019 [P] [US3] Create VPS setup script in scripts/setup-vps.sh (automate server configuration)
 
 **Checkpoint**: VPS accessible, Docker ready, secure SSH configured
@@ -86,12 +86,12 @@
 
 ### Implementation
 
-- [ ] T020 [P] [US4] Create Nginx configuration for reverse proxy in nginx/memoryloop.conf
-- [ ] T021 [US4] Install Certbot on VPS for Let's Encrypt SSL certificates
-- [ ] T022 [US4] Configure DNS A record for memoryloop.nicholaspsmith.com pointing to VPS IP
-- [ ] T023 [US4] Obtain SSL certificate using Certbot (certbot --nginx -d memoryloop.nicholaspsmith.com)
-- [ ] T024 [P] [US4] Configure Nginx SSL settings (TLS 1.3, HSTS, security headers)
-- [ ] T025 [US4] Set up automatic SSL certificate renewal (certbot renew --nginx)
+- [x] T020 [P] [US4] Create Nginx configuration for reverse proxy in nginx/memoryloop.conf
+- [x] T021 [US4] Install Certbot on VPS for Let's Encrypt SSL certificates
+- [x] T022 [US4] Configure DNS A record for memoryloop.nicholaspsmith.com pointing to VPS IP
+- [x] T023 [US4] Obtain SSL certificate using Certbot (certbot --nginx -d memoryloop.nicholaspsmith.com)
+- [x] T024 [P] [US4] Configure Nginx SSL settings (TLS 1.3, HSTS, security headers)
+- [x] T025 [US4] Set up automatic SSL certificate renewal (certbot renew --nginx)
 
 **Checkpoint**: HTTPS working, SSL certificate valid, automatic renewal configured
 
@@ -165,6 +165,7 @@
 ### Recommended Execution Order
 
 **Sequential (single developer):**
+
 1. Phase 1: GitHub Actions CI (automated testing foundation)
 2. Phase 2: Docker Configuration (local testing of containers)
 3. Phase 3: VPS Setup (provision and secure server)
@@ -174,6 +175,7 @@
 7. Phase 7: Documentation (capture operational knowledge)
 
 **Parallel (multiple developers or concurrent work):**
+
 - Developer A: Phase 1 + Phase 2 (CI and Docker setup)
 - Developer B: Phase 3 + Phase 4 (VPS and SSL setup)
 - Developer C: Phase 7 (Documentation drafts)
@@ -184,28 +186,35 @@
 ## Parallel Opportunities
 
 **Phase 1**:
+
 - T001-T003 (GitHub Actions workflows can be created independently)
 - T004 (Build caching is independent modification)
 
 **Phase 2**:
+
 - T010 (. dockerignore is independent)
 - T011 (Health endpoint is independent)
 - T012 (Entrypoint script is independent)
 
 **Phase 3**:
+
 - T019 (Setup script can be created in parallel with manual setup)
 
 **Phase 4**:
+
 - T020 (Nginx config can be created locally)
 - T024 (SSL settings can be prepared in advance)
 
 **Phase 5**:
+
 - T026, T028, T029, T030 (All scripts can be created in parallel)
 
 **Phase 6**:
+
 - T032-T034, T036 (Logging, monitoring, and dashboard can be set up independently)
 
 **Phase 7**:
+
 - T037-T039 (All documentation can be written in parallel)
 
 ---
@@ -225,6 +234,7 @@
 **Parallel Opportunities**: 19 tasks marked [P] can run in parallel within their phases
 
 **Success Criteria**:
+
 - ✅ CI pipeline completes in under 10 minutes
 - ✅ Docker builds successfully on local and VPS
 - ✅ HTTPS site accessible with valid SSL certificate

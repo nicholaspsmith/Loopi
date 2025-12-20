@@ -16,8 +16,7 @@ describe('FlashcardPreview', () => {
     conversationId: 'conv1',
     messageId: 'msg1',
     question: 'What is quantum entanglement?',
-    answer:
-      'A phenomenon where particles remain connected regardless of distance',
+    answer: 'A phenomenon where particles remain connected regardless of distance',
     questionEmbedding: null,
     createdAt: Date.now(),
     fsrsState: {
@@ -26,6 +25,7 @@ describe('FlashcardPreview', () => {
       difficulty: 0,
       elapsed_days: 0,
       scheduled_days: 0,
+      learning_steps: 0,
       reps: 0,
       lapses: 0,
       state: 0,
@@ -42,9 +42,7 @@ describe('FlashcardPreview', () => {
     render(<FlashcardPreview flashcard={mockFlashcard} />)
 
     expect(
-      screen.getByText(
-        /A phenomenon where particles remain connected regardless of distance/
-      )
+      screen.getByText(/A phenomenon where particles remain connected regardless of distance/)
     ).toBeInTheDocument()
   })
 
@@ -104,9 +102,7 @@ describe('FlashcardPreview', () => {
       },
     }
 
-    render(
-      <FlashcardPreview flashcard={reviewedFlashcard} showFSRSState={true} />
-    )
+    render(<FlashcardPreview flashcard={reviewedFlashcard} showFSRSState={true} />)
 
     expect(screen.getByText(/5 reviews?/i)).toBeInTheDocument()
   })

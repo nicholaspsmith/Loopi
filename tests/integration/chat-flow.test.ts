@@ -1,14 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { closeDbConnection } from '@/lib/db/client'
 import { createUser } from '@/lib/db/operations/users'
-import {
-  createConversation,
-  getConversationsByUserId,
-} from '@/lib/db/operations/conversations'
-import {
-  createMessage,
-  getMessagesByConversationId,
-} from '@/lib/db/operations/messages'
+import { createConversation, getConversationsByUserId } from '@/lib/db/operations/conversations'
+import { createMessage, getMessagesByConversationId } from '@/lib/db/operations/messages'
 import { hashPassword } from '@/lib/auth/helpers'
 
 /**
@@ -67,9 +61,7 @@ describe('Chat Conversation Flow Integration', () => {
 
     expect(userMessage1).toBeDefined()
     expect(userMessage1.role).toBe('user')
-    expect(userMessage1.content).toBe(
-      'Hello! Can you explain JavaScript closures?'
-    )
+    expect(userMessage1.content).toBe('Hello! Can you explain JavaScript closures?')
 
     // Step 4: Verify message is retrievable
     let messages = await getMessagesByConversationId(testConversationId)
@@ -81,8 +73,7 @@ describe('Chat Conversation Flow Integration', () => {
       conversationId: testConversationId,
       userId: testUserId,
       role: 'assistant',
-      content:
-        'A closure is a function that has access to variables in its outer scope...',
+      content: 'A closure is a function that has access to variables in its outer scope...',
     })
 
     expect(assistantMessage1).toBeDefined()
@@ -121,16 +112,12 @@ describe('Chat Conversation Flow Integration', () => {
     expect(messages).toHaveLength(4)
 
     // Verify order is preserved
-    expect(messages[0].content).toBe(
-      'Hello! Can you explain JavaScript closures?'
-    )
+    expect(messages[0].content).toBe('Hello! Can you explain JavaScript closures?')
     expect(messages[1].content).toBe(
       'A closure is a function that has access to variables in its outer scope...'
     )
     expect(messages[2].content).toBe('Can you give me an example?')
-    expect(messages[3].content).toBe(
-      'Sure! Here is an example: function outer() { ... }'
-    )
+    expect(messages[3].content).toBe('Sure! Here is an example: function outer() { ... }')
 
     // Verify roles alternate correctly
     expect(messages[0].role).toBe('user')

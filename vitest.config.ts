@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['./tests/setup.ts'],
+    setupFiles: ['./tests/setup.ts', './tests/db-setup.ts'],
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
@@ -15,16 +15,12 @@ export default defineConfig({
       '**/tests/integration/**', // Exclude Playwright tests
       '**/tests/contract/**', // Exclude contract tests (need server running)
     ],
+    // Increase test timeout for database operations
+    testTimeout: 30000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'tests/',
-        '**/*.config.ts',
-        '**/*.d.ts',
-        '.next/',
-      ],
+      exclude: ['node_modules/', 'tests/', '**/*.config.ts', '**/*.d.ts', '.next/'],
     },
   },
   resolve: {

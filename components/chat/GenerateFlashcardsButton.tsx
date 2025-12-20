@@ -22,7 +22,7 @@ interface GenerateFlashcardsButtonProps {
 
 export default function GenerateFlashcardsButton({
   messageId,
-  conversationId,
+  conversationId: _conversationId,
   hasFlashcards: initialHasFlashcards,
   onGenerated,
 }: GenerateFlashcardsButtonProps) {

@@ -16,6 +16,7 @@ MemoryLoop is a web application that enables users to learn through conversation
 **Language/Version**: TypeScript 5.7.x with Next.js 15.1.x (App Router with React 19)
 
 **Primary Dependencies**:
+
 - Next.js 15.1.x (full-stack framework with App Router)
 - React 19.x (UI components with React Compiler)
 - NextAuth.js 5.x (authentication with Auth.js)
@@ -34,6 +35,7 @@ MemoryLoop is a web application that enables users to learn through conversation
 **Project Type**: Web application (frontend + backend in Next.js)
 
 **Performance Goals**:
+
 - Page load < 2s (initial)
 - Chat response rendering < 500ms
 - Flashcard generation < 15s for 1000-word responses
@@ -41,6 +43,7 @@ MemoryLoop is a web application that enables users to learn through conversation
 - FSRS scheduling calculation < 50ms per card
 
 **Constraints**:
+
 - Claude API rate limits (tier-dependent)
 - LanceDB query performance for conversation retrieval
 - Client-side bundle size < 500KB (initial load)
@@ -48,6 +51,7 @@ MemoryLoop is a web application that enables users to learn through conversation
 - FSRS state persistence in LanceDB for review scheduling
 
 **Scale/Scope**:
+
 - Initial: 50 concurrent users
 - Conversation history: unlimited messages per user
 - Flashcards: thousands per user with FSRS metadata
@@ -55,7 +59,7 @@ MemoryLoop is a web application that enables users to learn through conversation
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 ### I. Documentation-First Development ✅ PASS
 
@@ -112,7 +116,7 @@ No complexity violations requiring justification. All constitutional principles 
 ### Post-Design Re-Evaluation ✅ COMPLETE
 
 **Date**: 2025-12-14
-**Artifacts Reviewed**: data-model.md, contracts/*.yaml, quickstart.md, research.md
+**Artifacts Reviewed**: data-model.md, contracts/\*.yaml, quickstart.md, research.md
 
 #### I. Documentation-First Development ✅ PASS
 
@@ -264,6 +268,7 @@ public/                   # Static assets
 ## Phase 0: Research (To be generated)
 
 Research will address:
+
 - LanceDB integration patterns for Next.js 15 App Router
 - NextAuth.js 5 (Auth.js) configuration for session-based auth with App Router
 - Anthropic SDK best practices for conversation context management
@@ -321,6 +326,7 @@ Research will address:
 ### Key Design Decisions
 
 **Data Model**:
+
 - Vector embeddings stored inline with entities (atomic consistency)
 - FSRS state as JSON column (ts-fsrs Card object)
 - Immutable message history (append-only)
@@ -328,6 +334,7 @@ Research will address:
 - Review logs separate table (analytics and optimization)
 
 **API Design**:
+
 - RESTful endpoints following Next.js 15 App Router conventions
 - Session-based authentication with NextAuth.js 5
 - OpenAPI 3.1.0 specifications with contract test scenarios
@@ -335,12 +342,14 @@ Research will address:
 - Performance targets embedded in contract specs (SC-002 through SC-006)
 
 **FSRS Integration**:
+
 - 4-rating system (Again=1, Hard=2, Good=3, Easy=4)
 - State progression (New → Learning → Review or Relearning)
 - Due-based filtering for quiz sessions
 - Review log persistence for analytics
 
 **Development Workflow**:
+
 - Test-first development (TDD) with contract tests
 - Independent user story deployment (P1 → P2 → P3 → P4)
 - LanceDB embedded for development, Postgres + pgvector option for Vercel production

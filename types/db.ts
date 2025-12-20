@@ -68,6 +68,7 @@ export const FSRSCardSchema = z.object({
   difficulty: z.number().min(0).max(10),
   elapsed_days: z.number().nonnegative(),
   scheduled_days: z.number().nonnegative(),
+  learning_steps: z.number().int().nonnegative().default(0),
   reps: z.number().int().nonnegative(),
   lapses: z.number().int().nonnegative(),
   state: z.nativeEnum(State), // 0=New, 1=Learning, 2=Review, 3=Relearning

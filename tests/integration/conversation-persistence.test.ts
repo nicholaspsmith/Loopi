@@ -6,10 +6,7 @@ import {
   getConversationsByUserId,
   getConversationById,
 } from '@/lib/db/operations/conversations'
-import {
-  createMessage,
-  getMessagesByConversationId,
-} from '@/lib/db/operations/messages'
+import { createMessage, getMessagesByConversationId } from '@/lib/db/operations/messages'
 import { hashPassword } from '@/lib/auth/helpers'
 
 /**
@@ -100,7 +97,7 @@ describe('Conversation History Persistence (FR-023)', () => {
 
   it('should maintain chronological message order across sessions', async () => {
     // Session 2 (continuing): User sends follow-up message
-    const message3 = await createMessage({
+    await createMessage({
       conversationId: testConversationId,
       userId: testUserId,
       role: 'user',
@@ -254,9 +251,7 @@ describe('Conversation History Persistence (FR-023)', () => {
 
     // Get messages again
     const retrievedMessages = await getMessagesByConversationId(testConversationId)
-    const retrievedFirstMessage = retrievedMessages.find(
-      (m) => m.id === originalFirstMessage.id
-    )
+    const retrievedFirstMessage = retrievedMessages.find((m) => m.id === originalFirstMessage.id)
 
     // Message content should be unchanged (immutable)
     expect(retrievedFirstMessage).toBeDefined()

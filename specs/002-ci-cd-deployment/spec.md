@@ -7,10 +7,10 @@
 
 ## Overview
 
-Implement a complete CI/CD pipeline and production deployment infrastructure for the MemoryLoop application. The system will automatically test, build, and deploy the application to a VPS (Hetzner CX22 or DigitalOcean Droplet) with Docker, Nginx reverse proxy, and Let's Encrypt SSL.
+Implement a complete CI/CD pipeline and production deployment infrastructure for the MemoryLoop application. The system will automatically test, build, and deploy the application to a Hetzner CX22 VPS with Docker, Nginx reverse proxy, and Let's Encrypt SSL.
 
 **Target Domain**: memoryloop.nicholaspsmith.com
-**Estimated Cost**: ~$5-12/month
+**Estimated Cost**: ~$5-10/month
 **Infrastructure**: VPS with Docker, Nginx, SSL certificates
 
 ## User Scenarios & Testing
@@ -57,7 +57,7 @@ Operations team can provision and configure a secure VPS with Docker, firewall r
 
 **Why this priority**: Required before deployment automation - one-time setup that enables all subsequent deployments.
 
-**Independent Test**: Provision VPS (Hetzner CX22 or DigitalOcean Droplet) → SSH into server → Verify Docker installed → Check UFW firewall rules (ports 22, 80, 443 open) → Test SSH key authentication → Verify password auth disabled → Directory structure created at /opt/memoryloop.
+**Independent Test**: Provision Hetzner CX22 VPS → SSH into server → Verify Docker installed → Check UFW firewall rules (ports 22, 80, 443 open) → Test SSH key authentication → Verify password auth disabled → Directory structure created at /opt/memoryloop.
 
 **Acceptance Scenarios**:
 
@@ -94,7 +94,7 @@ Developers can merge code to main branch and have it automatically deployed to p
 
 **Why this priority**: Automation goal - requires all previous stories to be complete, enables continuous deployment.
 
-**Independent Test**: Merge PR to main → GitHub Actions triggers deployment workflow → Docker image built and pushed to registry → SSH to VPS and deploy → Health check validates deployment → Old container stops, new container starts → Application accessible with new changes → Notification sent to Discord/Slack.
+**Independent Test**: Merge PR to main → GitHub Actions triggers deployment workflow → Docker image built and pushed to registry → SSH to VPS and deploy → Health check validates deployment → Old container stops, new container starts → Application accessible with new changes.
 
 **Acceptance Scenarios**:
 
@@ -103,8 +103,7 @@ Developers can merge code to main branch and have it automatically deployed to p
 3. **Given** deployment script running, **When** pulling new image on VPS, **Then** stops old container gracefully
 4. **Given** new container started, **When** health check endpoint called, **Then** returns 200 OK within 30 seconds
 5. **Given** deployment complete, **When** checking logs, **Then** no errors and application is serving traffic
-6. **Given** deployment succeeds, **When** checking notifications, **Then** Discord/Slack webhook triggered with success message
-7. **Given** deployment fails, **When** checking rollback, **Then** previous version is restored automatically
+6. **Given** deployment fails, **When** checking rollback, **Then** previous version is restored automatically
 
 ---
 
@@ -184,9 +183,9 @@ Operations team can monitor application health, logs, and uptime to quickly dete
 - **FR-027**: Deployment script MUST pull latest Docker image from registry
 - **FR-028**: Deployment MUST perform zero-downtime updates (start new container before stopping old)
 - **FR-029**: Deployment MUST validate health check before considering deployment successful
-- **FR-030**: Deployment MUST send notifications (Discord/Slack) on success or failure
+- **FR-030**: ~~Deployment MUST send notifications on success or failure~~ (Deferred - not needed initially)
 - **FR-031**: Rollback script MUST exist to revert to previous Docker image version
-- **FR-032**: Database backups MUST run daily via cron job to S3/B2
+- **FR-032**: Database backups MUST run daily via cron job to Backblaze B2
 - **FR-033**: Docker container logs MUST be rotated to prevent disk space issues
 
 #### Monitoring & Observability
@@ -194,7 +193,7 @@ Operations team can monitor application health, logs, and uptime to quickly dete
 - **FR-034**: Application MUST output structured logs to stdout in JSON format
 - **FR-035**: Docker logs MUST be aggregated (sent to external service or local file)
 - **FR-036**: Uptime monitoring MUST be configured to check application availability
-- **FR-037**: Error tracking MUST capture application errors with stack traces (optional: Sentry)
+- **FR-037**: Error tracking MUST capture application errors with stack traces via Sentry
 - **FR-038**: Monitoring dashboard script MUST display health status, disk usage, and memory usage
 
 ### Non-Functional Requirements
@@ -213,11 +212,11 @@ Operations team can monitor application health, logs, and uptime to quickly dete
 
 - **CI Workflow**: Represents a GitHub Actions workflow (ci.yml, integration.yml, deploy.yml)
 - **Docker Image**: Versioned application container with commit SHA tag
-- **VPS Instance**: Production server (Hetzner CX22 or DigitalOcean Droplet)
+- **VPS Instance**: Production server (Hetzner CX22 - 4GB RAM, 2 vCPU, 40GB SSD)
 - **SSL Certificate**: Let's Encrypt certificate for memoryloop.nicholaspsmith.com
 - **Deployment**: Single deployment event with status (success/failure), timestamp, version
 - **Health Check**: Application health status (database, Ollama, Anthropic API)
-- **Backup**: Daily database backup with timestamp and location (S3/B2)
+- **Backup**: Daily database backup with timestamp and location (Backblaze B2)
 - **Log Entry**: Structured application log in JSON format
 
 ### Success Criteria
@@ -241,31 +240,43 @@ Operations team can monitor application health, logs, and uptime to quickly dete
 - CDN integration (direct VPS access only)
 - Database replication or high availability
 - Load balancing across multiple servers
+- Deployment notifications (Discord/Slack webhooks) - deferred
+
+## Clarifications
+
+### Session 2025-12-19
+
+- Q: Which container registry should be used for Docker images? → A: GitHub Container Registry (ghcr.io)
+- Q: Which VPS provider should be used? → A: Hetzner CX22 (~$5/mo)
+- Q: Which notification platform for deployments? → A: None (skip notifications initially)
+- Q: Which backup storage provider? → A: Backblaze B2
+- Q: Should error tracking (Sentry) be included? → A: Yes, use Sentry
 
 ## Technical Context
 
 - **Current State**: Application runs locally with Next.js dev server, no deployment infrastructure
 - **CI Tool**: GitHub Actions (free tier for public repos)
 - **Container Platform**: Docker + Docker Compose
-- **VPS Options**: Hetzner CX22 (~$5/mo) or DigitalOcean Droplet ($12/mo)
+- **Container Registry**: GitHub Container Registry (ghcr.io) - native GitHub Actions integration, free for public repos
+- **VPS Provider**: Hetzner CX22 (~$5/mo) - 4GB RAM, 2 vCPU, 40GB SSD
 - **Web Server**: Nginx as reverse proxy
 - **SSL**: Let's Encrypt (free automated SSL certificates)
 - **Domain**: memoryloop.nicholaspsmith.com (DNS via domain registrar)
-- **Monitoring**: UptimeRobot (free tier) + optional Sentry for errors
-- **Backup Storage**: Backblaze B2 or AWS S3
+- **Monitoring**: UptimeRobot (free tier) for uptime, Sentry (free tier) for error tracking
+- **Backup Storage**: Backblaze B2 (S3-compatible API, ~$0.005/GB)
 
 ## Dependencies
 
-- **External**: GitHub Actions, Docker Hub or GitHub Container Registry, DNS provider, VPS provider (Hetzner or DigitalOcean)
+- **External**: GitHub Actions, GitHub Container Registry (ghcr.io), DNS provider, Hetzner Cloud, Backblaze B2, Sentry
 - **Internal**: Completed application from specs/001-claude-flashcard (authentication, chat, flashcards, quiz)
 
 ## Assumptions
 
 1. Application is production-ready (all Phase 1-6 features complete)
 2. Domain name already purchased and accessible for DNS configuration
-3. VPS provider account exists (Hetzner or DigitalOcean)
+3. Hetzner Cloud account exists for VPS provisioning
 4. GitHub repository is configured for Actions
 5. Manual VPS provisioning acceptable (no infrastructure-as-code initially)
 6. Single-server deployment sufficient (no need for scaling initially)
-7. Database backups to cloud storage (S3/B2) acceptable
+7. Database backups to Backblaze B2 cloud storage acceptable
 8. Manual rollback acceptable if automated rollback fails

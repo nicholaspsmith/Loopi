@@ -45,7 +45,6 @@ async function runMigration() {
     console.log('Your database schema is now ready.')
     console.log('You can start the dev server with: npm run dev')
     console.log('Or explore your database with: npm run db:studio')
-
   } catch (error) {
     console.error('❌ Migration failed:', error)
     process.exit(1)

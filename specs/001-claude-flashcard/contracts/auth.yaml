@@ -243,7 +243,7 @@ paths:
                   expires:
                     type: string
                     format: date-time
-                    example: "2025-12-15T10:00:00.000Z"
+                    example: '2025-12-15T10:00:00.000Z'
                     description: Session expiration timestamp
         '401':
           description: Session expired or invalid (FR-022)

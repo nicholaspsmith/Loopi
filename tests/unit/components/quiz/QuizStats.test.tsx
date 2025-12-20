@@ -110,9 +110,7 @@ describe('QuizStats', () => {
       render(<QuizStats stats={decimalStats} />)
 
       // Should show as 78% or 78.3% (rounded appropriately)
-      expect(
-        screen.getByText(/78\.3%/) || screen.getByText(/78%/)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/78\.3%/) || screen.getByText(/78%/)).toBeInTheDocument()
     })
   })
 
@@ -158,18 +156,14 @@ describe('QuizStats', () => {
       render(<QuizStats stats={mockStats} />)
 
       // 5.2 should appear somewhere
-      expect(
-        screen.queryByText(/5\.2/) || screen.queryByText(/difficulty/i)
-      ).toBeTruthy()
+      expect(screen.queryByText(/5\.2/) || screen.queryByText(/difficulty/i)).toBeTruthy()
     })
 
     it('should display average stability if provided', () => {
       render(<QuizStats stats={mockStats} />)
 
       // 3.8 should appear somewhere
-      expect(
-        screen.queryByText(/3\.8/) || screen.queryByText(/stability/i)
-      ).toBeTruthy()
+      expect(screen.queryByText(/3\.8/) || screen.queryByText(/stability/i)).toBeTruthy()
     })
   })
 
@@ -338,9 +332,7 @@ describe('QuizStats', () => {
       render(<QuizStats stats={decimalRetention} />)
 
       // Should round or truncate appropriately (87.7%, 87.65%, or 88%)
-      expect(
-        screen.getByText(/87\.|88%/)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/87\.|88%/)).toBeInTheDocument()
     })
   })
 

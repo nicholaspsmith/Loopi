@@ -75,17 +75,14 @@ Photosynthesis is essential for life on Earth because it produces oxygen and for
     await closeDbConnection()
   })
 
-  it(
-    'should generate flashcards from educational content',
-    async () => {
+  it('should generate flashcards from educational content', async () => {
     const message = await getMessageById(educationalMessageId)
     expect(message).toBeDefined()
 
     // Generate flashcards using the library
-    const flashcardPairs = await generateFlashcardsFromContent(
-      message!.content,
-      { maxFlashcards: 10 }
-    )
+    const flashcardPairs = await generateFlashcardsFromContent(message!.content, {
+      maxFlashcards: 10,
+    })
 
     // Should generate at least one flashcard from educational content
     expect(flashcardPairs.length).toBeGreaterThan(0)
@@ -99,34 +96,28 @@ Photosynthesis is essential for life on Earth because it produces oxygen and for
       expect(pair.question.length).toBeGreaterThan(0)
       expect(pair.answer.length).toBeGreaterThan(0)
     })
-    },
-    30000
-  ) // 30 second timeout for Ollama
+  }, 30000) // 30 second timeout for Ollama
 
   it('should not generate flashcards from conversational content (FR-019)', async () => {
     const message = await getMessageById(conversationalMessageId)
     expect(message).toBeDefined()
 
     // Generate flashcards - should return empty array for conversational content
-    const flashcardPairs = await generateFlashcardsFromContent(
-      message!.content,
-      { maxFlashcards: 10 }
-    )
+    const flashcardPairs = await generateFlashcardsFromContent(message!.content, {
+      maxFlashcards: 10,
+    })
 
     expect(flashcardPairs).toEqual([])
   })
 
-  it(
-    'should persist generated flashcards to database (FR-010)',
-    async () => {
+  it('should persist generated flashcards to database (FR-010)', async () => {
     const { createFlashcard } = await import('@/lib/db/operations/flashcards')
 
     // Generate flashcards
     const message = await getMessageById(educationalMessageId)
-    const flashcardPairs = await generateFlashcardsFromContent(
-      message!.content,
-      { maxFlashcards: 5 }
-    )
+    const flashcardPairs = await generateFlashcardsFromContent(message!.content, {
+      maxFlashcards: 5,
+    })
 
     expect(flashcardPairs.length).toBeGreaterThan(0)
 
@@ -163,9 +154,7 @@ Photosynthesis is essential for life on Earth because it produces oxygen and for
 
     // Clean up created flashcards
     await Promise.all(flashcards.map((fc) => deleteFlashcard(fc.id)))
-    },
-    30000
-  )
+  }, 30000)
 
   it('should retrieve flashcards by message ID (FR-017)', async () => {
     const { createFlashcard } = await import('@/lib/db/operations/flashcards')
@@ -291,9 +280,7 @@ Photosynthesis is essential for life on Earth because it produces oxygen and for
     await deleteFlashcard(flashcard.id)
   })
 
-  it(
-    'should handle questions with various formats',
-    async () => {
+  it('should handle questions with various formats', async () => {
     const testContent = `Machine Learning concepts:
 - Supervised learning uses labeled data
 - Unsupervised learning finds patterns in unlabeled data
@@ -317,13 +304,9 @@ Common algorithms include:
       expect(fc.answer.length).toBeGreaterThan(5)
       expect(fc.answer.length).toBeLessThanOrEqual(5000)
     })
-    },
-    30000
-  )
+  }, 30000)
 
-  it(
-    'should respect maxFlashcards limit',
-    async () => {
+  it('should respect maxFlashcards limit', async () => {
     const longContent = `Photosynthesis is a complex process. `.repeat(50)
 
     const flashcards = await generateFlashcardsFromContent(longContent, {
@@ -331,13 +314,9 @@ Common algorithms include:
     })
 
     expect(flashcards.length).toBeLessThanOrEqual(3)
-    },
-    30000
-  )
+  }, 30000)
 
-  it(
-    'should handle content with code examples',
-    async () => {
+  it('should handle content with code examples', async () => {
     const codeContent = `JavaScript arrow functions are a concise syntax for writing functions.
 
 Example:
@@ -353,7 +332,5 @@ Key features:
     })
 
     expect(flashcards.length).toBeGreaterThan(0)
-    },
-    30000
-  )
+  }, 30000)
 })

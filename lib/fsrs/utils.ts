@@ -122,7 +122,7 @@ export function formatInterval(days: number): string {
     const months = Math.round(days / 30)
     return `${months}mo`
   }
-  const years = Math.round(days / 365 * 10) / 10
+  const years = Math.round((days / 365) * 10) / 10
   return `${years}y`
 }
 
@@ -219,6 +219,7 @@ export function cardToObject(card: Card): {
   difficulty: number
   elapsed_days: number
   scheduled_days: number
+  learning_steps: number
   reps: number
   lapses: number
   last_review?: number
@@ -230,6 +231,7 @@ export function cardToObject(card: Card): {
     difficulty: card.difficulty,
     elapsed_days: card.elapsed_days,
     scheduled_days: card.scheduled_days,
+    learning_steps: card.learning_steps,
     reps: card.reps,
     lapses: card.lapses,
     last_review: card.last_review ? new Date(card.last_review).getTime() : undefined,
@@ -246,6 +248,7 @@ export function objectToCard(obj: {
   difficulty: number
   elapsed_days: number
   scheduled_days: number
+  learning_steps?: number
   reps: number
   lapses: number
   last_review?: number
@@ -257,6 +260,7 @@ export function objectToCard(obj: {
     difficulty: obj.difficulty,
     elapsed_days: obj.elapsed_days,
     scheduled_days: obj.scheduled_days,
+    learning_steps: obj.learning_steps ?? 0,
     reps: obj.reps,
     lapses: obj.lapses,
     last_review: obj.last_review ? new Date(obj.last_review) : undefined,

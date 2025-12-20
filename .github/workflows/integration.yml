@@ -1,0 +1,85 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+  workflow_dispatch:
+
+jobs:
+  e2e-tests:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: memoryloop_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Create test environment file
+        run: |
+          cat > .env.test.local << EOF
+          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/memoryloop_test
+          NEXTAUTH_SECRET=test-secret-key-for-ci-pipeline
+          NEXTAUTH_URL=http://localhost:3000
+          OLLAMA_BASE_URL=http://localhost:11434
+          ENCRYPTION_KEY=test-encryption-key-32-chars-long
+          EOF
+
+      - name: Run database migrations
+        run: npm run db:push
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
+
+      - name: Build Next.js application
+        run: npm run build
+        env:
+          SKIP_ENV_VALIDATION: true
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 7

@@ -91,17 +91,11 @@ describe('FSRS Scheduler', () => {
       const easyResult = scheduleCard(card, Rating.Easy)
 
       // Easy should have longer or equal interval than Good
-      expect(easyResult.log.scheduled_days).toBeGreaterThanOrEqual(
-        goodResult.log.scheduled_days
-      )
+      expect(easyResult.log.scheduled_days).toBeGreaterThanOrEqual(goodResult.log.scheduled_days)
       // Good should have longer or equal interval than Again
-      expect(goodResult.log.scheduled_days).toBeGreaterThanOrEqual(
-        againResult.log.scheduled_days
-      )
+      expect(goodResult.log.scheduled_days).toBeGreaterThanOrEqual(againResult.log.scheduled_days)
       // At minimum, Easy should be longer than Again
-      expect(easyResult.log.scheduled_days).toBeGreaterThanOrEqual(
-        againResult.log.scheduled_days
-      )
+      expect(easyResult.log.scheduled_days).toBeGreaterThanOrEqual(againResult.log.scheduled_days)
     })
 
     it('should update card state from New to Learning/Review', () => {
@@ -130,9 +124,7 @@ describe('FSRS Scheduler', () => {
       expect(result3.card.reps).toBe(3)
 
       // Interval should generally increase with successful reviews
-      expect(result3.log.scheduled_days).toBeGreaterThanOrEqual(
-        result1.log.scheduled_days
-      )
+      expect(result3.log.scheduled_days).toBeGreaterThanOrEqual(result1.log.scheduled_days)
     })
 
     it('should track lapses when rating Again', () => {
@@ -377,9 +369,7 @@ describe('FSRS Scheduler', () => {
       expect(card.reps).toBe(2)
 
       // Interval should increase
-      expect(review2.log.scheduled_days).toBeGreaterThanOrEqual(
-        review1.log.scheduled_days
-      )
+      expect(review2.log.scheduled_days).toBeGreaterThanOrEqual(review1.log.scheduled_days)
 
       // Third review - Again (forgot)
       const review3 = scheduleCard(card, Rating.Again)
@@ -413,9 +403,7 @@ describe('FSRS Scheduler', () => {
       })
 
       // Easy should have longest or equal interval
-      expect(options[Rating.Easy].interval).toBeGreaterThanOrEqual(
-        options[Rating.Again].interval
-      )
+      expect(options[Rating.Easy].interval).toBeGreaterThanOrEqual(options[Rating.Again].interval)
     })
   })
 })

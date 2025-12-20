@@ -126,7 +126,9 @@ test.describe('Authentication Flow', () => {
     await page.getByRole('button', { name: /sign in/i }).click()
 
     // Should show error message
-    await expect(page.getByText(/invalid.*credentials|incorrect.*password|user.*not.*found/i)).toBeVisible()
+    await expect(
+      page.getByText(/invalid.*credentials|incorrect.*password|user.*not.*found/i)
+    ).toBeVisible()
 
     // Should still be on login page
     await expect(page).toHaveURL('/login')

@@ -7,19 +7,23 @@
 ## What We've Set Up
 
 ✅ **Dependencies Installed**:
+
 - `drizzle-orm` - TypeScript ORM for PostgreSQL
 - `postgres` - PostgreSQL client
 - `pgvector` - Vector similarity search extension
 - `drizzle-kit` - Database migration tool
 
 ✅ **Schema Created**:
+
 - `/lib/db/drizzle-schema.ts` - Full database schema with foreign keys and vector columns
 - `/drizzle/0000_initial.sql` - SQL migration file
 
 ✅ **Database Client**:
+
 - `/lib/db/pg-client.ts` - PostgreSQL connection manager with Drizzle ORM
 
 ✅ **Documentation**:
+
 - `SUPABASE_SETUP.md` - Complete setup guide
 - `.env.example` - Updated with DATABASE_URL
 
@@ -42,6 +46,7 @@
 ### 1. Set up Supabase (5 minutes)
 
 Follow `SUPABASE_SETUP.md` to:
+
 1. Create Supabase project
 2. Enable pgvector extension
 3. Get DATABASE_URL
@@ -59,6 +64,7 @@ psql $DATABASE_URL < drizzle/0000_initial.sql
 Replace the LanceDB operations with PostgreSQL equivalents. Here's the pattern:
 
 **Before (LanceDB)**:
+
 ```typescript
 // lib/db/operations/users.ts
 import { create, findById } from '../queries'
@@ -75,6 +81,7 @@ export async function getUserById(id) {
 ```
 
 **After (PostgreSQL)**:
+
 ```typescript
 // lib/db/operations/users.ts
 import { eq } from 'drizzle-orm'
@@ -97,21 +104,25 @@ export async function getUserById(id) {
 ### Key Changes for Each File:
 
 #### `lib/db/operations/users.ts`
+
 - Replace `create()` with `db.insert(users).values().returning()`
 - Replace `findById()` with `db.select().from(users).where(eq(users.id, id))`
 - Remove timestamp conversions (PostgreSQL handles this)
 
 #### `lib/db/operations/conversations.ts`
+
 - Use `db.update(conversations).set().where().returning()`
 - No more delete+add pattern - proper UPDATE statements!
 - Foreign keys enforce referential integrity automatically
 
 #### `lib/db/operations/messages.ts`
+
 - Embeddings can be `null` without issues
 - Use `db.update()` for `markMessageWithFlashcards()`
 - Vector search: `sql\`embedding <=> ${queryVector}\``
 
 #### `lib/db/operations/flashcards.ts`
+
 - FSRS state stored as JSONB
 - Update with: `db.update().set({ fsrsState: newState })`
 - No more Vector type conversion issues!
@@ -170,30 +181,30 @@ beforeAll(async () => {
 
 ### 📊 Performance Comparison
 
-| Operation | LanceDB | PostgreSQL |
-|-----------|---------|------------|
-| Insert | ~50ms | ~5ms |
-| Update | Delete+Add (~100ms) | UPDATE (~5ms) |
-| Vector Search | Fast (~10ms) | Fast (~10ms) |
-| Join Queries | Not supported | Fast (~10ms) |
-| Transactions | No | Yes |
+| Operation     | LanceDB             | PostgreSQL    |
+| ------------- | ------------------- | ------------- |
+| Insert        | ~50ms               | ~5ms          |
+| Update        | Delete+Add (~100ms) | UPDATE (~5ms) |
+| Vector Search | Fast (~10ms)        | Fast (~10ms)  |
+| Join Queries  | Not supported       | Fast (~10ms)  |
+| Transactions  | No                  | Yes           |
 
 ## Example: How Updates Changed
 
 **Before (LanceDB - Risky)**:
+
 ```typescript
 // Update flashcard FSRS state
 const existing = await getFlashcardById(id) // Read
-await deleteFlashcard(id)                   // Delete (risky!)
+await deleteFlashcard(id) // Delete (risky!)
 await table.add([{ ...existing, fsrsState }]) // Add (can fail!)
 ```
 
 **After (PostgreSQL - Safe)**:
+
 ```typescript
 // Update flashcard FSRS state
-await db.update(flashcards)
-  .set({ fsrsState })
-  .where(eq(flashcards.id, id))
+await db.update(flashcards).set({ fsrsState }).where(eq(flashcards.id, id))
 // Atomic operation - either succeeds or fails safely
 ```
 
@@ -209,6 +220,7 @@ await db.update(flashcards)
 ## Need Help?
 
 The migration pattern is straightforward:
+
 1. Import `getDb()` and schema
 2. Replace LanceDB methods with Drizzle methods
 3. Remove workarounds (delete+add, Vector conversions, etc.)

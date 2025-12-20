@@ -35,11 +35,9 @@ export default function MessageList({
     return (
       <div className="flex flex-col items-center justify-center h-full text-center px-4">
         <div className="max-w-md">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-2">
-            Start a conversation
-          </h2>
+          <h2 className="text-2xl font-semibold text-gray-700 mb-2">Start a conversation</h2>
           <p className="text-gray-500">
-            Ask me anything! I'm here to help you learn and understand new concepts.
+            Ask me anything! I&apos;m here to help you learn and understand new concepts.
           </p>
         </div>
       </div>
@@ -69,9 +67,18 @@ export default function MessageList({
             <div className="flex items-center gap-2 text-gray-600">
               <span>Thinking</span>
               <div className="flex gap-1" aria-hidden="true">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '0ms' }}
+                />
+                <div
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '150ms' }}
+                />
+                <div
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '300ms' }}
+                />
               </div>
             </div>
           </div>

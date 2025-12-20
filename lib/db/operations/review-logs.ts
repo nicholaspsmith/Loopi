@@ -61,16 +61,11 @@ export async function createReviewLog(data: {
  *
  * Returns all reviews in chronological order (oldest to newest)
  */
-export async function getReviewLogsByFlashcardId(
-  flashcardId: string
-): Promise<ReviewLog[]> {
+export async function getReviewLogsByFlashcardId(flashcardId: string): Promise<ReviewLog[]> {
   const db = await getDbConnection()
   const table = await db.openTable('review_logs')
 
-  const results = await table
-    .query()
-    .where(`\`flashcardId\` = '${flashcardId}'`)
-    .toArray()
+  const results = await table.query().where(`\`flashcardId\` = '${flashcardId}'`).toArray()
 
   // Transform and sort by review date
   const logs = results.map((log: any) =>
@@ -81,9 +76,7 @@ export async function getReviewLogsByFlashcardId(
     })
   )
 
-  return logs.sort(
-    (a, b) => a.review.getTime() - b.review.getTime()
-  )
+  return logs.sort((a, b) => a.review.getTime() - b.review.getTime())
 }
 
 /**
@@ -115,9 +108,7 @@ export async function getReviewLogsByUserId(
   )
 
   // Sort by review date (newest first) and limit
-  return logs
-    .sort((a, b) => b.review.getTime() - a.review.getTime())
-    .slice(0, limit)
+  return logs.sort((a, b) => b.review.getTime() - a.review.getTime()).slice(0, limit)
 }
 
 /**
@@ -131,7 +122,6 @@ export async function getReviewHistoryWithFlashcards(
   limit: number = 20
 ): Promise<Array<ReviewLog & { flashcardQuestion: string; flashcardAnswer: string }>> {
   const db = await getDbConnection()
-  const reviewLogsTable = await db.openTable('review_logs')
   const flashcardsTable = await db.openTable('flashcards')
 
   // Get recent review logs
@@ -174,10 +164,7 @@ export async function getReviewStats(userId: string): Promise<{
   const db = await getDbConnection()
   const table = await db.openTable('review_logs')
 
-  const allReviews = await table
-    .query()
-    .where(`\`userId\` = '${userId}'`)
-    .toArray()
+  const allReviews = await table.query().where(`\`userId\` = '${userId}'`).toArray()
 
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -191,27 +178,18 @@ export async function getReviewStats(userId: string): Promise<{
     })
   )
 
-  const reviewsToday = reviews.filter(
-    (log) => log.review >= todayStart
-  ).length
+  const reviewsToday = reviews.filter((log) => log.review >= todayStart).length
 
-  const reviewsThisWeek = reviews.filter(
-    (log) => log.review >= weekStart
-  ).length
+  const reviewsThisWeek = reviews.filter((log) => log.review >= weekStart).length
 
   const totalReviews = reviews.length
 
   const averageRating =
-    totalReviews > 0
-      ? reviews.reduce((sum, log) => sum + log.rating, 0) / totalReviews
-      : 0
+    totalReviews > 0 ? reviews.reduce((sum, log) => sum + log.rating, 0) / totalReviews : 0
 
   // Retention rate: percentage of Good (3) or Easy (4) ratings
-  const successfulReviews = reviews.filter(
-    (log) => log.rating === 3 || log.rating === 4
-  ).length
-  const retentionRate =
-    totalReviews > 0 ? (successfulReviews / totalReviews) * 100 : 0
+  const successfulReviews = reviews.filter((log) => log.rating === 3 || log.rating === 4).length
+  const retentionRate = totalReviews > 0 ? (successfulReviews / totalReviews) * 100 : 0
 
   return {
     totalReviews,

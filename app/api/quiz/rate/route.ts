@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { z } from 'zod'
-import {
-  getFlashcardById,
-  updateFlashcardFSRSState,
-} from '@/lib/db/operations/flashcards'
+import { getFlashcardById, updateFlashcardFSRSState } from '@/lib/db/operations/flashcards'
 import { createReviewLog } from '@/lib/db/operations/review-logs'
 import { scheduleCard } from '@/lib/fsrs/scheduler'
 import { numberToRating, isValidRating, objectToCard } from '@/lib/fsrs/utils'
@@ -27,10 +24,7 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized', code: 'UNAUTHORIZED' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 })
     }
 
     const userId = session.user.id
@@ -70,15 +64,10 @@ export async function POST(request: NextRequest) {
 
     // Verify ownership
     if (flashcard.userId !== userId) {
-      return NextResponse.json(
-        { error: 'Forbidden', code: 'FORBIDDEN' },
-        { status: 403 }
-      )
+      return NextResponse.json({ error: 'Forbidden', code: 'FORBIDDEN' }, { status: 403 })
     }
 
-    console.log(
-      `[QuizRate] Rating flashcard ${flashcardId} with rating ${ratingNum}`
-    )
+    console.log(`[QuizRate] Rating flashcard ${flashcardId} with rating ${ratingNum}`)
 
     // Convert flashcard FSRS state to Card object
     const currentCard = objectToCard({
@@ -96,16 +85,10 @@ export async function POST(request: NextRequest) {
     })
 
     // Use FSRS scheduler to calculate next review (FR-015)
-    const { card: updatedCard, log: fsrsLog } = scheduleCard(
-      currentCard,
-      rating
-    )
+    const { card: updatedCard, log: fsrsLog } = scheduleCard(currentCard, rating)
 
     // Update flashcard FSRS state in database
-    const updatedFlashcard = await updateFlashcardFSRSState(
-      flashcardId,
-      updatedCard
-    )
+    const updatedFlashcard = await updateFlashcardFSRSState(flashcardId, updatedCard)
 
     // Create review log entry (FR-016)
     const reviewLog = await createReviewLog({
@@ -122,9 +105,7 @@ export async function POST(request: NextRequest) {
       review: fsrsLog.review,
     })
 
-    console.log(
-      `[QuizRate] Updated flashcard ${flashcardId}. Next review: ${updatedCard.due}`
-    )
+    console.log(`[QuizRate] Updated flashcard ${flashcardId}. Next review: ${updatedCard.due}`)
 
     return NextResponse.json({
       success: true,
@@ -145,7 +126,7 @@ export async function POST(request: NextRequest) {
         {
           error: 'Invalid request data',
           code: 'VALIDATION_ERROR',
-          details: error.errors,
+          details: error.issues,
         },
         { status: 400 }
       )

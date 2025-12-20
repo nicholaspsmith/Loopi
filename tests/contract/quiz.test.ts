@@ -22,7 +22,6 @@ describe('Quiz API Contract Tests', () => {
   let testUserId: string
   let testConversationId: string
   let testMessageId: string
-  let testFlashcardId: string
   let dueFlashcardId: string
 
   beforeAll(async () => {
@@ -52,7 +51,6 @@ describe('Quiz API Contract Tests', () => {
     testMessageId = message.id
 
     // Create a flashcard that's due now
-    const now = new Date()
     const dueFlashcard = await createFlashcard({
       userId: testUserId,
       conversationId: testConversationId,
@@ -63,15 +61,13 @@ describe('Quiz API Contract Tests', () => {
     dueFlashcardId = dueFlashcard.id
 
     // Create a flashcard that's not due yet (future due date)
-    const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
-    const futureFlashcard = await createFlashcard({
+    await createFlashcard({
       userId: testUserId,
       conversationId: testConversationId,
       messageId: testMessageId,
       question: 'What is the FSRS algorithm?',
       answer: 'Free Spaced Repetition Scheduler - an evidence-based scheduling algorithm.',
     })
-    testFlashcardId = futureFlashcard.id
   })
 
   afterAll(async () => {
@@ -345,13 +341,10 @@ describe('Quiz API Contract Tests', () => {
   describe('GET /api/quiz/history (FR-021)', () => {
     it('should return review history with flashcard details', async () => {
       // TODO: Add authentication headers
-      const response = await fetch(
-        'http://localhost:3000/api/quiz/history?limit=20',
-        {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      const response = await fetch('http://localhost:3000/api/quiz/history?limit=20', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      })
 
       // Expect 401 without auth
       if (response.status === 401) {
@@ -393,13 +386,10 @@ describe('Quiz API Contract Tests', () => {
 
     it('should respect limit parameter', async () => {
       // TODO: Add authentication headers
-      const response = await fetch(
-        'http://localhost:3000/api/quiz/history?limit=5',
-        {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      const response = await fetch('http://localhost:3000/api/quiz/history?limit=5', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      })
 
       // Skip if not authenticated
       if (response.status === 401) {
