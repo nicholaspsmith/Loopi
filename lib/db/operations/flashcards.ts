@@ -42,8 +42,19 @@ function transformFlashcardFromDB(raw: any): any {
     questionEmbedding,
     fsrsState: {
       ...raw.fsrsState,
+      // Convert timestamps to Date objects
       due: new Date(raw.fsrsState.due),
       last_review: raw.fsrsState.last_review ? new Date(raw.fsrsState.last_review) : undefined,
+      // Add null-safe defaults for all numeric fields
+      // LanceDB may return null instead of 0 for numeric fields
+      learning_steps: raw.fsrsState.learning_steps ?? 0,
+      elapsed_days: raw.fsrsState.elapsed_days ?? 0,
+      scheduled_days: raw.fsrsState.scheduled_days ?? 0,
+      reps: raw.fsrsState.reps ?? 0,
+      lapses: raw.fsrsState.lapses ?? 0,
+      stability: raw.fsrsState.stability ?? 0,
+      difficulty: raw.fsrsState.difficulty ?? 0,
+      state: raw.fsrsState.state ?? 0,
     },
   }
 }
