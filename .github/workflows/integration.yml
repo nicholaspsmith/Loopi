@@ -70,7 +70,7 @@ jobs:
           API_KEY_ENCRYPTION_SECRET: ${{ secrets.API_KEY_ENCRYPTION_SECRET }}
 
       - name: Run E2E tests
-        run: npm run test:e2e
+        run: npx playwright test --project=chromium
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
           API_KEY_ENCRYPTION_SECRET: test-api-key-encryption-secret-32
