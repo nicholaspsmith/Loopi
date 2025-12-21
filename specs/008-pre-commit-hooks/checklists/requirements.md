@@ -33,5 +33,6 @@
 
 - All items pass validation
 - Spec is ready for `/speckit.plan` or direct implementation
-- Four user stories cover: pre-commit checks (P1), pre-push tests (P2), test audit (P3), and fix suggestions (P4)
+- Five user stories cover: pre-commit checks (P1), pre-push tests (P2), test audit (P3), commit message validation (P2), and fix suggestions (P4)
 - Edge cases address bypass scenarios, flaky tests, and fresh clone setup
+- Updated 2025-12-21: Added User Story 4 (Commit Message Validation) and FR-013 through FR-017 for .claude/rules.md compliance

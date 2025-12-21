@@ -58,7 +58,25 @@ As a developer, I want a way to audit existing tests to ensure they are meaningf
 
 ---
 
-### User Story 4 - Fix Suggestions for Implementation Code (Priority: P4)
+### User Story 4 - Commit Message Validation (Priority: P2)
+
+As a developer, I want my commit messages to be validated against project standards before the commit is accepted, so that all commits follow consistent formatting and documentation rules.
+
+**Why this priority**: Consistent commit messages improve project history readability and ensure compliance with project standards defined in .claude/rules.md.
+
+**Independent Test**: Can be tested by attempting commits with invalid messages (too long, wrong format, multiple responsibilities mentioned) and verifying they are rejected with specific guidance.
+
+**Acceptance Scenarios**:
+
+1. **Given** a commit message exceeding 72 characters in the subject line, **When** I attempt to commit, **Then** the commit is blocked and I see the character limit violation
+2. **Given** a commit message not in imperative mood, **When** I attempt to commit, **Then** the commit is blocked with guidance to use imperative form
+3. **Given** a commit message mentioning multiple changes (indicating multiple responsibilities), **When** I attempt to commit, **Then** I receive a warning about atomic commits
+4. **Given** a commit body with content other than the required co-author tag, **When** I attempt to commit, **Then** the commit is blocked with the correct format shown
+5. **Given** a properly formatted commit message, **When** I attempt to commit, **Then** the commit proceeds to other validation checks
+
+---
+
+### User Story 5 - Fix Suggestions for Implementation Code (Priority: P4)
 
 As a developer, when tests fail before PR creation, I want to receive suggestions for fixing the implementation code (not just the tests), so that I can quickly resolve issues and proceed with my PR.
 
@@ -97,13 +115,20 @@ As a developer, when tests fail before PR creation, I want to receive suggestion
 - **FR-010**: System MUST support running checks on only changed files for performance
 - **FR-011**: System MUST exit with appropriate status codes (0 for success, non-zero for failure)
 - **FR-012**: System MUST group related errors by root cause when possible
+- **FR-013**: System MUST validate commit message subject line is 72 characters or fewer
+- **FR-014**: System MUST validate commit message uses imperative mood
+- **FR-015**: System MUST warn when commit message suggests multiple responsibilities
+- **FR-016**: System MUST validate commit body format matches project standards
+- **FR-017**: System MUST reference project rules file when showing commit message errors
 
 ### Key Entities
 
 - **Pre-Commit Hook**: Runs before each commit to validate code quality (types, lint, format)
+- **Commit-Msg Hook**: Runs after commit message is entered to validate message format against project rules
 - **Pre-Push Hook**: Runs before each push to validate all tests pass
 - **Test Audit Report**: Output from test quality analysis identifying weak or meaningless tests
 - **Fix Suggestion**: Actionable recommendation for resolving a detected issue
+- **Project Rules**: Configuration file defining commit message standards and other project conventions
 
 ## Success Criteria _(mandatory)_
 
@@ -117,6 +142,8 @@ As a developer, when tests fail before PR creation, I want to receive suggestion
 - **SC-006**: Developers receive fix suggestions for 80% of common failure patterns
 - **SC-007**: Hook setup requires zero manual configuration after initial project setup
 - **SC-008**: Build failures in CI pipeline reduce by 75% due to early local validation
+- **SC-009**: 100% of commits follow project commit message standards (subject length, format, body)
+- **SC-010**: Commit message validation completes in under 1 second
 
 ## Assumptions
 
@@ -125,3 +152,4 @@ As a developer, when tests fail before PR creation, I want to receive suggestion
 - Tests are organized in standard locations (tests/, __tests__, *.test.ts, etc.)
 - Git hooks can be configured via the .githooks directory pattern already in use
 - Bypass flags are used responsibly and only for exceptional circumstances
+- Project commit message rules are defined in .claude/rules.md and are the source of truth for validation
