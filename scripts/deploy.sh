@@ -40,15 +40,33 @@ if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "${IMAGE_NAME}"; 
     docker tag "${IMAGE_NAME}" "memoryloop-backup:${BACKUP_TAG}" 2>/dev/null || true
 fi
 
-# Stop existing container
-echo "Stopping existing container..."
+# Stop existing app container
+echo "Stopping existing app container..."
 docker compose -f "${COMPOSE_FILE}" stop app 2>/dev/null || true
 
-# Start new container
-echo "Starting new container..."
-docker compose -f "${COMPOSE_FILE}" up -d app
+# Start all services (postgres, ollama, nginx, app)
+echo "Starting services..."
+docker compose -f "${COMPOSE_FILE}" up -d
 
-# Wait for health check
+# Wait for postgres to be healthy
+echo "Waiting for PostgreSQL to be ready..."
+PG_ATTEMPTS=0
+PG_MAX=30
+while [ $PG_ATTEMPTS -lt $PG_MAX ]; do
+    PG_ATTEMPTS=$((PG_ATTEMPTS + 1))
+    if docker exec memoryloop-postgres pg_isready -U memoryloop > /dev/null 2>&1; then
+        echo "PostgreSQL is ready."
+        break
+    fi
+    echo "Waiting for PostgreSQL... (${PG_ATTEMPTS}/${PG_MAX})"
+    sleep 2
+done
+
+# Install pgcrypto extension (idempotent)
+echo "Ensuring pgcrypto extension is installed..."
+docker exec memoryloop-postgres psql -U memoryloop -d memoryloop -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;" 2>/dev/null || true
+
+# Wait for app health check
 echo "Waiting for health check..."
 MAX_ATTEMPTS=30
 ATTEMPT=0
