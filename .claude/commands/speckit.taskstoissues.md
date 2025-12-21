@@ -1,5 +1,5 @@
 ---
-description: Convert existing tasks into a two-tier issue system - high-level GitHub issues as parents with detailed beads (bd) issues as children.
+description: Convert existing tasks into GitHub issues with checklists mirroring tasks.md for high-level tracking.
 tools: ['github/github-mcp-server/issue_write']
 ---
 
@@ -13,12 +13,12 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Overview
 
-This command creates a two-tier issue tracking system:
+This command creates GitHub issues from tasks.md for high-level tracking:
 
-- **GitHub Issues**: High-level parent issues for phases/features (e.g., "Phase 3: Implement User Interface for AI Chat")
-- **Beads Issues**: Detailed, actionable tasks tracked locally with `bd`
+- **GitHub Issues**: High-level issues for phases/features with task checklists
+- **tasks.md**: Source of truth for detailed task tracking (using `- [ ]` / `- [x]`)
 
-Each GitHub issue contains a checklist of bd tasks showing their complete/incomplete status.
+Each GitHub issue contains a checklist mirroring the tasks in tasks.md.
 
 ## Outline
 
@@ -46,30 +46,20 @@ git config --get remote.origin.url
      - ## Overview section with feature/phase description
      - ## Tasks section with FULL checklist of all individual tasks
      - Each task in format: `- [ ] T### [P] [tags] Task title with full description`
-     - **Status:** `X/Y tasks completed` (with ✅ if all complete)
-     - ## Local Task Tracking section with bd commands
+     - **Status:** `X/Y tasks completed` (with checkmark emoji if all complete)
+     - ## Task Tracking section explaining that tasks.md is the source of truth
    - Labels: Add appropriate labels (phase, feature, etc.) if available
 
-6. **For each individual task**, create a bd issue:
-
-   ```bash
-   bd create "Task title" --json --priority <0-4> --type <task|bug|feature>
-   ```
-
-   - Parse the JSON output to get the issue ID (e.g., `memoryloop-1`)
-   - Store the mapping between task number and bd issue ID
-
-7. **Checklist format requirements:**
+6. **Checklist format requirements:**
    - Use `- [ ]` for incomplete tasks and `- [x]` for completed tasks
    - Include task number: `T001`, `T032`, etc.
    - Include all tags from original task: `[P]` for parallel, `[US1]` for user story
    - Include full task description with file paths when relevant
    - Example: `- [ ] T032 [P] [US1] Contract test for POST /api/auth/signin in tests/contract/auth.test.ts`
 
-8. **Output summary**:
+7. **Output summary**:
    - Total GitHub issues created
-   - Total bd issues created
-   - Mapping of GitHub issues to bd issue ranges
+   - Mapping of GitHub issues to task ranges
 
 ## Example Output
 
@@ -94,14 +84,14 @@ Implement user authentication system with login, signup, and session management.
 
 **Status:** 0/5 tasks completed
 
-## Local Task Tracking
+## Task Tracking
 
-These tasks are tracked locally with beads. Run:
+Tasks are tracked in `specs/[feature]/tasks.md`. Update task status there:
 
-- `bd list` - View all tasks
-- `bd ready` - View ready-to-work tasks
-- `bd show memoryloop-<id>` - View task details
-- `bd update memoryloop-<id> --status in_progress` - Claim a task
+- `- [ ]` for incomplete tasks
+- `- [x]` for completed tasks
+
+Sync GitHub issue checklists when tasks are completed.
 ```
 
 **Labels:** phase-3, user-story-1, authentication
@@ -110,11 +100,10 @@ These tasks are tracked locally with beads. Run:
 
 > [!IMPORTANT]
 >
-> - GitHub issues are **high-level tracking** only - don't create individual GitHub issues for each task
-> - Beads (bd) issues are the **source of truth** for task details and status
-> - Update GitHub issue checklists when bd tasks are completed
-> - Use `bd create` with `--json` flag for programmatic output
-> - All bd issues are automatically tracked in `.beads/issues.jsonl` and synced with git
+> - GitHub issues are **high-level tracking** for visibility
+> - `tasks.md` is the **source of truth** for task details and status
+> - Update GitHub issue checklists when tasks in tasks.md are completed
+> - Use standard markdown checkbox syntax in tasks.md
 
 > [!CAUTION]
 > UNDER NO CIRCUMSTANCES EVER CREATE GITHUB ISSUES IN REPOSITORIES THAT DO NOT MATCH THE REMOTE URL
