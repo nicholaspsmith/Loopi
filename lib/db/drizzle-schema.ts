@@ -86,9 +86,7 @@ export const messages = pgTable('messages', {
 // ============================================================================
 // Flashcards Table (with FSRS state)
 // ============================================================================
-// Note: Flashcards are stored in LanceDB, not PostgreSQL
-// This table exists in the schema but is not used by the application
-// Keeping it for potential future migration or reference
+// Primary storage in PostgreSQL. Embeddings synced to LanceDB for vector search.
 
 export const flashcards = pgTable('flashcards', {
   id: uuid('id').primaryKey().defaultRandom(),
