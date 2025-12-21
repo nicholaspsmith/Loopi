@@ -69,7 +69,7 @@ export async function GET(
  * Delete flashcard
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ flashcardId: string }> }
 ) {
   try {
