@@ -9,6 +9,9 @@ import { test, expect } from '@playwright/test'
  */
 
 test.describe('API Key Update Flow', () => {
+  // Run tests serially since they modify shared state (user's API key)
+  test.describe.configure({ mode: 'serial' })
+
   test.beforeEach(async ({ page }) => {
     // Navigate to settings page
     await page.goto('/settings')
@@ -82,9 +85,12 @@ test.describe('API Key Update Flow', () => {
     await page.reload()
     await page.waitForLoadState('networkidle')
 
-    // Should show current key preview
-    await expect(page.locator('text=/Current API Key/i')).toBeVisible()
+    // Should show current key preview in the ApiKeyDisplay component
     await expect(page.locator('text=/sk-ant-.*12$/i')).toBeVisible()
+
+    // Update form should still be available
+    await expect(page.locator('text=/Update API Key/i')).toBeVisible()
+    await expect(page.locator('input[type="password"]#api-key')).toBeVisible()
   })
 
   test('should validate key before allowing update', async ({ page }) => {
@@ -99,8 +105,8 @@ test.describe('API Key Update Flow', () => {
 
     if (await validateButton.isVisible()) {
       await validateButton.click()
-      // Should show error
-      await expect(page.locator('text=/invalid/i').first()).toBeVisible({ timeout: 3000 })
+      // Should show error (format validation shows "too short" for invalid keys)
+      await expect(page.locator('text=/too short|invalid/i').first()).toBeVisible({ timeout: 3000 })
     }
 
     // Save button should be disabled for invalid keys

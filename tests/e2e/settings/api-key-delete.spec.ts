@@ -9,6 +9,9 @@ import { test, expect } from '@playwright/test'
  */
 
 test.describe('API Key Deletion Flow', () => {
+  // Run tests serially since they modify shared state (user's API key)
+  test.describe.configure({ mode: 'serial' })
+
   test.beforeEach(async ({ page }) => {
     // Navigate to settings page
     await page.goto('/settings')
@@ -175,8 +178,8 @@ test.describe('API Key Deletion Flow', () => {
     await page.reload()
     await page.waitForLoadState('networkidle')
 
-    // Should show Ollama fallback status
-    await expect(page.locator('text=/Using Ollama.*Free Local AI/i')).toBeVisible()
+    // Should show Ollama fallback status (use heading selector to be specific)
+    await expect(page.getByRole('heading', { name: /Using Ollama/i })).toBeVisible()
   })
 
   test('should handle delete errors gracefully', async ({ page }) => {
