@@ -69,20 +69,36 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Setup VPS directories
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
+          mkdir -p /opt/memoryloop/scripts
+          mkdir -p /opt/memoryloop/data/lancedb
+          mkdir -p /opt/memoryloop/data/postgres
+          mkdir -p /opt/memoryloop/data/ollama
+          mkdir -p /opt/memoryloop/backups
+          mkdir -p /opt/memoryloop/nginx
+          ENDSSH
+
+      - name: Copy deployment files
+        run: |
+          scp -i ~/.ssh/deploy_key docker-compose.prod.yml ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/memoryloop/
+          scp -i ~/.ssh/deploy_key scripts/deploy.sh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/memoryloop/scripts/
+          scp -i ~/.ssh/deploy_key nginx/nginx.conf ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/memoryloop/nginx/
+          scp -i ~/.ssh/deploy_key nginx/memoryloop.conf ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/memoryloop/nginx/
+          scp -i ~/.ssh/deploy_key nginx/ssl-params.conf ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/memoryloop/nginx/
+          ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "chmod +x /opt/memoryloop/scripts/deploy.sh"
+
       - name: Deploy to VPS
         run: |
           ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
           cd /opt/memoryloop
 
-          # Pull latest image
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          # Set image name for deploy script
+          export IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
           # Run deployment script
           ./scripts/deploy.sh
-
-          # Health check
-          sleep 10
-          curl -f http://localhost:3000/api/health || exit 1
           ENDSSH
 
       - name: Send deployment notification
