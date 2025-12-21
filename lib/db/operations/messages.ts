@@ -3,7 +3,7 @@ import { messages } from '@/lib/db/drizzle-schema'
 import { eq } from 'drizzle-orm'
 import type { Message, MessageRole } from '@/types'
 import { incrementMessageCount } from './conversations'
-import { syncMessageToLanceDB, updateMessageHasFlashcardsInLanceDB } from './messages-lancedb'
+import { syncMessageToLanceDB } from './messages-lancedb'
 
 /**
  * Message Database Operations
@@ -44,18 +44,14 @@ export async function createMessage(data: {
   // Increment conversation message count
   await incrementMessageCount(data.conversationId)
 
-  // Sync to LanceDB asynchronously (fire and forget)
-  // This generates the embedding and stores it in LanceDB
+  // Sync embedding to LanceDB asynchronously (fire and forget)
+  // LanceDB only stores id, userId, and embedding for vector search
   // Skip in test environment to avoid race conditions
   if (process.env.NODE_ENV !== 'test') {
     syncMessageToLanceDB({
       id: message.id,
-      conversationId: message.conversationId,
       userId: message.userId,
-      role: message.role as 'user' | 'assistant',
       content: message.content,
-      createdAt: message.createdAt.getTime(),
-      hasFlashcards: message.hasFlashcards,
     }).catch((error) => {
       console.error(`[Messages] Failed to sync message ${message.id} to LanceDB:`, error)
     })
@@ -174,12 +170,7 @@ export async function markMessageWithFlashcards(id: string): Promise<Message> {
     throw new Error(`Message not found: ${id}`)
   }
 
-  // Update in LanceDB asynchronously
-  if (process.env.NODE_ENV !== 'test') {
-    updateMessageHasFlashcardsInLanceDB(id).catch((error) => {
-      console.error(`[Messages] Failed to update hasFlashcards in LanceDB:`, error)
-    })
-  }
+  // No LanceDB update needed - hasFlashcards is only stored in PostgreSQL
 
   return {
     id: updatedMessage.id,
