@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import RatingButtons from './RatingButtons'
 
 /**
@@ -44,12 +44,15 @@ interface QuizCardProps {
 export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps) {
   const [isAnswerRevealed, setIsAnswerRevealed] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [prevFlashcardId, setPrevFlashcardId] = useState(flashcard.id)
 
   // Reset answer visibility and delete confirmation when flashcard changes
-  useEffect(() => {
+  // Uses React-recommended pattern: https://react.dev/learn/you-might-not-need-an-effect
+  if (flashcard.id !== prevFlashcardId) {
+    setPrevFlashcardId(flashcard.id)
     setIsAnswerRevealed(false)
     setShowDeleteConfirm(false)
-  }, [flashcard.id])
+  }
 
   const handleRevealAnswer = () => {
     setIsAnswerRevealed(true)

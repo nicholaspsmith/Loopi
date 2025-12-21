@@ -177,7 +177,7 @@ export default function SettingsPage() {
               </h3>
             </div>
             <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
-              You're currently using Ollama, a free local AI model. This is completely free and
+              You&apos;re currently using Ollama, a free local AI model. This is completely free and
               private, but responses may be slower. Add your Claude API key above for improved
               performance and quality.
             </p>

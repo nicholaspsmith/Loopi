@@ -38,8 +38,8 @@ export default function FallbackNotice() {
             Using Ollama (Free Local AI)
           </h3>
           <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
-            You're currently using Ollama, a free local AI model. For faster responses and improved
-            quality, consider adding your Claude API key.
+            You&apos;re currently using Ollama, a free local AI model. For faster responses and
+            improved quality, consider adding your Claude API key.
           </p>
           <Link
             href="/settings"

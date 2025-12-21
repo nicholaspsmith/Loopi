@@ -294,7 +294,7 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
             {mode === 'due' ? 'Quiz Complete!' : 'Practice Session Complete!'}
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            You've reviewed all {flashcards.length} flashcard
+            You&apos;ve reviewed all {flashcards.length} flashcard
             {flashcards.length !== 1 ? 's' : ''}. Great work!
           </p>
           <div className="flex gap-3 justify-center">
