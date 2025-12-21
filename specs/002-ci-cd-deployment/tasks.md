@@ -142,9 +142,9 @@
 
 ### Implementation
 
-- [ ] T037 [P] Create deployment documentation in docs/deployment.md (VPS setup, deployment process)
-- [ ] T038 [P] Create operations runbook in docs/operations.md (restart, rollback, backup/restore, troubleshooting)
-- [ ] T039 [P] Update README.md with production deployment badge and links
+- [x] T037 [P] Create deployment documentation in docs/deployment.md (VPS setup, deployment process)
+- [x] T038 [P] Create operations runbook in docs/operations.md (restart, rollback, backup/restore, troubleshooting)
+- [x] T039 [P] Update README.md with production deployment badge and links
 
 **Final Checkpoint**: Application in production, fully documented, automated CI/CD pipeline
 
