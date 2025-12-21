@@ -8,6 +8,8 @@ services:
       - '3000'
     environment:
       - NODE_ENV=production
+      - HOSTNAME=0.0.0.0
+      - PORT=3000
       - DATABASE_URL=${DATABASE_URL}
       - DATABASE_HOST=postgres
       - POSTGRES_USER=${POSTGRES_USER}
