@@ -4,11 +4,6 @@ const nextConfig: NextConfig = {
   // Enable standalone output for Docker deployment
   output: 'standalone',
 
-  // Enable instrumentation for LanceDB initialization on startup
-  experimental: {
-    instrumentationHook: true,
-  },
-
   // Performance optimizations
   reactStrictMode: true,
 
