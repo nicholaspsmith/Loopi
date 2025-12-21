@@ -12,7 +12,7 @@ import {
  * Get single flashcard by ID
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ flashcardId: string }> }
 ) {
   try {

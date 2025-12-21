@@ -19,7 +19,7 @@ const SaveApiKeySchema = z.object({
  *
  * Returns user's API key status (without decrypting the key)
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await auth()
 
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
  *
  * Delete user's Claude API key
  */
-export async function DELETE(request: NextRequest) {
+export async function DELETE(_request: NextRequest) {
   try {
     const session = await auth()
 
