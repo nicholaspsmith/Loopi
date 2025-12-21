@@ -14,6 +14,7 @@ export default function SettingsPage() {
   const [apiKeyData, setApiKeyData] = useState<GetApiKeyResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const fetchApiKeyStatus = async () => {
     try {
@@ -40,6 +41,9 @@ export default function SettingsPage() {
   }, [])
 
   const handleSaveApiKey = async (apiKey: string) => {
+    setSuccessMessage(null)
+    setError(null)
+
     const response = await fetch('/api/settings/api-key', {
       method: 'POST',
       headers: {
@@ -54,11 +58,17 @@ export default function SettingsPage() {
       throw new Error(data.error || 'Failed to save API key')
     }
 
+    // Show success message before refreshing (so it persists through re-render)
+    setSuccessMessage('API key saved successfully')
+
     // Refresh the API key status
     await fetchApiKeyStatus()
   }
 
   const handleDeleteApiKey = async () => {
+    setSuccessMessage(null)
+    setError(null)
+
     const response = await fetch('/api/settings/api-key', {
       method: 'DELETE',
     })
@@ -68,6 +78,9 @@ export default function SettingsPage() {
     if (!response.ok) {
       throw new Error(data.error || 'Failed to delete API key')
     }
+
+    // Show success message before refreshing
+    setSuccessMessage('API key deleted successfully')
 
     // Refresh the API key status
     await fetchApiKeyStatus()
@@ -80,21 +93,38 @@ export default function SettingsPage() {
       <section className="mb-12">
         <h2 className="text-xl font-semibold mb-2">Claude API Key</h2>
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
-          Provide your own Claude API key to use Claude for chat and flashcard generation.
-          Your key is encrypted and stored securely.
+          Provide your own Claude API key to use Claude for chat and flashcard generation. Your key
+          is encrypted and stored securely.
         </p>
+
+        {successMessage && (
+          <div
+            role="status"
+            className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-300 text-sm"
+          >
+            {successMessage}
+          </div>
+        )}
 
         {isLoading ? (
           <div className="text-gray-600 dark:text-gray-400">Loading...</div>
         ) : error ? (
           <div className="text-red-600">{error}</div>
         ) : apiKeyData?.exists ? (
-          <ApiKeyDisplay
-            keyPreview={apiKeyData.keyPreview || ''}
-            onDelete={handleDeleteApiKey}
-            isValid={apiKeyData.isValid}
-            lastValidatedAt={apiKeyData.lastValidatedAt || undefined}
-          />
+          <div className="space-y-6">
+            <ApiKeyDisplay
+              keyPreview={apiKeyData.keyPreview || ''}
+              onDelete={handleDeleteApiKey}
+              isValid={apiKeyData.isValid}
+              lastValidatedAt={apiKeyData.lastValidatedAt || undefined}
+            />
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Update API Key
+              </h3>
+              <ApiKeyForm onSave={handleSaveApiKey} />
+            </div>
+          </div>
         ) : (
           <ApiKeyForm onSave={handleSaveApiKey} />
         )}
