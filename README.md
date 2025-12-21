@@ -1,5 +1,8 @@
 # MemoryLoop
 
+[![CI](https://github.com/nicholaspsmith/memoryloop/actions/workflows/ci.yml/badge.svg)](https://github.com/nicholaspsmith/memoryloop/actions/workflows/ci.yml)
+[![Deploy](https://github.com/nicholaspsmith/memoryloop/actions/workflows/deploy.yml/badge.svg)](https://github.com/nicholaspsmith/memoryloop/actions/workflows/deploy.yml)
+
 MemoryLoop is a web application that enables you to learn through conversation with Claude and convert those conversations into flashcards for spaced repetition practice.
 
 ## Features
@@ -179,14 +182,27 @@ npm run format
 
 ## Deployment
 
-MemoryLoop can be deployed to Vercel:
+MemoryLoop uses Docker-based deployment with GitHub Actions CI/CD:
 
-1. Push your code to GitHub
-2. Import the repository in Vercel
-3. Configure environment variables
-4. Deploy
+- **Production URL**: [memoryloop.nicholaspsmith.com](https://memoryloop.nicholaspsmith.com)
+- **CI/CD**: Automated testing and deployment on merge to main
 
-For detailed deployment instructions, see [specs/002-ci-cd-deployment/spec.md](specs/002-ci-cd-deployment/spec.md).
+### Quick Start
+
+```bash
+# Local development with Docker
+docker compose up -d
+
+# Production deployment (see full guide)
+./scripts/deploy.sh
+```
+
+### Documentation
+
+- [Deployment Guide](docs/deployment.md) - VPS setup and deployment process
+- [Operations Runbook](docs/operations.md) - Restart, rollback, backup procedures
+- [GitHub Secrets Setup](docs/github-secrets-setup.md) - Required secrets configuration
+- [Uptime Monitoring](docs/uptime-monitoring.md) - External monitoring setup
 
 ## Contributing
 

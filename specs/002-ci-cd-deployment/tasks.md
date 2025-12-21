@@ -72,7 +72,7 @@
 - [x] T016 [US3] Create deploy user with sudo access and SSH key authentication
 - [x] T017 [US3] Configure SSH hardening (disable password auth, fail2ban)
 - [x] T018 [US3] Create directory structure on VPS (/opt/memoryloop, /opt/memoryloop/data, etc.)
-- [ ] T019 [P] [US3] Create VPS setup script in scripts/setup-vps.sh (automate server configuration)
+- [x] T019 [P] [US3] Create VPS setup script in scripts/setup-vps.sh (automate server configuration)
 
 **Checkpoint**: VPS accessible, Docker ready, secure SSH configured
 
@@ -105,12 +105,12 @@
 
 ### Implementation
 
-- [ ] T026 [P] [US5] Create deployment script in scripts/deploy.sh (pull image, stop old container, start new, health check)
-- [ ] T027 [US5] Configure GitHub Actions to trigger deployment on merge to main branch in .github/workflows/deploy.yml
-- [ ] T028 [P] [US5] Add deployment notifications (Discord/Slack webhook on success/failure)
-- [ ] T029 [P] [US5] Create rollback script in scripts/rollback.sh (revert to previous Docker image)
-- [ ] T030 [P] [US5] Set up automated database backups in scripts/backup-db.sh (daily cron job, backup to S3/B2)
-- [ ] T031 [US5] Configure log rotation for Docker containers (Docker logging driver)
+- [x] T026 [P] [US5] Create deployment script in scripts/deploy.sh (pull image, stop old container, start new, health check)
+- [x] T027 [US5] Configure GitHub Actions to trigger deployment on merge to main branch in .github/workflows/deploy.yml
+- [x] T028 [P] [US5] Add deployment notifications (Discord/Slack webhook on success/failure)
+- [x] T029 [P] [US5] Create rollback script in scripts/rollback.sh (revert to previous Docker image)
+- [x] T030 [P] [US5] Set up automated database backups in scripts/backup-db.sh (daily cron job, backup to S3/B2)
+- [x] T031 [US5] Configure log rotation for Docker containers (Docker logging driver)
 
 **Checkpoint**: Automated deployment working, can deploy with git push
 
@@ -124,11 +124,11 @@
 
 ### Implementation
 
-- [ ] T032 [P] [US6] Set up application logging in lib/logger.ts (structured logs to stdout)
-- [ ] T033 [P] [US6] Configure Docker log aggregation (send to external service or local file)
-- [ ] T034 [P] [US6] Add error tracking with Sentry in next.config.ts (optional, can be added later)
-- [ ] T035 [US6] Set up uptime monitoring (UptimeRobot, Pingdom, or self-hosted)
-- [ ] T036 [P] [US6] Create monitoring dashboard script in scripts/monitor.sh (check health, disk usage, memory)
+- [x] T032 [P] [US6] Set up application logging in lib/logger.ts (structured logs to stdout)
+- [x] T033 [P] [US6] Configure Docker log aggregation (send to external service or local file)
+- [x] T034 [P] [US6] ~~Add error tracking with Sentry~~ Moved to 007-sentry-error-tracking
+- [x] T035 [US6] Set up uptime monitoring (UptimeRobot, Pingdom, or self-hosted) - see docs/uptime-monitoring.md
+- [x] T036 [P] [US6] Create monitoring dashboard script in scripts/monitor.sh (check health, disk usage, memory)
 
 **Checkpoint**: Application deployed, monitored, and accessible at memoryloop.nicholaspsmith.com
 
@@ -142,9 +142,9 @@
 
 ### Implementation
 
-- [ ] T037 [P] Create deployment documentation in docs/deployment.md (VPS setup, deployment process)
-- [ ] T038 [P] Create operations runbook in docs/operations.md (restart, rollback, backup/restore, troubleshooting)
-- [ ] T039 [P] Update README.md with production deployment badge and links
+- [x] T037 [P] Create deployment documentation in docs/deployment.md (VPS setup, deployment process)
+- [x] T038 [P] Create operations runbook in docs/operations.md (restart, rollback, backup/restore, troubleshooting)
+- [x] T039 [P] Update README.md with production deployment badge and links
 
 **Final Checkpoint**: Application in production, fully documented, automated CI/CD pipeline
 
