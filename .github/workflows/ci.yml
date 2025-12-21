@@ -85,6 +85,7 @@ jobs:
           NEXTAUTH_URL=http://localhost:3000
           OLLAMA_BASE_URL=http://localhost:11434
           ENCRYPTION_KEY=test-encryption-key-32-chars-long
+          API_KEY_ENCRYPTION_SECRET=test-api-key-encryption-secret-32
           EOF
 
       - name: Run database migrations
@@ -123,6 +124,7 @@ jobs:
         run: npm run build
         env:
           SKIP_ENV_VALIDATION: true
+          API_KEY_ENCRYPTION_SECRET: ${{ secrets.API_KEY_ENCRYPTION_SECRET }}
 
       - name: Check build output
         run: |
