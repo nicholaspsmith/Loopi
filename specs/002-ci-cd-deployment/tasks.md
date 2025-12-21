@@ -105,12 +105,12 @@
 
 ### Implementation
 
-- [ ] T026 [P] [US5] Create deployment script in scripts/deploy.sh (pull image, stop old container, start new, health check)
-- [ ] T027 [US5] Configure GitHub Actions to trigger deployment on merge to main branch in .github/workflows/deploy.yml
-- [ ] T028 [P] [US5] Add deployment notifications (Discord/Slack webhook on success/failure)
-- [ ] T029 [P] [US5] Create rollback script in scripts/rollback.sh (revert to previous Docker image)
-- [ ] T030 [P] [US5] Set up automated database backups in scripts/backup-db.sh (daily cron job, backup to S3/B2)
-- [ ] T031 [US5] Configure log rotation for Docker containers (Docker logging driver)
+- [x] T026 [P] [US5] Create deployment script in scripts/deploy.sh (pull image, stop old container, start new, health check)
+- [x] T027 [US5] Configure GitHub Actions to trigger deployment on merge to main branch in .github/workflows/deploy.yml
+- [x] T028 [P] [US5] Add deployment notifications (Discord/Slack webhook on success/failure)
+- [x] T029 [P] [US5] Create rollback script in scripts/rollback.sh (revert to previous Docker image)
+- [x] T030 [P] [US5] Set up automated database backups in scripts/backup-db.sh (daily cron job, backup to S3/B2)
+- [x] T031 [US5] Configure log rotation for Docker containers (Docker logging driver)
 
 **Checkpoint**: Automated deployment working, can deploy with git push
 
