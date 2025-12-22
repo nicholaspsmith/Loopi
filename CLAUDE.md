@@ -2,6 +2,17 @@
 
 This project uses speckit for feature specification and task tracking.
 
+## Feature-Specific Context
+
+When working on a feature branch (e.g., `003-flashcard-rating-labels`), check for a matching
+specs directory at `specs/[branch-name]/`. If it exists, read these files for feature context:
+
+- `specs/[branch-name]/spec.md` - Feature specification and requirements
+- `specs/[branch-name]/plan.md` - Implementation plan and technical decisions
+- `specs/[branch-name]/tasks.md` - Task breakdown and progress tracking
+
+This feature-specific context supplements the project-wide information below.
+
 ## Task Tracking
 
 Tasks are tracked in markdown files at `specs/[feature-name]/tasks.md` using simple checkboxes:
@@ -47,7 +58,7 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 
 - TypeScript 5.7
 - Node.js 20+
-- Next.js 16.0.10
+- Next.js 16.0
 - React 19.2
 
 ### Styling
@@ -58,7 +69,7 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 
 - PostgreSQL (via postgres 3.4, drizzle-orm 0.45)
 - LanceDB 0.22 (vector database)
-- pgvector 0.2.1 (vector embeddings)
+- pgvector 0.2 (vector embeddings)
 
 ### AI/ML
 
@@ -68,7 +79,7 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 
 ### Authentication
 
-- NextAuth 5.0
+- NextAuth 5.0.0
 
 ### Testing
 
