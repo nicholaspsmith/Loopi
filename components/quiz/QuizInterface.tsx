@@ -48,7 +48,7 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
   const [isLoading, setIsLoading] = useState(!initialFlashcards.length)
   const [error, setError] = useState<string | null>(null)
   const [isCompleted, setIsCompleted] = useState(false)
-  const [isSubmittingRating, setIsSubmittingRating] = useState(false)
+  const [syncError, setSyncError] = useState<string | null>(null)
   const [mode, setMode] = useState<'due' | 'all'>('due')
   const [totalCards, setTotalCards] = useState(0)
 
@@ -92,10 +92,18 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
   }
 
   const handleRate = async (flashcardId: string, rating: number) => {
-    try {
-      setIsSubmittingRating(true)
-      setError(null)
+    // Optimistic update: move to next card immediately for instant feedback
+    setSyncError(null)
 
+    if (currentIndex < flashcards.length - 1) {
+      setCurrentIndex(currentIndex + 1)
+    } else {
+      // Completed all cards
+      setIsCompleted(true)
+    }
+
+    // Send rating to server in background (fire-and-forget with error handling)
+    try {
       const response = await fetch('/api/quiz/rate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -103,26 +111,17 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
       })
 
       if (!response.ok) {
-        throw new Error('Failed to rate flashcard')
-      }
-
-      const data = await response.json()
-
-      if (data.success) {
-        // Move to next card
-        if (currentIndex < flashcards.length - 1) {
-          setCurrentIndex(currentIndex + 1)
-        } else {
-          // Completed all cards
-          setIsCompleted(true)
-        }
-      } else {
-        throw new Error(data.error || 'Failed to rate flashcard')
+        const data = await response.json().catch(() => ({}))
+        console.error('[Quiz] Rating failed:', data.error || response.statusText)
+        // Show non-blocking error toast
+        setSyncError('Failed to save rating. Your progress may not be saved.')
+        setTimeout(() => setSyncError(null), 4000)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
-      setIsSubmittingRating(false)
+      console.error('[Quiz] Rating error:', err)
+      // Show non-blocking error toast
+      setSyncError('Failed to save rating. Your progress may not be saved.')
+      setTimeout(() => setSyncError(null), 4000)
     }
   }
 
@@ -342,10 +341,19 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
         <QuizCard flashcard={currentFlashcard} onRate={handleRate} onDelete={handleDelete} />
       </div>
 
-      {/* Submitting indicator */}
-      {isSubmittingRating && (
-        <div className="text-center text-gray-600 dark:text-gray-400">
-          <p>Saving your rating...</p>
+      {/* Sync error toast (non-blocking) */}
+      {syncError && (
+        <div className="fixed bottom-4 right-4 bg-yellow-100 dark:bg-yellow-900 border border-yellow-400 dark:border-yellow-600 text-yellow-800 dark:text-yellow-200 px-4 py-3 rounded-lg shadow-lg max-w-sm animate-fade-in">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <p className="text-sm">{syncError}</p>
+          </div>
         </div>
       )}
     </div>
