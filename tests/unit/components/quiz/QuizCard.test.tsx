@@ -63,8 +63,8 @@ describe('QuizCard', () => {
       render(<QuizCard flashcard={mockFlashcard} onRate={mockOnRate} />)
 
       expect(screen.queryByRole('button', { name: /very hard/i })).not.toBeInTheDocument()
-      expect(screen.queryByRole('button', { name: /as Hard/i })).not.toBeInTheDocument()
-      expect(screen.queryByRole('button', { name: /as Easy/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /\bHard\b/ })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /(?<!Very )Easy/ })).not.toBeInTheDocument()
       expect(screen.queryByRole('button', { name: /very easy/i })).not.toBeInTheDocument()
     })
   })
@@ -106,8 +106,8 @@ describe('QuizCard', () => {
       await user.click(revealButton)
 
       expect(screen.getByRole('button', { name: /very hard/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /as Hard/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /as Easy/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /\bHard\b/ })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /(?<!Very )Easy/ })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /very easy/i })).toBeInTheDocument()
     })
 
@@ -151,7 +151,7 @@ describe('QuizCard', () => {
       })
       await user.click(revealButton)
 
-      const hardButton = screen.getByRole('button', { name: /as Hard/i })
+      const hardButton = screen.getByRole('button', { name: /\bHard\b/ })
       await user.click(hardButton)
 
       expect(mockOnRate).toHaveBeenCalledWith(mockFlashcard.id, 2)
@@ -166,7 +166,7 @@ describe('QuizCard', () => {
       })
       await user.click(revealButton)
 
-      const easyButton = screen.getByRole('button', { name: /as Easy/i })
+      const easyButton = screen.getByRole('button', { name: /(?<!Very )Easy/ })
       await user.click(easyButton)
 
       expect(mockOnRate).toHaveBeenCalledWith(mockFlashcard.id, 3)
@@ -196,7 +196,7 @@ describe('QuizCard', () => {
       })
       await user.click(revealButton)
 
-      const easyButton = screen.getByRole('button', { name: /as Easy/i })
+      const easyButton = screen.getByRole('button', { name: /(?<!Very )Easy/ })
       await user.click(easyButton)
 
       expect(mockOnRate).toHaveBeenCalledTimes(1)
@@ -345,7 +345,7 @@ describe('QuizCard', () => {
       })
       await user.click(revealButton)
 
-      const easyButton = screen.getByRole('button', { name: /as Easy/i })
+      const easyButton = screen.getByRole('button', { name: /(?<!Very )Easy/ })
 
       // Rapid clicks
       await user.click(easyButton)
