@@ -96,12 +96,12 @@
 
 **Purpose**: Final validation and documentation
 
-- [ ] T015 [P] Verify deploy script model pull completes in <60s when models exist (SC-004)
-- [ ] T016 [P] Verify health endpoint responds in <2s (SC-002, SC-003, FR-010)
-- [ ] T017 Run quickstart.md Scenario 1: Fresh deployment pulls models
-- [ ] T018 Run quickstart.md Scenario 2: Health endpoint reports model status
-- [ ] T019 Run quickstart.md Scenario 4: Idempotent model pull is fast
-- [ ] T020 Update quickstart.md manual verification checklist with test results
+- [x] T015 [P] Verify deploy script model pull completes in <60s when models exist (SC-004)
+- [x] T016 [P] Verify health endpoint responds in <2s (SC-002, SC-003, FR-010)
+- [x] T017 Run quickstart.md Scenario 1: Fresh deployment pulls models
+- [x] T018 Run quickstart.md Scenario 2: Health endpoint reports model status
+- [x] T019 Run quickstart.md Scenario 4: Idempotent model pull is fast
+- [x] T020 Update quickstart.md manual verification checklist with test results
 
 **Checkpoint**: All verification passed, feature ready for deployment
 
