@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Commit message validation hook
+# See specs/008-pre-commit-hooks for documentation
+#
+# Validates commit messages against .claude/rules.md:
+# - Subject line max 72 characters
+# - Imperative mood (Add not Added)
+# - Body only contains Co-Authored-By
+# - No AI attribution text
+#
+# Bypass with: git commit --no-verify
+
+set -e
+
+COMMIT_MSG_FILE="$1"
+
+if [ ! -f "$COMMIT_MSG_FILE" ]; then
+    echo "❌ Commit message file not found: $COMMIT_MSG_FILE"
+    exit 1
+fi
+
+# Run the TypeScript validator
+if ! npx tsx scripts/hooks/commit-msg-validator.ts "$COMMIT_MSG_FILE"; then
+    echo ""
+    echo "❌ Commit message validation failed."
+    echo ""
+    echo "To bypass (not recommended): git commit --no-verify"
+    exit 1
+fi
