@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Pre-commit hook for code quality validation
+# See specs/008-pre-commit-hooks for documentation
+#
+# Runs lint-staged to check:
+# - TypeScript type errors (tsc --noEmit)
+# - ESLint errors with auto-fix
+# - Prettier formatting with auto-fix
+#
+# Bypass with: git commit --no-verify
+
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# Run lint-staged for type checking, linting, and formatting
+if ! npx lint-staged; then
+    echo ""
+    echo "❌ Pre-commit checks failed."
+    echo ""
+    echo "Please fix the issues above before committing."
+    echo "See .claude/rules.md for code quality standards."
+    echo ""
+    echo "To bypass (not recommended): git commit --no-verify"
+    exit 1
+fi
+
+echo "✅ Pre-commit checks passed."
