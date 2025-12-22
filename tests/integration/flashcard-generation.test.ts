@@ -326,7 +326,12 @@ Photosynthesis is essential for life on Earth because it produces oxygen and for
     await deleteFlashcard(flashcard.id)
   })
 
-  it('should handle questions with various formats', async () => {
+  it('should handle questions with various formats', async function () {
+    if (!ollamaAvailable) {
+      console.log('Skipping: Ollama not available')
+      return
+    }
+
     const testContent = `Machine Learning concepts:
 - Supervised learning uses labeled data
 - Unsupervised learning finds patterns in unlabeled data
@@ -352,7 +357,12 @@ Common algorithms include:
     })
   }, 15000)
 
-  it('should respect maxFlashcards limit', async () => {
+  it('should respect maxFlashcards limit', async function () {
+    if (!ollamaAvailable) {
+      console.log('Skipping: Ollama not available')
+      return
+    }
+
     const longContent = `Photosynthesis is a complex process. `.repeat(50)
 
     const flashcards = await generateFlashcardsFromContent(longContent, {
@@ -362,7 +372,12 @@ Common algorithms include:
     expect(flashcards.length).toBeLessThanOrEqual(3)
   }, 15000)
 
-  it('should handle content with code examples', async () => {
+  it('should handle content with code examples', async function () {
+    if (!ollamaAvailable) {
+      console.log('Skipping: Ollama not available')
+      return
+    }
+
     const codeContent = `JavaScript arrow functions are a concise syntax for writing functions.
 
 Example:
