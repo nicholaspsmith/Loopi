@@ -23,14 +23,14 @@ Implement comprehensive git hooks for code quality enforcement: pre-commit hooks
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. Documentation-First | ✅ PASS | Spec complete with 5 user stories, 17 FRs, 10 SCs |
-| II. Test-First (TDD) | ✅ PASS | Tests will be written for hook scripts and commit-msg parser |
-| III. Modularity | ✅ PASS | Separate hooks (pre-commit, commit-msg, pre-push), modular validation scripts |
-| IV. Simplicity (YAGNI) | ✅ PASS | Using native .githooks + lint-staged vs Husky abstraction |
-| V. Observability | ✅ PASS | Clear error messages with actionable output (FR-005) |
-| VI. Atomic Commits | ✅ PASS | This feature enforces commit discipline via commit-msg hook |
+| Principle              | Status  | Notes                                                                         |
+| ---------------------- | ------- | ----------------------------------------------------------------------------- |
+| I. Documentation-First | ✅ PASS | Spec complete with 5 user stories, 17 FRs, 10 SCs                             |
+| II. Test-First (TDD)   | ✅ PASS | Tests will be written for hook scripts and commit-msg parser                  |
+| III. Modularity        | ✅ PASS | Separate hooks (pre-commit, commit-msg, pre-push), modular validation scripts |
+| IV. Simplicity (YAGNI) | ✅ PASS | Using native .githooks + lint-staged vs Husky abstraction                     |
+| V. Observability       | ✅ PASS | Clear error messages with actionable output (FR-005)                          |
+| VI. Atomic Commits     | ✅ PASS | This feature enforces commit discipline via commit-msg hook                   |
 
 **Gate Result**: ✅ PASS - No violations requiring justification
 
@@ -107,18 +107,18 @@ package.json             # MODIFY: Add prepare script, lint-staged dep
 
 ### Unit Tests (tests/unit/scripts/hooks/)
 
-| Test File | Covers | Key Cases |
-|-----------|--------|-----------|
+| Test File                    | Covers                                | Key Cases                                                    |
+| ---------------------------- | ------------------------------------- | ------------------------------------------------------------ |
 | commit-msg-validator.test.ts | scripts/hooks/commit-msg-validator.ts | Subject length, imperative mood, body format, AI attribution |
-| test-audit.test.ts | scripts/hooks/test-audit.ts | No assertions, weak assertions, new vs existing detection |
+| test-audit.test.ts           | scripts/hooks/test-audit.ts           | No assertions, weak assertions, new vs existing detection    |
 
 ### Integration Tests (tests/integration/)
 
-| Test File | Covers | Key Cases |
-|-----------|--------|-----------|
-| pre-commit-hook.test.ts | .githooks/pre-commit | Type errors block, lint errors block, clean code passes |
-| commit-msg-hook.test.ts | .githooks/commit-msg | Invalid messages blocked, valid messages pass |
-| pre-push-hook.test.ts | .githooks/pre-push | Failing tests block, retry on flaky, passing tests proceed |
+| Test File               | Covers               | Key Cases                                                  |
+| ----------------------- | -------------------- | ---------------------------------------------------------- |
+| pre-commit-hook.test.ts | .githooks/pre-commit | Type errors block, lint errors block, clean code passes    |
+| commit-msg-hook.test.ts | .githooks/commit-msg | Invalid messages blocked, valid messages pass              |
+| pre-push-hook.test.ts   | .githooks/pre-push   | Failing tests block, retry on flaky, passing tests proceed |
 
 ### Manual Verification
 
@@ -129,4 +129,3 @@ package.json             # MODIFY: Add prepare script, lint-staged dep
 ## Complexity Tracking
 
 > No violations requiring justification. Using native .githooks with lint-staged for simplicity over Husky abstraction. Custom commit validator preferred over commitlint due to non-standard project rules.
-

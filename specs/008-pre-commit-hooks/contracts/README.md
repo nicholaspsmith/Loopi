@@ -43,8 +43,8 @@ function parseAndValidate(message: string): CommitValidationResult
 function auditTests(testFiles: string[], options: AuditOptions): void
 
 interface AuditOptions {
-  blockNewTests: boolean  // Exit 1 for new tests with issues
-  warnExisting: boolean   // Just warn for existing tests
+  blockNewTests: boolean // Exit 1 for new tests with issues
+  warnExisting: boolean // Just warn for existing tests
 }
 ```
 

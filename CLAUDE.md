@@ -42,6 +42,7 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 - Atomic Commits & Version Control Discipline. Adhere to .claude/rules.md
 
 ## Active Technologies
+
 - TypeScript 5.7, Node.js 20+, Bash (for hook scripts) + Husky (hook management), lint-staged (staged file operations), commitlint (commit message validation) (008-pre-commit-hooks)
 - N/A (hooks are stateless) (008-pre-commit-hooks)
 

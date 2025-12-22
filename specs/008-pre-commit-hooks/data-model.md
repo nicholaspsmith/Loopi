@@ -23,6 +23,7 @@ interface LintStagedConfig {
 ```
 
 **Example**:
+
 ```javascript
 {
   '*.{ts,tsx}': () => 'tsc --noEmit',
@@ -41,8 +42,8 @@ interface LintStagedConfig {
 
 ```typescript
 interface CommitMessage {
-  subject: string      // Max 72 chars, imperative mood
-  body?: string        // ONLY "Co-Authored-By: Claude <noreply@anthropic.com>"
+  subject: string // Max 72 chars, imperative mood
+  body?: string // ONLY "Co-Authored-By: Claude <noreply@anthropic.com>"
 }
 
 interface CommitValidationResult {
@@ -66,13 +67,13 @@ interface CommitValidationWarning {
 
 **Validation Rules**:
 
-| Rule | Constraint | Error Level |
-|------|------------|-------------|
-| subject-length | ≤ 72 characters | Error (blocks commit) |
-| imperative-mood | No past tense ("Added", "Fixed") | Error (blocks commit) |
-| body-format | Must be exactly Co-Authored-By line | Error (blocks commit) |
-| ai-attribution | No "Generated with Claude Code" | Error (blocks commit) |
-| multiple-responsibilities | Single change per commit | Warning (allows commit) |
+| Rule                      | Constraint                          | Error Level             |
+| ------------------------- | ----------------------------------- | ----------------------- |
+| subject-length            | ≤ 72 characters                     | Error (blocks commit)   |
+| imperative-mood           | No past tense ("Added", "Fixed")    | Error (blocks commit)   |
+| body-format               | Must be exactly Co-Authored-By line | Error (blocks commit)   |
+| ai-attribution            | No "Generated with Claude Code"     | Error (blocks commit)   |
+| multiple-responsibilities | Single change per commit            | Warning (allows commit) |
 
 ---
 
@@ -87,8 +88,8 @@ interface TestAuditReport {
   totalTests: number
   findings: TestAuditFinding[]
   summary: {
-    errors: number    // Block (new tests)
-    warnings: number  // Warn (existing tests)
+    errors: number // Block (new tests)
+    warnings: number // Warn (existing tests)
   }
 }
 
@@ -97,7 +98,7 @@ interface TestAuditFinding {
   testName: string
   line: number
   issue: TestAuditIssue
-  isNewTest: boolean  // Determines error vs warning
+  isNewTest: boolean // Determines error vs warning
 }
 
 type TestAuditIssue =
@@ -118,7 +119,7 @@ const WEAK_ASSERTIONS = [
   'toBeNaN',
 ] as const
 
-type WeakAssertion = typeof WEAK_ASSERTIONS[number]
+type WeakAssertion = (typeof WEAK_ASSERTIONS)[number]
 ```
 
 ---
@@ -129,7 +130,7 @@ type WeakAssertion = typeof WEAK_ASSERTIONS[number]
 enum HookExitCode {
   SUCCESS = 0,
   VALIDATION_ERROR = 1,
-  HOOK_ERROR = 2,  // Hook itself failed
+  HOOK_ERROR = 2, // Hook itself failed
 }
 ```
 
@@ -247,15 +248,23 @@ This feature does not introduce any database tables or persistent storage. All "
 // Commit message validation
 const SUBJECT_MAX_LENGTH = 72
 const PAST_TENSE_PREFIXES = [
-  'Added', 'Fixed', 'Updated', 'Created', 'Implemented',
-  'Modified', 'Changed', 'Removed', 'Deleted', 'Resolved'
+  'Added',
+  'Fixed',
+  'Updated',
+  'Created',
+  'Implemented',
+  'Modified',
+  'Changed',
+  'Removed',
+  'Deleted',
+  'Resolved',
 ]
 const THIRD_PERSON_PREFIXES = ['Adds', 'Fixes', 'Updates', 'Creates', 'Implements']
 const REQUIRED_COAUTHOR = 'Co-Authored-By: Claude <noreply@anthropic.com>'
 const FORBIDDEN_TEXT = ['Generated with', 'Claude Code', '🤖']
 
 // Performance targets (from spec)
-const PRE_COMMIT_TIMEOUT_MS = 30_000  // SC-003
-const PRE_PUSH_TIMEOUT_MS = 300_000   // SC-004
-const COMMIT_MSG_TIMEOUT_MS = 1_000   // SC-010
+const PRE_COMMIT_TIMEOUT_MS = 30_000 // SC-003
+const PRE_PUSH_TIMEOUT_MS = 300_000 // SC-004
+const COMMIT_MSG_TIMEOUT_MS = 1_000 // SC-010
 ```

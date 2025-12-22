@@ -162,7 +162,7 @@ As a developer, when tests fail before PR creation, I want to receive suggestion
 
 - Developers have standard development tools installed (Node.js, npm)
 - The project already has type checking, linting, and formatting tools configured
-- Tests are organized in standard locations (tests/, __tests__, *.test.ts, etc.)
+- Tests are organized in standard locations (tests/, **tests**, \*.test.ts, etc.)
 - Git hooks can be configured via the .githooks directory pattern already in use
 - Bypass flags are used responsibly and only for exceptional circumstances
 - Project commit message rules are defined in .claude/rules.md and are the source of truth for validation

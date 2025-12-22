@@ -28,11 +28,11 @@
 
 ### Alternatives Considered
 
-| Tool | Rejected Because |
-|------|------------------|
-| Husky | Unnecessary abstraction; recent reliability issues in v9; project already has working alternative |
-| simple-git-hooks | Only allows ONE command per hook; too limiting for lint-staged + multiple checks |
-| Lefthook | Requires binary installation; overkill for single-developer workflow |
+| Tool             | Rejected Because                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| Husky            | Unnecessary abstraction; recent reliability issues in v9; project already has working alternative |
+| simple-git-hooks | Only allows ONE command per hook; too limiting for lint-staged + multiple checks                  |
+| Lefthook         | Requires binary installation; overkill for single-developer workflow                              |
 
 ---
 
@@ -90,12 +90,12 @@ module.exports = {
 
 Project rules in `.claude/rules.md` are non-standard:
 
-| Rule | commitlint Support |
-|------|-------------------|
-| Max 72 char subject | ✅ Yes (configurable) |
-| Imperative mood ("Add" not "Added") | ❌ No built-in, custom rule needed |
+| Rule                                    | commitlint Support                          |
+| --------------------------------------- | ------------------------------------------- |
+| Max 72 char subject                     | ✅ Yes (configurable)                       |
+| Imperative mood ("Add" not "Added")     | ❌ No built-in, custom rule needed          |
 | Body = ONLY "Co-Authored-By: Claude..." | ❌ No, commitlint expects conventional body |
-| No AI attribution | ❌ No built-in |
+| No AI attribution                       | ❌ No built-in                              |
 
 commitlint enforces conventional commits format (feat:, fix:, docs:) which doesn't match project conventions.
 
@@ -113,10 +113,10 @@ const FORBIDDEN_PATTERNS = /Generated with|Claude Code/i
 
 ### Alternatives Considered
 
-| Approach | Rejected Because |
-|----------|------------------|
-| commitlint | Enforces conventional commits format; custom rules are complex |
-| Pure bash script | Regex is error-prone; harder to test; less maintainable |
+| Approach         | Rejected Because                                               |
+| ---------------- | -------------------------------------------------------------- |
+| commitlint       | Enforces conventional commits format; custom rules are complex |
+| Pure bash script | Regex is error-prone; harder to test; less maintainable        |
 
 ---
 
@@ -160,35 +160,30 @@ export default [
 ### Weak Assertion Patterns to Detect
 
 ```typescript
-const WEAK_ASSERTIONS = [
-  'toBeTruthy',
-  'toBeDefined',
-  'toBeFalsy',
-  'toBeUndefined',
-]
+const WEAK_ASSERTIONS = ['toBeTruthy', 'toBeDefined', 'toBeFalsy', 'toBeUndefined']
 ```
 
 ### Alternatives Considered
 
-| Approach | Rejected Because |
-|----------|------------------|
+| Approach               | Rejected Because                                                        |
+| ---------------------- | ----------------------------------------------------------------------- |
 | Vitest custom reporter | Only works during test run; adds overhead; can't pre-check before tests |
-| ESLint only | Cannot detect weak assertions without complex custom rules |
-| Custom analyzer only | Reinvents wheel for basic "no assertion" detection |
+| ESLint only            | Cannot detect weak assertions without complex custom rules              |
+| Custom analyzer only   | Reinvents wheel for basic "no assertion" detection                      |
 
 ---
 
 ## Summary of Technology Choices
 
-| Area | Choice | Dependencies |
-|------|--------|--------------|
-| Hook management | Native .githooks + prepare script | None |
-| Staged file checks | lint-staged | lint-staged |
-| Type checking | tsc --noEmit (full project) | None (existing) |
-| Linting | ESLint + vitest plugin | eslint-plugin-vitest |
-| Formatting | Prettier | None (existing) |
-| Commit message | Custom TypeScript validator | None |
-| Test audit | ESLint + custom analyzer | eslint-plugin-vitest |
+| Area               | Choice                            | Dependencies         |
+| ------------------ | --------------------------------- | -------------------- |
+| Hook management    | Native .githooks + prepare script | None                 |
+| Staged file checks | lint-staged                       | lint-staged          |
+| Type checking      | tsc --noEmit (full project)       | None (existing)      |
+| Linting            | ESLint + vitest plugin            | eslint-plugin-vitest |
+| Formatting         | Prettier                          | None (existing)      |
+| Commit message     | Custom TypeScript validator       | None                 |
+| Test audit         | ESLint + custom analyzer          | eslint-plugin-vitest |
 
 ---
 
@@ -207,9 +202,9 @@ const WEAK_ASSERTIONS = [
 
 ## Open Questions Resolved
 
-| Question | Resolution |
-|----------|------------|
-| Husky vs native hooks? | Native - already working, simpler |
-| commitlint vs custom? | Custom - project rules non-standard |
+| Question                        | Resolution                             |
+| ------------------------------- | -------------------------------------- |
+| Husky vs native hooks?          | Native - already working, simpler      |
+| commitlint vs custom?           | Custom - project rules non-standard    |
 | How to type-check staged files? | Full project check via function syntax |
-| How to detect weak assertions? | Custom TypeScript AST analyzer |
+| How to detect weak assertions?  | Custom TypeScript AST analyzer         |

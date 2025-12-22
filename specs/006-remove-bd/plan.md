@@ -23,14 +23,14 @@ Remove the beads (bd) task tracking tool from the project, consolidating all tas
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. Documentation-First | PASS | Spec complete with user stories and acceptance criteria |
-| II. Test-First (TDD) | N/A | No runtime code; verification via grep/inspection |
-| III. Modularity | PASS | Isolated change to tooling configuration |
-| IV. Simplicity (YAGNI) | PASS | Removing complexity, not adding |
-| V. Observability | N/A | No runtime behavior |
-| VI. Atomic Commits | PASS | Will follow .claude/rules.md |
+| Principle              | Status | Notes                                                   |
+| ---------------------- | ------ | ------------------------------------------------------- |
+| I. Documentation-First | PASS   | Spec complete with user stories and acceptance criteria |
+| II. Test-First (TDD)   | N/A    | No runtime code; verification via grep/inspection       |
+| III. Modularity        | PASS   | Isolated change to tooling configuration                |
+| IV. Simplicity (YAGNI) | PASS   | Removing complexity, not adding                         |
+| V. Observability       | N/A    | No runtime behavior                                     |
+| VI. Atomic Commits     | PASS   | Will follow .claude/rules.md                            |
 
 **Gate Status**: PASS - No violations. Proceed to implementation.
 
@@ -68,6 +68,7 @@ package-lock.json              # Updated after npm install
 ## Phase 0: Research
 
 This feature requires no research. It is a straightforward removal of:
+
 1. A npm package (bd/beads) from dependencies
 2. A configuration directory (.beads)
 3. References in a command file (speckit.taskstoissues.md)
@@ -101,6 +102,7 @@ rm -rf .beads/
 #### 3. Update speckit.taskstoissues.md
 
 The command file needs to be rewritten to:
+
 - Remove all bd/beads CLI references
 - Keep GitHub Issues integration
 - Reference tasks.md for task tracking
@@ -109,6 +111,7 @@ The command file needs to be rewritten to:
 ### Updated Command Structure
 
 The new `speckit.taskstoissues.md` should:
+
 1. Read tasks from `specs/[feature]/tasks.md`
 2. Group tasks into high-level GitHub Issues (by phase/user story)
 3. Each GitHub Issue contains a checklist mirroring tasks.md

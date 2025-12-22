@@ -108,17 +108,14 @@ export async function searchSimilarMessages(
 
     // Fetch full message data from PostgreSQL
     const pgDb = getDb()
-    const fullMessages = await pgDb
-      .select()
-      .from(messages)
-      .where(inArray(messages.id, messageIds))
+    const fullMessages = await pgDb.select().from(messages).where(inArray(messages.id, messageIds))
 
     // Return in the same order as vector search results
-    const messageMap = new Map(fullMessages.map(m => [m.id, m]))
+    const messageMap = new Map(fullMessages.map((m) => [m.id, m]))
     return messageIds
       .map((id: string) => messageMap.get(id))
-      .filter((m): m is typeof fullMessages[0] => m !== undefined)
-      .map(m => ({
+      .filter((m): m is (typeof fullMessages)[0] => m !== undefined)
+      .map((m) => ({
         id: m.id,
         conversationId: m.conversationId,
         userId: m.userId,
