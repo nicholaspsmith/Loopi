@@ -92,10 +92,15 @@ jobs:
         run: |
           PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
 
+      # Migration Strategy:
+      # 1. db:push creates schema from Drizzle definitions (uses 'real' types from drizzle-schema.ts)
+      # 2. Manual migration handles existing production databases that had 'integer' types
+      # The manual migration is idempotent - it only alters columns if they're still integers
+      # This ensures both fresh databases and migrated databases have correct 'real' types
       - name: Run database migrations
         run: |
           npm run db:push
-          # Apply manual migration for FSRS decimal columns
+          # Apply idempotent migration for FSRS decimal columns (no-op if already 'real')
           PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -f drizzle/0002_fix_review_logs_types.sql
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
