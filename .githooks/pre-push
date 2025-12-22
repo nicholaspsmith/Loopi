@@ -1,10 +1,55 @@
 #!/bin/bash
 
-# Pre-push hook to prevent direct pushes to main branch
-# Override with: FORCE_PUSH_MAIN=1 git push
+# Pre-push hook for test validation and branch protection
+# See specs/008-pre-commit-hooks for documentation
+#
+# Runs:
+# 1. Unit tests (npm test -- --run)
+#
+# Note: Integration tests are run in CI, not pre-push, because they
+# require external services (Ollama, PostgreSQL) that may not be available.
+#
+# Features:
+# - Retry logic: retries failed tests once before blocking (FR-004a)
+# - Flaky test warning: warns if tests pass on retry
+# - Main branch protection: blocks direct pushes to main
+#
+# Bypass with: git push --no-verify
+
+set -e
 
 protected_branch="main"
 
+# Function to run tests with retry logic
+run_tests_with_retry() {
+    local test_name="$1"
+    local test_command="$2"
+
+    echo "🧪 Running $test_name..."
+
+    if eval "$test_command"; then
+        echo "✅ $test_name passed."
+        return 0
+    fi
+
+    echo ""
+    echo "⚠️  $test_name failed. Retrying once..."
+    echo ""
+
+    if eval "$test_command"; then
+        echo ""
+        echo "⚠️  $test_name passed on retry - potential flaky test detected!"
+        echo "   Consider investigating test stability."
+        echo ""
+        return 0
+    fi
+
+    echo ""
+    echo "❌ $test_name failed after retry."
+    return 1
+}
+
+# Check branch protection
 while read local_ref local_sha remote_ref remote_sha
 do
   if [[ "$remote_ref" == *"$protected_branch"* ]]; then
@@ -27,4 +72,22 @@ do
   fi
 done
 
+echo ""
+echo "🔍 Running pre-push checks..."
+echo ""
+
+# Run unit tests with retry
+if ! run_tests_with_retry "Unit tests" "npm test -- --run"; then
+    echo ""
+    echo "❌ Pre-push checks failed."
+    echo ""
+    echo "Please fix the failing tests before pushing."
+    echo "To bypass (not recommended): git push --no-verify"
+    exit 1
+fi
+
+# Note: Integration tests require external services and are run in CI instead
+
+echo ""
+echo "✅ All pre-push checks passed."
 exit 0

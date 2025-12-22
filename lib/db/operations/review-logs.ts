@@ -172,10 +172,7 @@ export async function getReviewStats(userId: string): Promise<{
   const db = getDb()
 
   // Get all reviews for user
-  const allReviews = await db
-    .select()
-    .from(reviewLogs)
-    .where(eq(reviewLogs.userId, userId))
+  const allReviews = await db.select().from(reviewLogs).where(eq(reviewLogs.userId, userId))
 
   const reviews = allReviews.map(rowToReviewLog)
 

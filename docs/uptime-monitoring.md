@@ -5,6 +5,7 @@ This guide explains how to set up uptime monitoring for MemoryLoop production de
 ## Overview
 
 Uptime monitoring provides:
+
 - Immediate alerts when the application goes down
 - Historical uptime statistics
 - Response time tracking
@@ -34,6 +35,7 @@ Uptime monitoring provides:
 ### Self-Hosted Options
 
 For self-hosted monitoring, consider:
+
 - **Uptime Kuma**: Open-source, self-hosted alternative
 - **Healthchecks.io**: For cron job monitoring
 
@@ -46,6 +48,7 @@ GET /api/health
 ```
 
 **Response (healthy)**:
+
 ```json
 {
   "status": "healthy",
@@ -56,6 +59,7 @@ GET /api/health
 ```
 
 **Response (unhealthy)**:
+
 ```json
 {
   "status": "unhealthy",
@@ -68,12 +72,12 @@ GET /api/health
 
 ### Recommended Alert Rules
 
-| Condition | Action |
-|-----------|--------|
-| Down for 5+ minutes | Email + Slack notification |
-| Down for 15+ minutes | SMS alert (if configured) |
-| Response time > 5 seconds | Warning notification |
-| SSL certificate expiring (< 14 days) | Email notification |
+| Condition                            | Action                     |
+| ------------------------------------ | -------------------------- |
+| Down for 5+ minutes                  | Email + Slack notification |
+| Down for 15+ minutes                 | SMS alert (if configured)  |
+| Response time > 5 seconds            | Warning notification       |
+| SSL certificate expiring (< 14 days) | Email notification         |
 
 ### Notification Channels
 

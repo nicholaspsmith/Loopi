@@ -115,11 +115,7 @@ export async function createFlashcard(data: CreateFlashcardInput): Promise<Flash
 export async function getFlashcardById(flashcardId: string): Promise<Flashcard | null> {
   const db = getDb()
 
-  const [row] = await db
-    .select()
-    .from(flashcards)
-    .where(eq(flashcards.id, flashcardId))
-    .limit(1)
+  const [row] = await db.select().from(flashcards).where(eq(flashcards.id, flashcardId)).limit(1)
 
   return row ? rowToFlashcard(row) : null
 }
@@ -177,10 +173,7 @@ export async function getDueFlashcards(userId: string): Promise<Flashcard[]> {
 
   // Get all user's flashcards and filter by due date in memory
   // (JSONB date comparison in SQL is complex)
-  const rows = await db
-    .select()
-    .from(flashcards)
-    .where(eq(flashcards.userId, userId))
+  const rows = await db.select().from(flashcards).where(eq(flashcards.userId, userId))
 
   const now = new Date()
   return rows
@@ -203,14 +196,9 @@ export async function getDueFlashcards(userId: string): Promise<Flashcard[]> {
 export async function getFlashcardsByState(userId: string, state: State): Promise<Flashcard[]> {
   const db = getDb()
 
-  const rows = await db
-    .select()
-    .from(flashcards)
-    .where(eq(flashcards.userId, userId))
+  const rows = await db.select().from(flashcards).where(eq(flashcards.userId, userId))
 
-  return rows
-    .filter((row) => (row.fsrsState as any).state === state)
-    .map(rowToFlashcard)
+  return rows.filter((row) => (row.fsrsState as any).state === state).map(rowToFlashcard)
 }
 
 /**

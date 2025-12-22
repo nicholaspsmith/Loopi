@@ -4,14 +4,14 @@ This runbook covers common operational tasks for MemoryLoop production environme
 
 ## Quick Reference
 
-| Task | Command |
-|------|---------|
-| Check status | `./scripts/monitor.sh` |
-| View logs | `docker logs memoryloop-app --tail 100 -f` |
-| Restart app | `docker compose -f docker-compose.prod.yml restart app` |
-| Rollback | `./scripts/rollback.sh <backup-tag>` |
-| Backup database | `./scripts/backup-db.sh` |
-| Restore database | `./scripts/backup-db.sh --restore <file>` |
+| Task             | Command                                                 |
+| ---------------- | ------------------------------------------------------- |
+| Check status     | `./scripts/monitor.sh`                                  |
+| View logs        | `docker logs memoryloop-app --tail 100 -f`              |
+| Restart app      | `docker compose -f docker-compose.prod.yml restart app` |
+| Rollback         | `./scripts/rollback.sh <backup-tag>`                    |
+| Backup database  | `./scripts/backup-db.sh`                                |
+| Restore database | `./scripts/backup-db.sh --restore <file>`               |
 
 ## Service Management
 
@@ -72,6 +72,7 @@ If a deployment causes issues, rollback to the previous version:
 ```
 
 The rollback script:
+
 1. Stops current container
 2. Tags backup image as latest
 3. Starts container with backup image
@@ -119,28 +120,31 @@ crontab -e
 
 ### Data Directories
 
-| Directory | Contents | Backup Priority |
-|-----------|----------|-----------------|
-| `/opt/memoryloop/data/postgres` | PostgreSQL data | High |
-| `/opt/memoryloop/data/lancedb` | Vector embeddings | Medium |
-| `/opt/memoryloop/data/ollama` | Ollama models | Low (can re-download) |
-| `/opt/memoryloop/backups` | Database backups | High |
+| Directory                       | Contents          | Backup Priority       |
+| ------------------------------- | ----------------- | --------------------- |
+| `/opt/memoryloop/data/postgres` | PostgreSQL data   | High                  |
+| `/opt/memoryloop/data/lancedb`  | Vector embeddings | Medium                |
+| `/opt/memoryloop/data/ollama`   | Ollama models     | Low (can re-download) |
+| `/opt/memoryloop/backups`       | Database backups  | High                  |
 
 ## Troubleshooting
 
 ### Application Not Responding
 
 1. **Check container status**
+
    ```bash
    docker ps -a | grep memoryloop
    ```
 
 2. **Check health endpoint**
+
    ```bash
    curl -v http://localhost:3000/api/health
    ```
 
 3. **Check application logs**
+
    ```bash
    docker logs memoryloop-app --tail 200
    ```
@@ -153,16 +157,19 @@ crontab -e
 ### Database Connection Errors
 
 1. **Check postgres container**
+
    ```bash
    docker exec memoryloop-postgres pg_isready -U memoryloop
    ```
 
 2. **Check connection from app container**
+
    ```bash
    docker exec memoryloop-app nc -zv postgres 5432
    ```
 
 3. **Check postgres logs**
+
    ```bash
    docker logs memoryloop-postgres --tail 100
    ```
@@ -175,12 +182,14 @@ crontab -e
 ### High Memory Usage
 
 1. **Check memory usage**
+
    ```bash
    ./scripts/monitor.sh --memory
    docker stats --no-stream
    ```
 
 2. **Check for memory leaks**
+
    ```bash
    docker exec memoryloop-app node --expose-gc -e "console.log(process.memoryUsage())"
    ```
@@ -193,18 +202,21 @@ crontab -e
 ### Disk Space Issues
 
 1. **Check disk usage**
+
    ```bash
    ./scripts/monitor.sh --disk
    df -h
    ```
 
 2. **Clean Docker resources**
+
    ```bash
    docker system prune -f
    docker image prune -a -f --filter "until=168h"
    ```
 
 3. **Clean old backups**
+
    ```bash
    find /opt/memoryloop/backups -name "*.sql.gz" -mtime +7 -delete
    ```
@@ -218,11 +230,13 @@ crontab -e
 ### SSL Certificate Expiry
 
 1. **Check certificate expiry**
+
    ```bash
    sudo certbot certificates
    ```
 
 2. **Renew certificate**
+
    ```bash
    sudo certbot renew
    ```
@@ -235,11 +249,13 @@ crontab -e
 ### Ollama Model Issues
 
 1. **Check Ollama status**
+
    ```bash
    docker exec memoryloop-ollama ollama list
    ```
 
 2. **Re-download model**
+
    ```bash
    docker exec memoryloop-ollama ollama pull nomic-embed-text
    ```
@@ -301,10 +317,12 @@ services:
 ### Log Aggregation
 
 Logs are configured with Docker's json-file driver with rotation:
+
 - Max size: 10MB per file
 - Max files: 3
 
 To view aggregated logs:
+
 ```bash
 docker compose -f docker-compose.prod.yml logs --tail 100
 ```
@@ -335,6 +353,7 @@ docker compose -f docker-compose.prod.yml logs --tail 100
 ## Contact & Escalation
 
 For issues not covered in this runbook:
+
 1. Check application logs for specific error messages
 2. Search GitHub issues for similar problems
 3. Create new issue with logs and reproduction steps
