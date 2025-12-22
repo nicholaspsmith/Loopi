@@ -134,6 +134,15 @@ export function toClaudeMessages(messages: Message[]): ClaudeMessage[] {
  * @returns Configured Anthropic client
  */
 export function createAnthropicClient(apiKey: string): Anthropic {
+  // Runtime check: Fail fast if accidentally used in browser
+  // This prevents API key exposure in client-side JavaScript
+  if (typeof window !== 'undefined' && !process.env.VITEST) {
+    throw new Error(
+      'createAnthropicClient cannot be called from browser code. ' +
+        'This would expose your API key. Use server-side API routes instead.'
+    )
+  }
+
   // Safe to use dangerouslyAllowBrowser - this code only runs server-side in Next.js API routes
   // The SDK incorrectly flags test environments (Vitest) as browser-like
   return new Anthropic({ apiKey, dangerouslyAllowBrowser: true })
