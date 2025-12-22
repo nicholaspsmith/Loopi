@@ -171,13 +171,17 @@ Custom suggestion system deemed over-engineering. Native tool output sufficient.
 
 **Purpose**: Final validation and documentation
 
-- [ ] T068 [P] Verify fresh clone → npm install → hooks auto-configured (SC-007)
-- [ ] T069 [P] Verify pre-commit completes in under 30 seconds (SC-003)
-- [ ] T070 [P] Verify commit-msg validation completes in under 1 second (SC-010)
-- [ ] T071 [P] Verify pre-push completes in under 5 minutes (SC-004)
-- [ ] T072 Update quickstart.md with final hook behavior verification steps
-- [ ] T073 Document measurement plan for SC-006 (80% fix suggestions) and SC-008 (75% CI reduction) - post-deployment metrics
-- [ ] T074 Run full manual test: commit with errors → push with failing tests → verify blocked
+- [x] T068 [P] Verify fresh clone → npm install → hooks auto-configured (SC-007)
+- [x] T069 [P] Verify pre-commit completes in under 30 seconds (SC-003)
+- [x] T070 [P] Verify commit-msg validation completes in under 1 second (SC-010)
+- [x] T071 [P] Verify pre-push completes in under 5 minutes (SC-004)
+- [x] T072 Update quickstart.md with final hook behavior verification steps
+- [x] T073 Document measurement plan for SC-006 (80% fix suggestions) and SC-008 (75% CI reduction) - post-deployment metrics
+- [x] T074 Run full manual test: commit with errors → push with failing tests → verify blocked
+
+**Note on SC-006/SC-008**: These are post-deployment metrics that will be measured after the feature is in use:
+- SC-006 (80% fix suggestions): Measure via developer feedback on error message clarity
+- SC-008 (75% CI reduction): Measure via CI pipeline failure rate before/after hooks
 
 **Final Checkpoint**: All hooks working, performance targets met, documentation updated.
 
