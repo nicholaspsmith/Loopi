@@ -26,10 +26,11 @@
 
 **Purpose**: Install dependencies and configure auto-setup
 
-- [ ] T001 Install lint-staged as dev dependency in package.json
-- [ ] T002 Install eslint-plugin-vitest as dev dependency in package.json
-- [ ] T003 Add prepare script to package.json: `"prepare": "[ -d '.git' ] && git config core.hooksPath .githooks"`
-- [ ] T004 Create scripts/hooks/ directory for TypeScript helper scripts
+- [x] T001 Install lint-staged as dev dependency in package.json
+- [x] T002 Install eslint-plugin-vitest as dev dependency in package.json
+- [x] T003 Add prepare script to package.json: `"prepare": "[ -d '.git' ] && git config core.hooksPath .githooks"`
+- [x] T004 Create scripts/hooks/ directory for TypeScript helper scripts
+- [x] T005 Add eslint-plugin-vitest rules to eslint.config.mjs (see research.md §4) - foundational for US3
 
 **Checkpoint**: Dependencies installed, hooks will auto-configure on npm install
 
@@ -45,14 +46,13 @@
 
 ### Implementation for User Story 1
 
-- [ ] T005 [P] [US1] Create .lintstagedrc.js with function syntax for tsc (see research.md §2)
-- [ ] T006 [P] [US1] Add eslint-plugin-vitest rules to eslint.config.mjs (see research.md §4)
-- [ ] T007 [US1] Create .githooks/pre-commit hook script calling `npx lint-staged`
-- [ ] T008 [US1] Make .githooks/pre-commit executable (chmod +x)
-- [ ] T009 [US1] Test pre-commit: verify type error blocks commit with clear message
-- [ ] T010 [US1] Test pre-commit: verify lint error blocks commit with fix suggestions
-- [ ] T011 [US1] Test pre-commit: verify format issue blocks commit
-- [ ] T012 [US1] Test pre-commit: verify clean code passes without intervention
+- [x] T006 [P] [US1] Create .lintstagedrc.js with function syntax for tsc (see research.md §2)
+- [x] T007 [US1] Create .githooks/pre-commit hook script calling `npx lint-staged`
+- [x] T008 [US1] Make .githooks/pre-commit executable (chmod +x)
+- [x] T009 [US1] Test pre-commit: verify type error blocks commit with clear message
+- [x] T010 [US1] Test pre-commit: verify lint error blocks commit with fix suggestions
+- [x] T011 [US1] Test pre-commit: verify format issue blocks commit
+- [x] T012 [US1] Test pre-commit: verify clean code passes without intervention
 
 **Checkpoint**: Pre-commit hook blocks bad code, allows good code. US1 complete.
 
@@ -68,26 +68,26 @@
 
 ### Tests for User Story 4
 
-- [ ] T013 [P] [US4] Write unit tests for commit-msg-validator.ts in tests/unit/scripts/hooks/commit-msg-validator.test.ts
-- [ ] T014 [P] [US4] Test case: subject line >72 chars returns error
-- [ ] T015 [P] [US4] Test case: past tense prefix ("Added", "Fixed") returns error
-- [ ] T016 [P] [US4] Test case: body with extra content (not just Co-Authored-By) returns error
-- [ ] T017 [P] [US4] Test case: forbidden AI attribution text returns error
-- [ ] T018 [P] [US4] Test case: multiple responsibilities returns warning
-- [ ] T019 [P] [US4] Test case: valid commit message passes
+- [x] T013 [P] [US4] Write unit tests for commit-msg-validator.ts in tests/unit/scripts/hooks/commit-msg-validator.test.ts
+- [x] T014 [P] [US4] Test case: subject line >72 chars returns error
+- [x] T015 [P] [US4] Test case: past tense prefix ("Added", "Fixed") returns error
+- [x] T016 [P] [US4] Test case: body with extra content (not just Co-Authored-By) returns error
+- [x] T017 [P] [US4] Test case: forbidden AI attribution text returns error
+- [x] T018 [P] [US4] Test case: multiple responsibilities returns warning
+- [x] T019 [P] [US4] Test case: valid commit message passes
 
 ### Implementation for User Story 4
 
-- [ ] T020 [US4] Create scripts/hooks/commit-msg-validator.ts with validation logic (see data-model.md §2)
-- [ ] T021 [US4] Implement subject length validation (max 72 chars)
-- [ ] T022 [US4] Implement imperative mood check (pattern match past tense prefixes)
-- [ ] T023 [US4] Implement body format validation (only Co-Authored-By allowed)
-- [ ] T024 [US4] Implement AI attribution check (forbidden patterns)
-- [ ] T025 [US4] Implement multiple responsibilities warning
-- [ ] T026 [US4] Add reference to .claude/rules.md in error messages (FR-017)
-- [ ] T027 [US4] Create .githooks/commit-msg hook script calling tsx validator
-- [ ] T028 [US4] Make .githooks/commit-msg executable (chmod +x)
-- [ ] T029 [US4] Run unit tests - verify all pass
+- [x] T020 [US4] Create scripts/hooks/commit-msg-validator.ts with validation logic (see data-model.md §2)
+- [x] T021 [US4] Implement subject length validation (max 72 chars)
+- [x] T022 [US4] Implement imperative mood check (pattern match past tense prefixes)
+- [x] T023 [US4] Implement body format validation (only Co-Authored-By allowed)
+- [x] T024 [US4] Implement AI attribution check (forbidden patterns)
+- [x] T025 [US4] Implement multiple responsibilities warning
+- [x] T026 [US4] Add reference to .claude/rules.md in error messages (FR-017)
+- [x] T027 [US4] Create .githooks/commit-msg hook script calling tsx validator
+- [x] T028 [US4] Make .githooks/commit-msg executable (chmod +x)
+- [x] T029 [US4] Run unit tests - verify all pass
 
 **Checkpoint**: Commit message validation enforces project standards. US4 complete.
 
@@ -139,7 +139,7 @@
 ### Implementation for User Story 3
 
 - [ ] T047 [US3] Create scripts/hooks/test-audit.ts skeleton with TypeScript types (see data-model.md §3)
-- [ ] T048 [US3] Implement test file discovery (glob tests/**/*.test.ts)
+- [ ] T048 [US3] Implement test file discovery (glob tests/\*_/_.test.ts)
 - [ ] T049 [US3] Implement AST parsing to detect expect() calls
 - [ ] T050 [US3] Implement no-assertions detection
 - [ ] T051 [US3] Implement weak-assertion detection (toBeTruthy, toBeDefined, etc.)
@@ -161,15 +161,22 @@
 
 **Maps to**: FR-008, FR-012
 
+### Tests for User Story 5
+
+- [ ] T057 [P] [US5] Write unit tests for fix-suggestions.ts in tests/unit/scripts/hooks/fix-suggestions.test.ts
+- [ ] T058 [P] [US5] Test case: type error includes file path and line number in suggestion
+- [ ] T059 [P] [US5] Test case: test failure points to likely implementation file
+- [ ] T060 [P] [US5] Test case: related failures are grouped by root cause
+
 ### Implementation for User Story 5
 
-- [ ] T057 [US5] Design common error-to-suggestion patterns in scripts/hooks/
-- [ ] T058 [US5] Implement type error suggestion: point to file and line needing correction
-- [ ] T059 [US5] Implement test failure suggestion: point to likely implementation issue
-- [ ] T060 [US5] Implement error grouping by root cause in pre-push output
-- [ ] T061 [US5] Integrate suggestions into pre-push hook output formatting
-- [ ] T062 [US5] Test: verify type error shows file/line suggestion
-- [ ] T063 [US5] Test: verify related failures are grouped
+- [ ] T061 [US5] Create scripts/hooks/fix-suggestions.ts skeleton with TypeScript types
+- [ ] T062 [US5] Design common error-to-suggestion patterns
+- [ ] T063 [US5] Implement type error suggestion: point to file and line needing correction
+- [ ] T064 [US5] Implement test failure suggestion: point to likely implementation issue
+- [ ] T065 [US5] Implement error grouping by root cause in pre-push output
+- [ ] T066 [US5] Integrate suggestions into pre-push hook output formatting
+- [ ] T067 [US5] Run unit tests - verify all pass
 
 **Checkpoint**: Fix suggestions help developers quickly resolve issues. US5 complete.
 
@@ -179,12 +186,13 @@
 
 **Purpose**: Final validation and documentation
 
-- [ ] T064 [P] Verify fresh clone → npm install → hooks auto-configured (SC-007)
-- [ ] T065 [P] Verify pre-commit completes in under 30 seconds (SC-003)
-- [ ] T066 [P] Verify commit-msg validation completes in under 1 second (SC-010)
-- [ ] T067 [P] Verify pre-push completes in under 5 minutes (SC-004)
-- [ ] T068 Update quickstart.md with final hook behavior verification steps
-- [ ] T069 Run full manual test: commit with errors → push with failing tests → verify blocked
+- [ ] T068 [P] Verify fresh clone → npm install → hooks auto-configured (SC-007)
+- [ ] T069 [P] Verify pre-commit completes in under 30 seconds (SC-003)
+- [ ] T070 [P] Verify commit-msg validation completes in under 1 second (SC-010)
+- [ ] T071 [P] Verify pre-push completes in under 5 minutes (SC-004)
+- [ ] T072 Update quickstart.md with final hook behavior verification steps
+- [ ] T073 Document measurement plan for SC-006 (80% fix suggestions) and SC-008 (75% CI reduction) - post-deployment metrics
+- [ ] T074 Run full manual test: commit with errors → push with failing tests → verify blocked
 
 **Final Checkpoint**: All hooks working, performance targets met, documentation updated.
 
@@ -213,18 +221,27 @@
 ### Parallel Opportunities
 
 **Within Phase 1:**
+
 - T001, T002 can install dependencies in parallel
 
 **Within US1 (Phase 2):**
-- T005, T006 create different config files in parallel
+
+- T006 is the only parallelizable task (config file creation)
 
 **Within US4 (Phase 3):**
+
 - T013-T019 all test cases can be written in parallel
 
 **Within US3 (Phase 5):**
+
 - T040-T046 all test cases can be written in parallel
 
+**Within US5 (Phase 6):**
+
+- T057-T060 all test cases can be written in parallel
+
 **Across Phases:**
+
 - After Setup, US1 and US4 can proceed in parallel (different hooks)
 - After Setup, US2 can proceed in parallel with US1/US4
 
@@ -248,8 +265,8 @@ Task: "Test case: valid commit message passes"
 
 ### MVP First (User Story 1 Only)
 
-1. Complete Phase 1: Setup (T001-T004)
-2. Complete Phase 2: User Story 1 (T005-T012)
+1. Complete Phase 1: Setup (T001-T005)
+2. Complete Phase 2: User Story 1 (T006-T012)
 3. **STOP and VALIDATE**: Test pre-commit blocks bad code
 4. Feature is usable at this point
 
@@ -266,17 +283,17 @@ Task: "Test case: valid commit message passes"
 
 ## Task Summary
 
-**Total Tasks**: 69
+**Total Tasks**: 74
 
-- **Phase 1 (Setup)**: 4 tasks
-- **Phase 2 (US1 Pre-Commit)**: 8 tasks
+- **Phase 1 (Setup)**: 5 tasks
+- **Phase 2 (US1 Pre-Commit)**: 7 tasks
 - **Phase 3 (US4 Commit-Msg)**: 17 tasks (7 tests + 10 implementation)
 - **Phase 4 (US2 Pre-Push)**: 10 tasks
 - **Phase 5 (US3 Test Audit)**: 17 tasks (7 tests + 10 implementation)
-- **Phase 6 (US5 Fix Suggestions)**: 7 tasks
-- **Phase 7 (Polish)**: 6 tasks
+- **Phase 6 (US5 Fix Suggestions)**: 11 tasks (4 tests + 7 implementation)
+- **Phase 7 (Polish)**: 7 tasks
 
-**Parallel Opportunities**: 26 tasks marked [P]
+**Parallel Opportunities**: 29 tasks marked [P]
 
 ---
 
