@@ -1,8 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import QuizCard from './QuizCard'
 import QuizProgress from './QuizProgress'
+
+const MAX_RETRIES = 3
+const INITIAL_RETRY_DELAY = 1000 // 1 second
 
 /**
  * QuizInterface Component
@@ -47,9 +51,11 @@ interface FailedRating {
   flashcardQuestion: string
   rating: number
   retrying: boolean
+  retryCount: number
 }
 
 export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceProps) {
+  const router = useRouter()
   const [flashcards, setFlashcards] = useState<Flashcard[]>(initialFlashcards)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(!initialFlashcards.length)
@@ -115,7 +121,12 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
     await sendRating(flashcardId, flashcardQuestion, rating)
   }
 
-  const sendRating = async (flashcardId: string, flashcardQuestion: string, rating: number) => {
+  const sendRating = async (
+    flashcardId: string,
+    flashcardQuestion: string,
+    rating: number,
+    retryCount: number = 0
+  ): Promise<boolean> => {
     try {
       const response = await fetch('/api/quiz/rate', {
         method: 'POST',
@@ -123,16 +134,46 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
         body: JSON.stringify({ flashcardId, rating }),
       })
 
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}))
-        console.error('[Quiz] Rating failed:', data.error || response.statusText)
-        // Show error with retry option
-        setFailedRating({ flashcardId, flashcardQuestion, rating, retrying: false })
+      if (response.ok) {
+        return true
       }
+
+      // Handle authentication errors - redirect to login
+      if (response.status === 401) {
+        console.error('[Quiz] Authentication expired, redirecting to login')
+        router.push('/login')
+        return false
+      }
+
+      // For server errors (5xx) or network issues, auto-retry with backoff
+      if (response.status >= 500 && retryCount < MAX_RETRIES) {
+        const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount)
+        console.log(
+          `[Quiz] Server error, retrying in ${delay}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`
+        )
+        await new Promise((resolve) => setTimeout(resolve, delay))
+        return sendRating(flashcardId, flashcardQuestion, rating, retryCount + 1)
+      }
+
+      // Client errors (4xx except 401) or max retries exceeded - show error
+      const data = await response.json().catch(() => ({}))
+      console.error('[Quiz] Rating failed:', data.error || response.statusText)
+      setFailedRating({ flashcardId, flashcardQuestion, rating, retrying: false, retryCount: 0 })
+      return false
     } catch (err) {
-      console.error('[Quiz] Rating error:', err)
-      // Show error with retry option
-      setFailedRating({ flashcardId, flashcardQuestion, rating, retrying: false })
+      // Network errors - auto-retry with backoff
+      if (retryCount < MAX_RETRIES) {
+        const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount)
+        console.log(
+          `[Quiz] Network error, retrying in ${delay}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`
+        )
+        await new Promise((resolve) => setTimeout(resolve, delay))
+        return sendRating(flashcardId, flashcardQuestion, rating, retryCount + 1)
+      }
+
+      console.error('[Quiz] Rating error after retries:', err)
+      setFailedRating({ flashcardId, flashcardQuestion, rating, retrying: false, retryCount: 0 })
+      return false
     }
   }
 
@@ -141,30 +182,21 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
 
     setFailedRating({ ...failedRating, retrying: true })
 
-    try {
-      const response = await fetch('/api/quiz/rate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          flashcardId: failedRating.flashcardId,
-          rating: failedRating.rating,
-        }),
-      })
+    // Use sendRating with auto-retry logic
+    const success = await sendRating(
+      failedRating.flashcardId,
+      failedRating.flashcardQuestion,
+      failedRating.rating
+    )
 
-      if (response.ok) {
-        // Success - clear the error
-        setFailedRating(null)
-      } else {
-        // Still failing
-        setFailedRating({ ...failedRating, retrying: false })
-      }
-    } catch {
-      // Still failing
-      setFailedRating({ ...failedRating, retrying: false })
+    if (success) {
+      setFailedRating(null)
     }
+    // If failed, sendRating will update failedRating state with new error
   }
 
-  const handleCancelRetry = () => {
+  const handleDismissError = () => {
+    // Dismiss without retrying - rating is lost but server state unchanged
     setFailedRating(null)
   }
 
@@ -384,14 +416,14 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
         <QuizCard flashcard={currentFlashcard} onRate={handleRate} onDelete={handleDelete} />
       </div>
 
-      {/* Failed rating error modal */}
+      {/* Failed rating snackbar - non-blocking bottom notification */}
       {failedRating && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
-            <div className="flex items-start gap-3 mb-4">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-md z-50 animate-in slide-in-from-bottom-4 duration-300">
+          <div className="bg-red-50 dark:bg-red-900/90 border border-red-200 dark:border-red-800 rounded-lg shadow-lg p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
                 <svg
-                  className="w-6 h-6 text-red-600 dark:text-red-400"
+                  className="w-5 h-5 text-red-600 dark:text-red-400"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -404,59 +436,60 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
                   />
                 </svg>
               </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  Failed to Save Rating
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Your rating for this flashcard could not be saved:
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                  Failed to save rating
+                </p>
+                <p className="mt-1 text-sm text-red-700 dark:text-red-300 truncate">
+                  &ldquo;{failedRating.flashcardQuestion}&rdquo;
                 </p>
               </div>
-            </div>
-
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4">
-              <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
-                &ldquo;{failedRating.flashcardQuestion}&rdquo;
-              </p>
-            </div>
-
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={handleCancelRetry}
-                disabled={failedRating.retrying}
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200 disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleRetryRating}
-                disabled={failedRating.retrying}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 flex items-center gap-2"
-              >
-                {failedRating.retrying ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        fill="none"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    Retrying...
-                  </>
-                ) : (
-                  'Retry'
-                )}
-              </button>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={handleRetryRating}
+                  disabled={failedRating.retrying}
+                  className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-md transition-colors duration-200 disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  {failedRating.retrying ? (
+                    <>
+                      <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Retrying
+                    </>
+                  ) : (
+                    'Retry'
+                  )}
+                </button>
+                <button
+                  onClick={handleDismissError}
+                  disabled={failedRating.retrying}
+                  className="p-1 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800 rounded transition-colors duration-200 disabled:opacity-50"
+                  aria-label="Dismiss"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
