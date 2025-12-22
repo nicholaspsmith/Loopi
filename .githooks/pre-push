@@ -5,7 +5,9 @@
 #
 # Runs:
 # 1. Unit tests (npm test -- --run)
-# 2. Integration tests (npm run test:integration)
+#
+# Note: Integration tests are run in CI, not pre-push, because they
+# require external services (Ollama, PostgreSQL) that may not be available.
 #
 # Features:
 # - Retry logic: retries failed tests once before blocking (FR-004a)
@@ -84,15 +86,7 @@ if ! run_tests_with_retry "Unit tests" "npm test -- --run"; then
     exit 1
 fi
 
-# Run integration tests with retry
-if ! run_tests_with_retry "Integration tests" "npm run test:integration"; then
-    echo ""
-    echo "❌ Pre-push checks failed."
-    echo ""
-    echo "Please fix the failing tests before pushing."
-    echo "To bypass (not recommended): git push --no-verify"
-    exit 1
-fi
+# Note: Integration tests require external services and are run in CI instead
 
 echo ""
 echo "✅ All pre-push checks passed."
