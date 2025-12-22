@@ -43,6 +43,9 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 
 ## Active Technologies
 
+- TypeScript 5.7, Node.js 20+, Bash (for hook scripts) + Husky (hook management), lint-staged (staged file operations), commitlint (commit message validation) (008-pre-commit-hooks)
+- N/A (hooks are stateless) (008-pre-commit-hooks)
+
 - TypeScript 5.x, Node.js 20.x (Next.js 15) + Next.js 15, Docker, Docker Compose, Nginx, Certbot, GitHub Actions (002-ci-cd-deployment)
 - LanceDB (file-based vector database), Backblaze B2 (backups) (002-ci-cd-deployment)
 - TypeScript 5.7 / Node.js (Next.js 16.0.10) + Next.js 16, @anthropic-ai/sdk 0.71, @lancedb/lancedb 0.22, Ollama (nomic-embed-text) (005-rag-integration)

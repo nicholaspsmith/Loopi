@@ -5,6 +5,7 @@ This guide covers the complete deployment process for MemoryLoop.
 ## Overview
 
 MemoryLoop uses a containerized deployment with:
+
 - **Docker Compose** for container orchestration
 - **GitHub Actions** for CI/CD pipeline
 - **Nginx** for reverse proxy with SSL
@@ -38,27 +39,29 @@ MemoryLoop uses a containerized deployment with:
 ## Prerequisites
 
 ### VPS Requirements
+
 - Ubuntu 22.04 LTS or later
 - Minimum 4GB RAM, 2 vCPU
 - 40GB SSD storage
 - Public IP address
 
 ### Required Secrets (GitHub)
+
 Configure these in repository Settings > Secrets:
 
-| Secret | Description |
-|--------|-------------|
-| `VPS_HOST` | VPS IP address or hostname |
-| `VPS_USER` | SSH username (e.g., `deploy`) |
-| `VPS_SSH_KEY` | Private SSH key for deployment |
-| `POSTGRES_USER` | PostgreSQL username |
-| `POSTGRES_PASSWORD` | PostgreSQL password |
-| `POSTGRES_DB` | PostgreSQL database name |
-| `NEXTAUTH_SECRET` | NextAuth.js session secret |
-| `NEXTAUTH_URL` | Production URL |
-| `ENCRYPTION_KEY` | Data encryption key |
-| `API_KEY_ENCRYPTION_SECRET` | API key encryption secret |
-| `DEPLOYMENT_WEBHOOK_URL` | (Optional) Slack/Discord webhook |
+| Secret                      | Description                      |
+| --------------------------- | -------------------------------- |
+| `VPS_HOST`                  | VPS IP address or hostname       |
+| `VPS_USER`                  | SSH username (e.g., `deploy`)    |
+| `VPS_SSH_KEY`               | Private SSH key for deployment   |
+| `POSTGRES_USER`             | PostgreSQL username              |
+| `POSTGRES_PASSWORD`         | PostgreSQL password              |
+| `POSTGRES_DB`               | PostgreSQL database name         |
+| `NEXTAUTH_SECRET`           | NextAuth.js session secret       |
+| `NEXTAUTH_URL`              | Production URL                   |
+| `ENCRYPTION_KEY`            | Data encryption key              |
+| `API_KEY_ENCRYPTION_SECRET` | API key encryption secret        |
+| `DEPLOYMENT_WEBHOOK_URL`    | (Optional) Slack/Discord webhook |
 
 See [github-secrets-setup.md](./github-secrets-setup.md) for detailed instructions.
 
@@ -86,6 +89,7 @@ cd /tmp/memoryloop
 ```
 
 The script configures:
+
 - UFW firewall (ports 22, 80, 443)
 - Docker and Docker Compose
 - Deploy user with sudo access
@@ -140,6 +144,7 @@ sudo certbot certonly --standalone -d memoryloop.yourdomain.com
 ### Automatic Deployment
 
 Deployments are triggered automatically when:
+
 1. Code is merged to `main` branch
 2. GitHub Actions workflow runs:
    - Builds Docker image

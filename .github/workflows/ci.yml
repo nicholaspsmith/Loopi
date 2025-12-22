@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ['*']
+    branches: ['main']
   pull_request:
     branches: ['main']
 
@@ -46,7 +46,7 @@ jobs:
       - name: Run TypeScript type check
         run: npm run typecheck
 
-  test:
+  unit-tests:
     name: Unit & Integration Tests
     runs-on: ubuntu-latest
 

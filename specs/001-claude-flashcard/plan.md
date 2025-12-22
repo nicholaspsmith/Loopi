@@ -93,7 +93,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 - ✅ Session-based auth (NextAuth.js 5 standard patterns, no custom auth)
 - ✅ Single conversation stream per user (no multi-conversation UI complexity)
 - ✅ FSRS library handles scheduling complexity (no custom algorithm)
-- ✅ Future enhancements tracked separately (bd task memoryloop-6to)
+- ✅ Future enhancements tracked separately (deferred to future specs)
 - ✅ No premature abstractions: build features as needed per user story
 
 ### V. Observability & Debugging ✅ PASS
@@ -157,7 +157,7 @@ No complexity violations requiring justification. All constitutional principles 
 - ✅ Session-based auth with NextAuth.js 5 defaults (no custom auth provider)
 - ✅ LanceDB embedded for development simplicity (migration path to Postgres documented but not implemented)
 
-**Finding**: Design maintains MVP scope. Future enhancements documented (bd task memoryloop-6to) but not included in current design.
+**Finding**: Design maintains MVP scope. Future enhancements deferred to separate specs.
 
 #### V. Observability & Debugging ✅ PASS
 
