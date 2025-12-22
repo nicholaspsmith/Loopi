@@ -185,25 +185,25 @@ export function formatValidationResult(result: CommitValidationResult): string {
 
 // CLI entry point
 if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('commit-msg-validator.ts')) {
-  const fs = await import('fs')
-
-  const commitMsgFile = process.argv[2]
-  if (!commitMsgFile) {
-    console.error('Usage: commit-msg-validator.ts <commit-msg-file>')
-    process.exit(2)
-  }
-
-  try {
-    const message = fs.readFileSync(commitMsgFile, 'utf-8')
-    const result = validateCommitMessage(message)
-
-    console.log(formatValidationResult(result))
-
-    if (!result.valid) {
-      process.exit(1)
+  import('fs').then((fs) => {
+    const commitMsgFile = process.argv[2]
+    if (!commitMsgFile) {
+      console.error('Usage: commit-msg-validator.ts <commit-msg-file>')
+      process.exit(2)
     }
-  } catch (error) {
-    console.error(`Error reading commit message file: ${error}`)
-    process.exit(2)
-  }
+
+    try {
+      const message = fs.readFileSync(commitMsgFile, 'utf-8')
+      const result = validateCommitMessage(message)
+
+      console.log(formatValidationResult(result))
+
+      if (!result.valid) {
+        process.exit(1)
+      }
+    } catch (error) {
+      console.error(`Error reading commit message file: ${error}`)
+      process.exit(2)
+    }
+  })
 }
