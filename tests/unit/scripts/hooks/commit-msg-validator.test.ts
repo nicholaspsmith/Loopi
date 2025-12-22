@@ -1,8 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import {
-  validateCommitMessage,
-  type CommitValidationResult,
-} from '../../../../scripts/hooks/commit-msg-validator'
+import { validateCommitMessage } from '../../../../scripts/hooks/commit-msg-validator'
 
 describe('commit-msg-validator', () => {
   describe('subject line validation', () => {
@@ -23,7 +20,8 @@ describe('commit-msg-validator', () => {
 
     it('should accept subject line with exactly 72 characters', () => {
       // Exactly 72 chars
-      const exactSubject = 'Add feature that does something useful for users in the application here'
+      const exactSubject =
+        'Add feature that does something useful for users in the application here'
       expect(exactSubject.length).toBe(72) // Verify test data
 
       const result = validateCommitMessage(exactSubject)

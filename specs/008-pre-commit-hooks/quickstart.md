@@ -82,6 +82,7 @@ npm run typecheck
 ### Commit message rejected?
 
 Check `.claude/rules.md` for format requirements:
+
 - Subject: imperative mood, ≤72 chars
 - Body: only Co-Authored-By line
 

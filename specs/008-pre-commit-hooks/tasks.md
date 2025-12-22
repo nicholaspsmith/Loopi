@@ -180,6 +180,7 @@ Custom suggestion system deemed over-engineering. Native tool output sufficient.
 - [x] T074 Run full manual test: commit with errors → push with failing tests → verify blocked
 
 **Note on SC-006/SC-008**: These are post-deployment metrics that will be measured after the feature is in use:
+
 - SC-006 (80% fix suggestions): Measure via developer feedback on error message clarity
 - SC-008 (75% CI reduction): Measure via CI pipeline failure rate before/after hooks
 

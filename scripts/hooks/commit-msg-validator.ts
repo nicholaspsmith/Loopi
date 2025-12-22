@@ -101,7 +101,8 @@ export function validateCommitMessage(message: string): CommitValidationResult {
 
     // Check for non-Co-Authored-By content
     const nonCoAuthorLines = bodyLines.filter(
-      (line) => !line.trim().startsWith('Co-Authored-By:') && !line.trim().startsWith('Co-authored-by:')
+      (line) =>
+        !line.trim().startsWith('Co-Authored-By:') && !line.trim().startsWith('Co-authored-by:')
     )
 
     if (nonCoAuthorLines.length > 0) {
@@ -139,7 +140,8 @@ export function validateCommitMessage(message: string): CommitValidationResult {
       warnings.push({
         rule: 'multiple-responsibilities',
         message: 'Commit may contain multiple responsibilities',
-        suggestion: 'Consider splitting into separate commits for single responsibility. See .claude/rules.md',
+        suggestion:
+          'Consider splitting into separate commits for single responsibility. See .claude/rules.md',
       })
       break // Only warn once
     }
@@ -184,7 +186,10 @@ export function formatValidationResult(result: CommitValidationResult): string {
 }
 
 // CLI entry point
-if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('commit-msg-validator.ts')) {
+if (
+  import.meta.url === `file://${process.argv[1]}` ||
+  process.argv[1]?.endsWith('commit-msg-validator.ts')
+) {
   import('fs').then((fs) => {
     const commitMsgFile = process.argv[2]
     if (!commitMsgFile) {
