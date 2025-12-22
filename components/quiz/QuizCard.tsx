@@ -45,6 +45,7 @@ export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps)
   const [isAnswerRevealed, setIsAnswerRevealed] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [prevFlashcardId, setPrevFlashcardId] = useState(flashcard.id)
+  const [isRatingDisabled, setIsRatingDisabled] = useState(false)
 
   // Reset answer visibility and delete confirmation when flashcard changes
   // Uses React-recommended pattern: https://react.dev/learn/you-might-not-need-an-effect
@@ -52,6 +53,7 @@ export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps)
     setPrevFlashcardId(flashcard.id)
     setIsAnswerRevealed(false)
     setShowDeleteConfirm(false)
+    setIsRatingDisabled(false)
   }
 
   const handleRevealAnswer = () => {
@@ -59,6 +61,9 @@ export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps)
   }
 
   const handleRating = (rating: number) => {
+    // Prevent rapid double-clicks
+    if (isRatingDisabled) return
+    setIsRatingDisabled(true)
     onRate(flashcard.id, rating)
   }
 
@@ -171,7 +176,7 @@ export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps)
           </button>
         ) : (
           /* Rating Buttons */
-          <RatingButtons onRate={handleRating} />
+          <RatingButtons onRate={handleRating} disabled={isRatingDisabled} />
         )}
       </div>
     </div>

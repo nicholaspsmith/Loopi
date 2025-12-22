@@ -134,6 +134,15 @@ export function toClaudeMessages(messages: Message[]): ClaudeMessage[] {
  * @returns Configured Anthropic client
  */
 export function createAnthropicClient(apiKey: string): Anthropic {
+  // Runtime check: Fail fast if accidentally used in browser
+  // This prevents API key exposure in client-side JavaScript
+  if (typeof window !== 'undefined') {
+    throw new Error(
+      'createAnthropicClient cannot be called from browser code. ' +
+        'This would expose your API key. Use server-side API routes instead.'
+    )
+  }
+
   return new Anthropic({ apiKey })
 }
 

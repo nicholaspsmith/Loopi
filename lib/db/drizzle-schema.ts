@@ -7,6 +7,7 @@ import {
   integer,
   boolean,
   jsonb,
+  real,
 } from 'drizzle-orm/pg-core'
 
 /**
@@ -122,11 +123,11 @@ export const reviewLogs = pgTable('review_logs', {
   rating: integer('rating').notNull(), // 1=Again, 2=Hard, 3=Good, 4=Easy
   state: integer('state').notNull(), // 0=New, 1=Learning, 2=Review, 3=Relearning
   due: timestamp('due').notNull(),
-  stability: integer('stability').notNull(),
-  difficulty: integer('difficulty').notNull(),
-  elapsedDays: integer('elapsed_days').notNull(),
-  lastElapsedDays: integer('last_elapsed_days').notNull(),
-  scheduledDays: integer('scheduled_days').notNull(),
+  stability: real('stability').notNull(), // FSRS stability (decimal)
+  difficulty: real('difficulty').notNull(), // FSRS difficulty (decimal)
+  elapsedDays: real('elapsed_days').notNull(), // Days since last review (decimal)
+  lastElapsedDays: real('last_elapsed_days').notNull(), // Previous elapsed days (decimal)
+  scheduledDays: real('scheduled_days').notNull(), // Days until next review (decimal)
   review: timestamp('review').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
