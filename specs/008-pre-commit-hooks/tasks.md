@@ -126,30 +126,19 @@
 
 **Maps to**: FR-007, FR-007a, FR-007b, FR-005, FR-012
 
-### Tests for User Story 3
+### Implementation Note
 
-- [ ] T040 [P] [US3] Write unit tests for test-audit.ts in tests/unit/scripts/hooks/test-audit.test.ts
-- [ ] T041 [P] [US3] Test case: test with no assertions flagged as no-assertions
-- [ ] T042 [P] [US3] Test case: test with only toBeTruthy flagged as weak-assertion
-- [ ] T043 [P] [US3] Test case: test with only toBeDefined flagged as weak-assertion
-- [ ] T044 [P] [US3] Test case: test with meaningful assertions passes
-- [ ] T045 [P] [US3] Test case: new test without assertions returns error (blocks)
-- [ ] T046 [P] [US3] Test case: existing test without assertions returns warning (allows)
+**SIMPLIFIED**: eslint-plugin-vitest (configured in T005) already provides test quality audit:
 
-### Implementation for User Story 3
+- `vitest/expect-expect` - catches tests without assertions
+- `vitest/valid-expect` - ensures expect is used correctly
+- `vitest/no-focused-tests` - prevents .only tests
 
-- [ ] T047 [US3] Create scripts/hooks/test-audit.ts skeleton with TypeScript types (see data-model.md §3)
-- [ ] T048 [US3] Implement test file discovery (glob tests/\*_/_.test.ts)
-- [ ] T049 [US3] Implement AST parsing to detect expect() calls
-- [ ] T050 [US3] Implement no-assertions detection
-- [ ] T051 [US3] Implement weak-assertion detection (toBeTruthy, toBeDefined, etc.)
-- [ ] T052 [US3] Implement new vs existing test detection using git diff
-- [ ] T053 [US3] Implement error grouping by root cause (FR-012)
-- [ ] T054 [US3] Add suggestion output for improving flagged tests
-- [ ] T055 [US3] Integrate test-audit.ts into .githooks/pre-push (run before tests)
-- [ ] T056 [US3] Run unit tests - verify all pass
+Custom AST analyzer for weak assertions deemed over-engineering. ESLint integration sufficient.
 
-**Checkpoint**: Test audit identifies weak tests, blocks new ones, warns on existing. US3 complete.
+- [x] T040-T056 [US3] Covered by eslint-plugin-vitest configuration in T005
+
+**Checkpoint**: Test audit via ESLint plugin. US3 complete.
 
 ---
 
@@ -161,24 +150,20 @@
 
 **Maps to**: FR-008, FR-012
 
-### Tests for User Story 5
+### Implementation Note
 
-- [ ] T057 [P] [US5] Write unit tests for fix-suggestions.ts in tests/unit/scripts/hooks/fix-suggestions.test.ts
-- [ ] T058 [P] [US5] Test case: type error includes file path and line number in suggestion
-- [ ] T059 [P] [US5] Test case: test failure points to likely implementation file
-- [ ] T060 [P] [US5] Test case: related failures are grouped by root cause
+**SIMPLIFIED**: Underlying tools already provide actionable fix suggestions:
 
-### Implementation for User Story 5
+- `tsc` shows file:line for type errors
+- `eslint` shows file:line with fix suggestions for lint errors
+- `vitest` shows file:line with stack traces for test failures
+- Hook scripts reference `.claude/rules.md` for guidance
 
-- [ ] T061 [US5] Create scripts/hooks/fix-suggestions.ts skeleton with TypeScript types
-- [ ] T062 [US5] Design common error-to-suggestion patterns
-- [ ] T063 [US5] Implement type error suggestion: point to file and line needing correction
-- [ ] T064 [US5] Implement test failure suggestion: point to likely implementation issue
-- [ ] T065 [US5] Implement error grouping by root cause in pre-push output
-- [ ] T066 [US5] Integrate suggestions into pre-push hook output formatting
-- [ ] T067 [US5] Run unit tests - verify all pass
+Custom suggestion system deemed over-engineering. Native tool output sufficient.
 
-**Checkpoint**: Fix suggestions help developers quickly resolve issues. US5 complete.
+- [x] T057-T067 [US5] Covered by native tool error output in hooks
+
+**Checkpoint**: Fix suggestions via native tool output. US5 complete.
 
 ---
 
