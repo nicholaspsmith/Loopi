@@ -10,6 +10,11 @@ export default defineConfig({
     setupFiles: ['./tests/setup.ts'],
     include: ['**/tests/integration/**/*.test.ts'],
     exclude: ['**/node_modules/**', '**/dist/**', '**/.next/**'],
+    // Run tests sequentially to avoid Ollama resource contention
+    fileParallelism: false,
+    sequence: {
+      concurrent: false,
+    },
   },
   resolve: {
     alias: {

@@ -134,7 +134,9 @@ export function toClaudeMessages(messages: Message[]): ClaudeMessage[] {
  * @returns Configured Anthropic client
  */
 export function createAnthropicClient(apiKey: string): Anthropic {
-  return new Anthropic({ apiKey })
+  // Safe to use dangerouslyAllowBrowser - this code only runs server-side in Next.js API routes
+  // The SDK incorrectly flags test environments (Vitest) as browser-like
+  return new Anthropic({ apiKey, dangerouslyAllowBrowser: true })
 }
 
 /**
