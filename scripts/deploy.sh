@@ -80,10 +80,49 @@ while [ $OLLAMA_ATTEMPTS -lt $OLLAMA_MAX ]; do
     sleep 2
 done
 
+# Check available memory before model operations
+echo "Checking system memory..."
+AVAILABLE_MEM_KB=$(grep MemAvailable /proc/meminfo | awk '{print $2}')
+AVAILABLE_MEM_GB=$(echo "scale=1; $AVAILABLE_MEM_KB / 1024 / 1024" | bc)
+REQUIRED_MEM_GB="2.5"
+
+echo "Available memory: ${AVAILABLE_MEM_GB} GiB"
+
+# Compare memory (bc returns 1 if true, 0 if false)
+MEM_SUFFICIENT=$(echo "$AVAILABLE_MEM_GB >= $REQUIRED_MEM_GB" | bc)
+
+if [ "$MEM_SUFFICIENT" -eq 0 ]; then
+    echo "=========================================="
+    echo "WARNING: Insufficient memory for Ollama models"
+    echo "Available: ${AVAILABLE_MEM_GB} GiB"
+    echo "Required:  ${REQUIRED_MEM_GB} GiB (for llama3.2)"
+    echo ""
+    echo "Chat and flashcard generation will fail."
+    echo "Upgrade VPS to 8 GB RAM to fix this issue."
+    echo "=========================================="
+fi
+
 # Pull required models with 5-minute timeout (idempotent - skips if already present)
 echo "Ensuring Ollama models are available..."
 timeout 300 docker exec memoryloop-ollama ollama pull nomic-embed-text || echo "Warning: Failed to pull nomic-embed-text"
 timeout 300 docker exec memoryloop-ollama ollama pull llama3.2 || echo "Warning: Failed to pull llama3.2"
+
+# Validate llama3.2 can actually load (catches memory issues early)
+echo "Validating llama3.2 model can load..."
+if timeout 60 docker exec memoryloop-ollama ollama run llama3.2 "test" > /dev/null 2>&1; then
+    echo "llama3.2 model validated successfully."
+else
+    echo "=========================================="
+    echo "WARNING: llama3.2 failed to load"
+    echo ""
+    echo "This is likely a memory issue. The model requires"
+    echo "approximately 2.3 GiB of available RAM."
+    echo ""
+    echo "Current available: ${AVAILABLE_MEM_GB} GiB"
+    echo "Chat and flashcard features will not work."
+    echo "=========================================="
+fi
+
 echo "Ollama models ready."
 
 # Wait for app health check
