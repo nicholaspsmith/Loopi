@@ -62,10 +62,10 @@ describe('QuizCard', () => {
     it('should NOT show rating buttons initially', () => {
       render(<QuizCard flashcard={mockFlashcard} onRate={mockOnRate} />)
 
-      expect(screen.queryByRole('button', { name: /again/i })).not.toBeInTheDocument()
-      expect(screen.queryByRole('button', { name: /hard/i })).not.toBeInTheDocument()
-      expect(screen.queryByRole('button', { name: /good/i })).not.toBeInTheDocument()
-      expect(screen.queryByRole('button', { name: /easy/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /very hard/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /as Hard/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /as Easy/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /very easy/i })).not.toBeInTheDocument()
     })
   })
 
@@ -105,10 +105,10 @@ describe('QuizCard', () => {
       })
       await user.click(revealButton)
 
-      expect(screen.getByRole('button', { name: /again/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /hard/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /good/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /easy/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /very hard/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /as Hard/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /as Easy/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /very easy/i })).toBeInTheDocument()
     })
 
     it('should keep showing the question after answer is revealed', async () => {
@@ -125,7 +125,7 @@ describe('QuizCard', () => {
   })
 
   describe('FSRS Rating Buttons', () => {
-    it('should call onRate with rating 1 when Again is clicked', async () => {
+    it('should call onRate with rating 1 when Very hard is clicked', async () => {
       const user = userEvent.setup()
       render(<QuizCard flashcard={mockFlashcard} onRate={mockOnRate} />)
 
@@ -135,9 +135,9 @@ describe('QuizCard', () => {
       })
       await user.click(revealButton)
 
-      // Click Again button
-      const againButton = screen.getByRole('button', { name: /again/i })
-      await user.click(againButton)
+      // Click Very hard button
+      const veryHardButton = screen.getByRole('button', { name: /very hard/i })
+      await user.click(veryHardButton)
 
       expect(mockOnRate).toHaveBeenCalledWith(mockFlashcard.id, 1)
     })
@@ -151,13 +151,13 @@ describe('QuizCard', () => {
       })
       await user.click(revealButton)
 
-      const hardButton = screen.getByRole('button', { name: /hard/i })
+      const hardButton = screen.getByRole('button', { name: /as Hard/i })
       await user.click(hardButton)
 
       expect(mockOnRate).toHaveBeenCalledWith(mockFlashcard.id, 2)
     })
 
-    it('should call onRate with rating 3 when Good is clicked', async () => {
+    it('should call onRate with rating 3 when Easy is clicked', async () => {
       const user = userEvent.setup()
       render(<QuizCard flashcard={mockFlashcard} onRate={mockOnRate} />)
 
@@ -166,13 +166,13 @@ describe('QuizCard', () => {
       })
       await user.click(revealButton)
 
-      const goodButton = screen.getByRole('button', { name: /good/i })
-      await user.click(goodButton)
+      const easyButton = screen.getByRole('button', { name: /as Easy/i })
+      await user.click(easyButton)
 
       expect(mockOnRate).toHaveBeenCalledWith(mockFlashcard.id, 3)
     })
 
-    it('should call onRate with rating 4 when Easy is clicked', async () => {
+    it('should call onRate with rating 4 when Very Easy is clicked', async () => {
       const user = userEvent.setup()
       render(<QuizCard flashcard={mockFlashcard} onRate={mockOnRate} />)
 
@@ -181,8 +181,8 @@ describe('QuizCard', () => {
       })
       await user.click(revealButton)
 
-      const easyButton = screen.getByRole('button', { name: /easy/i })
-      await user.click(easyButton)
+      const veryEasyButton = screen.getByRole('button', { name: /very easy/i })
+      await user.click(veryEasyButton)
 
       expect(mockOnRate).toHaveBeenCalledWith(mockFlashcard.id, 4)
     })
@@ -196,8 +196,8 @@ describe('QuizCard', () => {
       })
       await user.click(revealButton)
 
-      const goodButton = screen.getByRole('button', { name: /good/i })
-      await user.click(goodButton)
+      const easyButton = screen.getByRole('button', { name: /as Easy/i })
+      await user.click(easyButton)
 
       expect(mockOnRate).toHaveBeenCalledTimes(1)
     })
@@ -333,7 +333,7 @@ describe('QuizCard', () => {
       await user.click(revealButton)
 
       // Rating buttons should still appear
-      expect(screen.getByRole('button', { name: /again/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /very hard/i })).toBeInTheDocument()
     })
 
     it('should not break if onRate is called multiple times quickly', async () => {
@@ -345,12 +345,12 @@ describe('QuizCard', () => {
       })
       await user.click(revealButton)
 
-      const goodButton = screen.getByRole('button', { name: /good/i })
+      const easyButton = screen.getByRole('button', { name: /as Easy/i })
 
       // Rapid clicks
-      await user.click(goodButton)
-      await user.click(goodButton)
-      await user.click(goodButton)
+      await user.click(easyButton)
+      await user.click(easyButton)
+      await user.click(easyButton)
 
       // Should be called at least once (component may debounce)
       expect(mockOnRate).toHaveBeenCalled()

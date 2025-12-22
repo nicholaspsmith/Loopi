@@ -617,12 +617,12 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
                 Rated card as{' '}
                 <span className="font-medium">
                   {lastRating.rating === 1
-                    ? 'Again'
+                    ? 'Very hard'
                     : lastRating.rating === 2
                       ? 'Hard'
                       : lastRating.rating === 3
-                        ? 'Good'
-                        : 'Easy'}
+                        ? 'Easy'
+                        : 'Very Easy'}
                 </span>
               </p>
               <button

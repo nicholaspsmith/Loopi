@@ -2,7 +2,7 @@
  * RatingButtons Component
  *
  * FSRS rating buttons for flashcard review.
- * Provides 4 difficulty ratings: Again (1), Hard (2), Good (3), Easy (4).
+ * Provides 4 difficulty ratings: Very hard (1), Hard (2), Easy (3), Very Easy (4).
  *
  * Maps to T117 in Phase 6 (User Story 4)
  */
@@ -14,20 +14,20 @@ interface RatingButtonsProps {
 
 export default function RatingButtons({ onRate, disabled = false }: RatingButtonsProps) {
   const ratings = [
-    { value: 1, label: 'Again', color: 'bg-red-600 hover:bg-red-700' },
+    { value: 1, label: 'Very hard', color: 'bg-red-600 hover:bg-red-700' },
     { value: 2, label: 'Hard', color: 'bg-orange-600 hover:bg-orange-700' },
-    { value: 3, label: 'Good', color: 'bg-green-600 hover:bg-green-700' },
-    { value: 4, label: 'Easy', color: 'bg-blue-600 hover:bg-blue-700' },
+    { value: 3, label: 'Easy', color: 'bg-green-600 hover:bg-green-700' },
+    { value: 4, label: 'Very Easy', color: 'bg-blue-600 hover:bg-blue-700' },
   ]
 
   return (
     <div
       className="space-y-2 sm:space-y-3"
       role="group"
-      aria-label="Rate your knowledge of this flashcard"
+      aria-label="Rate the difficulty of this question"
     >
       <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 text-center mb-3 sm:mb-4">
-        How well did you know this?
+        How hard was this question?
       </p>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
         {ratings.map(({ value, label, color }) => (
