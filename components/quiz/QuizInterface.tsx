@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import QuizCard from './QuizCard'
 import QuizProgress from './QuizProgress'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 
 const MAX_RETRIES = 2 // Reduced from 3 to minimize delay before showing error (max 3s vs 7s)
 const INITIAL_RETRY_DELAY = 1000 // 1 second
@@ -420,14 +421,7 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
 
   // Loading state
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading flashcards...</p>
-        </div>
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   // Error state

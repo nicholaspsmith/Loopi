@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import Message from './Message'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import type { Message as MessageType } from '@/types'
 
 /**
@@ -30,13 +31,20 @@ export default function MessageList({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // Show loading spinner while fetching initial messages
+  if (messages.length === 0 && isLoading) {
+    return <LoadingSpinner />
+  }
+
   // Show empty state if no messages
   if (messages.length === 0 && !isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center px-4">
         <div className="max-w-md">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-2">Start a conversation</h2>
-          <p className="text-gray-500">
+          <h2 className="text-2xl font-semibold text-gray-700 dark:text-gray-200 mb-2">
+            Start a conversation
+          </h2>
+          <p className="text-gray-500 dark:text-gray-400">
             Ask me anything! I&apos;m here to help you learn and understand new concepts.
           </p>
         </div>

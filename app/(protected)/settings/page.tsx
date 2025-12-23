@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import ApiKeyForm from '@/components/settings/ApiKeyForm'
 import ApiKeyDisplay from '@/components/settings/ApiKeyDisplay'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import type { GetApiKeyResponse } from '@/lib/types/api-key'
 
 /**
@@ -107,7 +108,7 @@ export default function SettingsPage() {
         )}
 
         {isLoading ? (
-          <div className="text-gray-600 dark:text-gray-400">Loading...</div>
+          <LoadingSpinner />
         ) : error ? (
           <div className="text-red-600">{error}</div>
         ) : apiKeyData?.exists ? (
