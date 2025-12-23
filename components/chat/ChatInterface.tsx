@@ -20,7 +20,7 @@ interface ChatInterfaceProps {
 export default function ChatInterface({ userId }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [conversation, setConversation] = useState<Conversation | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
   const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -106,6 +106,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
     if (!conversation) return
 
     try {
+      setIsLoading(true)
       const response = await fetch(`/api/chat/conversations/${conversation.id}/messages`)
       const data = await response.json()
 
@@ -116,6 +117,8 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
       setMessages(data.data.messages)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load messages')
+    } finally {
+      setIsLoading(false)
     }
   }
 
