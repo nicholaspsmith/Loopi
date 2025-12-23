@@ -111,40 +111,40 @@
   }
 
   /* Card navigation slide animations */
-  @keyframes slideInLeft {
+  @keyframes slideOutLeft {
     from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
       opacity: 0;
       transform: translateX(-100%);
     }
-    to {
+  }
+
+  @keyframes slideOutRight {
+    from {
       opacity: 1;
       transform: translateX(0);
     }
-  }
-
-  @keyframes slideInRight {
-    from {
+    to {
       opacity: 0;
       transform: translateX(100%);
     }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
   }
 
-  .animate-slide-in-left {
-    animation: slideInLeft 300ms ease-out;
+  .animate-slide-out-left {
+    animation: slideOutLeft 300ms ease-out;
   }
 
-  .animate-slide-in-right {
-    animation: slideInRight 300ms ease-out;
+  .animate-slide-out-right {
+    animation: slideOutRight 300ms ease-out;
   }
 
   /* Respect user's motion preferences for slide animations */
   @media (prefers-reduced-motion: reduce) {
-    .animate-slide-in-left,
-    .animate-slide-in-right {
+    .animate-slide-out-left,
+    .animate-slide-out-right {
       animation: none !important;
     }
   }

@@ -654,9 +654,9 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
       </div>
 
       {/* Current flashcard with navigation arrows */}
-      <div className="mb-8 relative">
+      <div className="mb-8 relative overflow-visible">
         {/* Navigation arrows */}
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-4 overflow-visible">
           {/* Left arrow */}
           <button
             onClick={handleNavigatePrevious}
@@ -680,14 +680,14 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
           </button>
 
           {/* Flashcard - fixed width container with animation */}
-          <div className="flex-shrink-0 flex-grow-0 w-full sm:w-[640px] md:w-[768px] lg:w-[896px] overflow-x-clip">
+          <div className="flex-shrink-0 flex-grow-0 w-full sm:w-[640px] md:w-[768px] lg:w-[896px]">
             <div
               key={currentFlashcard.id}
               className={
                 navigationDirection === 'left'
-                  ? 'animate-slide-in-left'
+                  ? 'animate-slide-out-left'
                   : navigationDirection === 'right'
-                    ? 'animate-slide-in-right'
+                    ? 'animate-slide-out-right'
                     : ''
               }
             >
