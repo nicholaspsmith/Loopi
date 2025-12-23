@@ -88,7 +88,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="mx-auto px-4 py-8">
+    <div className="mx-auto px-4 py-8 max-w-4xl">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8">Settings</h1>
 
       <section className="mb-12">
