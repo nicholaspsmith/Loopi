@@ -90,14 +90,14 @@
 
 ### Tests for User Story 2
 
-- [ ] T019 [P] [US2] Write test to verify no createTable calls in lib/db/client.ts in tests/unit/lib/db/client-auto-init.test.ts
-- [ ] T020 [P] [US2] Write test to verify dynamic import succeeds in tests/unit/lib/db/client-auto-init.test.ts
+- [x] T019 [P] [US2] Write test to verify no createTable calls in lib/db/client.ts in tests/unit/lib/db/client-auto-init.test.ts
+- [x] T020 [P] [US2] Write test to verify dynamic import succeeds in tests/unit/lib/db/client-auto-init.test.ts
 
 ### Implementation for User Story 2
 
-- [ ] T021 [US2] Verify grep shows 0 occurrences of "createTable" in lib/db/client.ts
-- [ ] T022 [US2] Verify grep shows 2 occurrences of "createTable" in lib/db/schema.ts (messages, flashcards)
-- [ ] T023 [US2] Update documentation in lib/db/client.ts to reference schema.ts as single source of truth
+- [x] T021 [US2] Verify grep shows 0 occurrences of "createTable" in lib/db/client.ts
+- [x] T022 [US2] Verify grep shows 2 occurrences of "createTable" in lib/db/schema.ts (messages, flashcards)
+- [x] T023 [US2] Update documentation in lib/db/client.ts to reference schema.ts as single source of truth
 
 **Checkpoint**: User Story 2 complete - single source of truth verified
 

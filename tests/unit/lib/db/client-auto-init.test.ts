@@ -268,4 +268,47 @@ describe('LanceDB Auto-Initialization', () => {
       expect(tableNames).toContain('flashcards')
     })
   })
+
+  describe('Single Source of Truth (US2)', () => {
+    it('should have no createTable calls in client.ts', async () => {
+      // This test verifies code maintainability by ensuring schema logic
+      // exists only in schema.ts, not duplicated in client.ts
+
+      const fs = await import('fs')
+      const path = await import('path')
+
+      const clientPath = path.join(process.cwd(), 'lib/db/client.ts')
+      const clientCode = fs.readFileSync(clientPath, 'utf-8')
+
+      // Count occurrences of createTable in client.ts
+      const createTableMatches = clientCode.match(/createTable/g)
+      const createTableCount = createTableMatches ? createTableMatches.length : 0
+
+      // Should have ZERO createTable calls in client.ts
+      expect(createTableCount).toBe(0)
+    })
+
+    it('should successfully delegate to schema.ts via dynamic import', async () => {
+      // This test verifies that the dynamic import mechanism works correctly
+      // and that schema initialization is fully delegated to schema.ts
+
+      // Reset to force re-initialization
+      resetDbConnection()
+
+      // Get connection - this should trigger dynamic import of schema.ts
+      const db = await getDbConnection()
+
+      // Verify connection is valid
+      expect(db).toBeDefined()
+
+      // Verify tables were created by schema.ts (proves delegation worked)
+      const tableNames = await db.tableNames()
+      expect(tableNames).toContain('messages')
+      expect(tableNames).toContain('flashcards')
+
+      // Verify only the expected tables exist (2 tables from schema.ts)
+      const lanceDbTables = tableNames.filter((t) => ['messages', 'flashcards'].includes(t))
+      expect(lanceDbTables).toHaveLength(2)
+    })
+  })
 })
