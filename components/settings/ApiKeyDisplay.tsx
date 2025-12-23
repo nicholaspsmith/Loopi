@@ -66,7 +66,7 @@ export default function ApiKeyDisplay({
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <p className="font-mono text-sm">{keyPreview}</p>
+              <p className="font-mono text-sm text-gray-900 dark:text-gray-100">{keyPreview}</p>
               {isValid !== undefined && (
                 <span
                   role="status"
@@ -107,7 +107,7 @@ export default function ApiKeyDisplay({
 
       {showDeleteConfirm && (
         <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-          <p className="text-sm mb-3">
+          <p className="text-sm text-gray-900 dark:text-gray-100 mb-3">
             Are you sure you want to delete your API key? This action cannot be undone.
           </p>
           <div className="flex gap-2">
