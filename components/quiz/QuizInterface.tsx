@@ -413,7 +413,8 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
 
   const handleNavigateNext = () => {
     if (flashcards.length === 0) return
-    setNavigationDirection('right')
+    // Next: card slides towards right (enters from left)
+    setNavigationDirection('left')
     setCurrentIndex((prev) => (prev + 1) % flashcards.length)
     // Clear animation after it completes
     setTimeout(() => setNavigationDirection(null), 300)
@@ -421,7 +422,8 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
 
   const handleNavigatePrevious = () => {
     if (flashcards.length === 0) return
-    setNavigationDirection('left')
+    // Previous: card slides from right to left (enters from right)
+    setNavigationDirection('right')
     setCurrentIndex((prev) => (prev - 1 + flashcards.length) % flashcards.length)
     // Clear animation after it completes
     setTimeout(() => setNavigationDirection(null), 300)
@@ -678,7 +680,7 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
           </button>
 
           {/* Flashcard - fixed width container with animation */}
-          <div className="flex-shrink-0 flex-grow-0 w-full max-w-3xl overflow-hidden">
+          <div className="flex-shrink-0 flex-grow-0 w-full sm:w-[640px] md:w-[768px] lg:w-[896px] overflow-x-clip">
             <div
               key={currentFlashcard.id}
               className={
