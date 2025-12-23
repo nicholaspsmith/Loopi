@@ -670,8 +670,8 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
             </svg>
           </button>
 
-          {/* Flashcard */}
-          <div className="flex-1 max-w-3xl">
+          {/* Flashcard - fixed width container */}
+          <div className="w-full max-w-3xl">
             <QuizCard flashcard={currentFlashcard} onRate={handleRate} onDelete={handleDelete} />
           </div>
 

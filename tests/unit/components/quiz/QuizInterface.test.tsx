@@ -344,8 +344,8 @@ describe('QuizInterface - Navigation Arrows', () => {
         expect(questions.length).toBeGreaterThanOrEqual(1)
       })
 
-      // Progress should show 0 of 3 (0%)
-      expect(screen.getByText(/0 \/ 3|0 of 3/i)).toBeInTheDocument()
+      // Progress should show "Completed 0 of 3 Cards" (0%)
+      expect(screen.getByText(/completed 0 of 3 cards/i)).toBeInTheDocument()
       expect(screen.getByText(/0%/i)).toBeInTheDocument()
     })
 
@@ -358,8 +358,8 @@ describe('QuizInterface - Navigation Arrows', () => {
         expect(questions.length).toBeGreaterThanOrEqual(1)
       })
 
-      // Initial progress: 0/3
-      expect(screen.getByText(/0 \/ 3|0 of 3/i)).toBeInTheDocument()
+      // Initial progress: "Completed 0 of 3 Cards"
+      expect(screen.getByText(/completed 0 of 3 cards/i)).toBeInTheDocument()
 
       // Reveal answer and rate the first card
       const revealButton = screen.getByRole('button', { name: /show answer|reveal/i })
@@ -368,9 +368,9 @@ describe('QuizInterface - Navigation Arrows', () => {
       const easyButton = screen.getByRole('button', { name: /(?<!Very )Easy/i })
       await user.click(easyButton)
 
-      // Progress should update to 1/3 (33%)
+      // Progress should update to "Completed 1 of 3 Cards" (33%)
       await waitFor(() => {
-        expect(screen.getByText(/1 \/ 3|1 of 3/i)).toBeInTheDocument()
+        expect(screen.getByText(/completed 1 of 3 cards/i)).toBeInTheDocument()
         expect(screen.getByText(/33%/i)).toBeInTheDocument()
       })
     })
