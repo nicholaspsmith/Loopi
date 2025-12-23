@@ -28,7 +28,7 @@ export default function QuizProgress({
   const progressValue = total > 0 ? (current / total) * 100 : 0
 
   return (
-    <div className="w-full max-w-2xl">
+    <div className="w-full">
       {/* Progress Text */}
       <div className="flex items-center justify-between mb-2">
         <p className="text-sm font-medium text-gray-700 dark:text-gray-300">

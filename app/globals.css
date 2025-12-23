@@ -57,13 +57,16 @@
 
   .flip-card-front,
   .flip-card-back {
-    position: absolute;
     width: 100%;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
 
+  /* Back face positioning and rotation */
   .flip-card-back {
+    position: absolute;
+    top: 0;
+    left: 0;
     transform: rotateY(180deg);
   }
 
