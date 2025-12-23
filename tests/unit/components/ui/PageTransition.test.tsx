@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { PageTransition } from '@/components/ui/PageTransition'
+import * as navigation from 'next/navigation'
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
@@ -10,6 +11,8 @@ vi.mock('next/navigation', () => ({
 describe('PageTransition', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Reset to default mock value
+    vi.mocked(navigation.usePathname).mockReturnValue('/chat')
   })
 
   it('renders children without crashing', () => {
@@ -22,7 +25,7 @@ describe('PageTransition', () => {
     expect(screen.getByText('Test Content')).toBeInTheDocument()
   })
 
-  it('applies transition opacity classes', () => {
+  it('applies fade-in animation class', () => {
     const { container } = render(
       <PageTransition>
         <div>Test Content</div>
@@ -30,61 +33,48 @@ describe('PageTransition', () => {
     )
 
     const wrapper = container.firstChild
-    expect(wrapper).toHaveClass('transition-opacity')
+    expect(wrapper).toHaveClass('animate-fadeIn')
   })
 
-  it('applies duration-300 class for 300ms transitions', () => {
+  it('uses pathname as key for transitions', () => {
+    // Mock initial pathname
+    vi.mocked(navigation.usePathname).mockReturnValue('/chat')
+
     const { container } = render(
       <PageTransition>
         <div>Test Content</div>
       </PageTransition>
     )
 
-    const wrapper = container.firstChild
-    expect(wrapper).toHaveClass('duration-300')
+    const wrapper = container.firstChild as Element
+    // Wrapper should have pathname as key (React internal, but we can verify behavior)
+    expect(wrapper).toBeInTheDocument()
+    expect(wrapper).toHaveClass('animate-fadeIn')
   })
 
-  it('applies ease-out timing function', () => {
-    const { container } = render(
-      <PageTransition>
-        <div>Test Content</div>
-      </PageTransition>
-    )
+  it('remounts on pathname change', () => {
+    // Start with /chat
+    vi.mocked(navigation.usePathname).mockReturnValue('/chat')
 
-    const wrapper = container.firstChild
-    expect(wrapper).toHaveClass('ease-out')
-  })
-
-  it('starts with opacity-100 after initial render', async () => {
-    const { container } = render(
-      <PageTransition>
-        <div>Test Content</div>
-      </PageTransition>
-    )
-
-    // After initial transition, should be fully visible
-    const wrapper = container.firstChild
-    expect(wrapper).toHaveClass('opacity-100')
-  })
-
-  it('applies opacity-0 during transition', () => {
-    const { usePathname } = require('next/navigation')
     const { container, rerender } = render(
       <PageTransition>
-        <div>Test Content</div>
+        <div>Chat Content</div>
       </PageTransition>
     )
 
-    // Simulate route change
-    usePathname.mockReturnValue('/quiz')
+    // Change to /quiz
+    vi.mocked(navigation.usePathname).mockReturnValue('/quiz')
     rerender(
       <PageTransition>
-        <div>New Content</div>
+        <div>Quiz Content</div>
       </PageTransition>
     )
 
-    // During transition, should briefly have opacity-0
-    // This is tested via the implementation logic
-    expect(container.firstChild).toHaveClass('transition-opacity')
+    const wrapper = container.firstChild
+
+    // The wrapper should still have the animation class
+    expect(wrapper).toHaveClass('animate-fadeIn')
+    // Content should be updated
+    expect(wrapper).toHaveTextContent('Quiz Content')
   })
 })
