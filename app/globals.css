@@ -15,3 +15,26 @@
     @apply antialiased bg-gray-50 dark:bg-gray-900;
   }
 }
+
+@layer utilities {
+  /* Page transition fade-in animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 300ms ease-out;
+  }
+
+  /* Respect user's motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fadeIn {
+      animation: none;
+    }
+  }
+}
