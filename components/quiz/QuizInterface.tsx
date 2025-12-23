@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import QuizCard from './QuizCard'
 import QuizProgress from './QuizProgress'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { triggerConfetti, clearConfetti } from '@/lib/animations/confetti'
 
 const MAX_RETRIES = 2 // Reduced from 3 to minimize delay before showing error (max 3s vs 7s)
 const INITIAL_RETRY_DELAY = 1000 // 1 second
@@ -153,6 +154,24 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
       }
     }
   }, [undoTimeoutId])
+
+  // Trigger confetti when quiz completes
+  useEffect(() => {
+    if (isCompleted) {
+      // Trigger confetti animation
+      triggerConfetti()
+
+      // Auto-cleanup after 3 seconds
+      const cleanupTimeout = setTimeout(() => {
+        clearConfetti()
+      }, 3000)
+
+      return () => {
+        clearTimeout(cleanupTimeout)
+        clearConfetti()
+      }
+    }
+  }, [isCompleted])
 
   const fetchFlashcards = async (fetchMode: 'due' | 'all' = 'due') => {
     try {
