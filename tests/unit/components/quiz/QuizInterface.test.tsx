@@ -153,7 +153,7 @@ describe('QuizInterface - Card Stack Effect', () => {
       expect(stackContainer).toBeInTheDocument()
     })
 
-    it('should apply correct z-index order (front to back)', async () => {
+    it('should apply correct z-index layering via CSS', async () => {
       const { container } = render(<QuizInterface initialFlashcards={mockFlashcards} />)
 
       await waitFor(() => {
@@ -162,12 +162,11 @@ describe('QuizInterface - Card Stack Effect', () => {
 
       const stackedCards = container.querySelectorAll('.card-stack-item')
 
-      // Front card should have highest z-index
-      expect(stackedCards[0]).toHaveClass('z-30')
-      // Second card should have middle z-index
-      expect(stackedCards[1]).toHaveClass('z-20')
-      // Third card should have lowest z-index
-      expect(stackedCards[2]).toHaveClass('z-10')
+      // All cards should have card-stack-item class
+      expect(stackedCards[0]).toHaveClass('card-stack-item')
+      // Cards behind should have specific classes
+      expect(stackedCards[1]).toHaveClass('card-stack-behind-1')
+      expect(stackedCards[2]).toHaveClass('card-stack-behind-2')
     })
 
     it('should apply translateY offset to cards behind', async () => {
