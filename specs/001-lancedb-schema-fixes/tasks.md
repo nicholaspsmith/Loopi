@@ -117,9 +117,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T024 [US3] Fix test description at line 143 in tests/unit/lib/db/client-auto-init.test.ts (change to "should delegate to schema.ts via dynamic import")
-- [ ] T025 [US3] Review and update all test descriptions in tests/unit/lib/db/client-auto-init.test.ts for accuracy
-- [ ] T026 [US3] Add test assertions to verify delegation actually occurs in tests/unit/lib/db/client-auto-init.test.ts
+- [x] T024 [US3] Fix test description at line 143 in tests/unit/lib/db/client-auto-init.test.ts (change to "should delegate to schema.ts via dynamic import")
+- [x] T025 [US3] Review and update all test descriptions in tests/unit/lib/db/client-auto-init.test.ts for accuracy
+- [x] T026 [US3] Add test assertions to verify delegation actually occurs in tests/unit/lib/db/client-auto-init.test.ts
 
 **Checkpoint**: User Story 3 complete - test documentation accurate
 

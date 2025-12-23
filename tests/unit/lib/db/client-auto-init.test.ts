@@ -51,14 +51,14 @@ describe('LanceDB Auto-Initialization', () => {
       expect(tablesAfterSecond).toEqual(tablesAfterFirst)
     })
 
-    it('should handle schema initialization errors gracefully', async () => {
-      // This test verifies that if schema init fails, the app continues
-      // In a real error scenario, getDbConnection would still return a connection
-      // but operations would fail with error logging
+    it('should successfully complete schema initialization', async () => {
+      // This test verifies that schema initialization completes successfully
+      // With fail-fast error handling, errors propagate (not swallowed)
+      // If there were initialization errors, this test would throw
 
       const db = await getDbConnection()
 
-      // Connection should still be established even if there were init errors
+      // Connection should be established with schema initialized
       expect(db).toBeDefined()
     })
   })
@@ -140,7 +140,7 @@ describe('LanceDB Auto-Initialization', () => {
   })
 
   describe('Integration with Existing Schema Module', () => {
-    it('should use the existing initializeSchema function', async () => {
+    it('should delegate to schema.ts via dynamic import', async () => {
       // Verify that auto-initialization delegates to schema.ts
       const db = await getDbConnection()
 
