@@ -20,69 +20,57 @@ export async function getDbConnection(): Promise<Connection> {
 
   console.log(`✅ LanceDB connected at: ${dbPath}`)
 
-  // Initialize schema on first connection
+  // Auto-initialize schema on first connection if tables don't exist
+  // This ensures production deployments work without manual initialization
   if (!schemaInitialized) {
-    await ensureSchemaInitialized(dbConnection)
-    schemaInitialized = true
+    try {
+      const tableNames = await dbConnection.tableNames()
+
+      // Create messages table if it doesn't exist
+      if (!tableNames.includes('messages')) {
+        await dbConnection.createTable(
+          'messages',
+          [
+            {
+              id: '00000000-0000-0000-0000-000000000000',
+              userId: '00000000-0000-0000-0000-000000000000',
+              embedding: new Array(768).fill(0), // nomic-embed-text: 768 dimensions
+            },
+          ],
+          { mode: 'create' }
+        )
+        const table = await dbConnection.openTable('messages')
+        await table.delete("id = '00000000-0000-0000-0000-000000000000'")
+        console.log('✅ Created messages table')
+      }
+
+      // Create flashcards table if it doesn't exist
+      if (!tableNames.includes('flashcards')) {
+        await dbConnection.createTable(
+          'flashcards',
+          [
+            {
+              id: '00000000-0000-0000-0000-000000000000',
+              userId: '00000000-0000-0000-0000-000000000000',
+              embedding: new Array(768).fill(0), // nomic-embed-text: 768 dimensions
+            },
+          ],
+          { mode: 'create' }
+        )
+        const table = await dbConnection.openTable('flashcards')
+        await table.delete("id = '00000000-0000-0000-0000-000000000000'")
+        console.log('✅ Created flashcards table')
+      }
+
+      schemaInitialized = true
+    } catch (error) {
+      console.error('❌ Failed to auto-initialize LanceDB schema:', error)
+      // Don't throw - allow app to continue even if schema init fails
+      // Operations will fail gracefully with error logging
+    }
   }
 
   return dbConnection
-}
-
-/**
- * Ensure LanceDB schema is initialized
- * Creates messages and flashcards tables if they don't exist
- */
-async function ensureSchemaInitialized(db: Connection): Promise<void> {
-  try {
-    const existingTables = await db.tableNames()
-
-    // Create messages table if it doesn't exist
-    if (!existingTables.includes('messages')) {
-      console.log('🔨 Creating LanceDB messages table...')
-      await db.createTable(
-        'messages',
-        [
-          {
-            id: '00000000-0000-0000-0000-000000000000',
-            userId: '00000000-0000-0000-0000-000000000000',
-            embedding: new Array(768).fill(0),
-          },
-        ],
-        { mode: 'create' }
-      )
-      // Clean up init row
-      const table = await db.openTable('messages')
-      await table.delete("id = '00000000-0000-0000-0000-000000000000'")
-      console.log('✅ Created messages table')
-    }
-
-    // Create flashcards table if it doesn't exist
-    if (!existingTables.includes('flashcards')) {
-      console.log('🔨 Creating LanceDB flashcards table...')
-      await db.createTable(
-        'flashcards',
-        [
-          {
-            id: '00000000-0000-0000-0000-000000000000',
-            userId: '00000000-0000-0000-0000-000000000000',
-            embedding: new Array(768).fill(0),
-          },
-        ],
-        { mode: 'create' }
-      )
-      // Clean up init row
-      const table = await db.openTable('flashcards')
-      await table.delete("id = '00000000-0000-0000-0000-000000000000'")
-      console.log('✅ Created flashcards table')
-    }
-
-    console.log('✅ LanceDB schema initialized')
-  } catch (error) {
-    console.error('❌ Failed to initialize LanceDB schema:', error)
-    // Don't throw - allow app to continue even if schema init fails
-    // Operations will fail gracefully with error logging
-  }
 }
 
 /**
