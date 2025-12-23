@@ -46,11 +46,24 @@
   .flip-card-inner {
     position: relative;
     width: 100%;
+    height: 100%;
     transition: transform 600ms ease-out;
     transform-style: preserve-3d;
   }
 
   .flip-card-inner.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .flip-card-front,
+  .flip-card-back {
+    position: absolute;
+    width: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .flip-card-back {
     transform: rotateY(180deg);
   }
 
@@ -63,6 +76,24 @@
     .flip-card-inner.flipped {
       transform: none;
     }
+
+    .flip-card-front,
+    .flip-card-back {
+      position: relative;
+      backface-visibility: visible;
+    }
+
+    .flip-card-back {
+      transform: none;
+    }
+
+    .flip-card-inner:not(.flipped) .flip-card-back {
+      display: none;
+    }
+
+    .flip-card-inner.flipped .flip-card-front {
+      display: none;
+    }
   }
 
   /* Respect user's motion preferences for flip */
@@ -73,60 +104,6 @@
 
     .flip-card-inner.flipped {
       transform: none !important;
-    }
-  }
-
-  /* Card Stack Effect */
-  .card-stack {
-    position: relative;
-    perspective: 1000px;
-  }
-
-  .card-stack-item {
-    position: absolute;
-    width: 100%;
-    transition: all 300ms ease-out;
-  }
-
-  /* Front card (z-30) */
-  .card-stack-item:nth-child(1) {
-    position: relative;
-    z-index: 30;
-  }
-
-  /* First card behind (z-20) */
-  .card-stack-item.card-stack-behind-1 {
-    z-index: 20;
-    transform: translateY(12px) scale(0.96);
-    opacity: 0.7;
-  }
-
-  /* Second card behind (z-10) */
-  .card-stack-item.card-stack-behind-2 {
-    z-index: 10;
-    transform: translateY(24px) scale(0.92);
-    opacity: 0.4;
-  }
-
-  /* Fallback for browsers without 3D transform support */
-  @supports not (transform: translateY(12px) scale(0.96)) {
-    .card-stack-item.card-stack-behind-1 {
-      transform: none;
-      margin-top: 8px;
-      opacity: 0.7;
-    }
-
-    .card-stack-item.card-stack-behind-2 {
-      transform: none;
-      margin-top: 16px;
-      opacity: 0.4;
-    }
-  }
-
-  /* Respect user's motion preferences for stack */
-  @media (prefers-reduced-motion: reduce) {
-    .card-stack-item {
-      transition: none !important;
     }
   }
 }

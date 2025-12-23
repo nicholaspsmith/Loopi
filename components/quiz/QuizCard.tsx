@@ -95,25 +95,53 @@ export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps)
   return (
     <div className="flip-card" role="region" aria-label="Flashcard">
       <div className={`flip-card-inner ${isAnswerRevealed ? 'flipped' : ''}`}>
-        <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] p-4 sm:p-6 md:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-          {/* Question Section */}
-          <div className="w-full max-w-2xl mb-6 sm:mb-8">
-            <h2
-              id="flashcard-question-label"
-              className="text-xs sm:text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2"
-            >
-              Question
-            </h2>
-            <p
-              className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900 dark:text-gray-100 leading-relaxed"
-              aria-labelledby="flashcard-question-label"
-            >
-              {flashcard.question}
-            </p>
-          </div>
+        {/* Front Face - Question Only */}
+        <div className="flip-card-front">
+          <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] p-4 sm:p-6 md:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+            {/* Question Section */}
+            <div className="w-full max-w-2xl mb-6 sm:mb-8">
+              <h2
+                id="flashcard-question-label"
+                className="text-xs sm:text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2"
+              >
+                Question
+              </h2>
+              <p
+                className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900 dark:text-gray-100 leading-relaxed"
+                aria-labelledby="flashcard-question-label"
+              >
+                {flashcard.question}
+              </p>
+            </div>
 
-          {/* Answer Section - Only shown after reveal */}
-          {isAnswerRevealed && (
+            {/* Show Answer Button */}
+            <div className="w-full max-w-2xl mt-auto">
+              <button
+                onClick={handleRevealAnswer}
+                disabled={isFlipAnimating}
+                aria-label="Reveal answer to this flashcard"
+                className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Show Answer
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Back Face - Question + Answer + Rating */}
+        <div className="flip-card-back">
+          <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] p-4 sm:p-6 md:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+            {/* Question (for context) */}
+            <div className="w-full max-w-2xl mb-6 sm:mb-8">
+              <h2 className="text-xs sm:text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+                Question
+              </h2>
+              <p className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900 dark:text-gray-100 leading-relaxed">
+                {flashcard.question}
+              </p>
+            </div>
+
+            {/* Answer Section */}
             <div
               className="w-full max-w-2xl mb-6 sm:mb-8 pt-6 sm:pt-8 border-t border-gray-200 dark:border-gray-700"
               role="region"
@@ -131,19 +159,6 @@ export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps)
               >
                 {flashcard.answer}
               </p>
-
-              {/* Delete button - only show if onDelete is provided */}
-              {/* {onDelete && !showDeleteConfirm && ( */}
-              {/*   <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"> */}
-              {/*     <button */}
-              {/*       onClick={handleDeleteClick} */}
-              {/*       className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200" */}
-              {/*       aria-label="Delete this flashcard" */}
-              {/*     > */}
-              {/*       Delete Flashcard */}
-              {/*     </button> */}
-              {/*   </div> */}
-              {/* )} */}
 
               {/* Delete confirmation */}
               {showDeleteConfirm && (
@@ -170,23 +185,11 @@ export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps)
                 </div>
               )}
             </div>
-          )}
 
-          {/* Action Buttons */}
-          <div className="w-full max-w-2xl mt-auto">
-            {!isAnswerRevealed ? (
-              /* Show Answer Button */
-              <button
-                onClick={handleRevealAnswer}
-                aria-label="Reveal answer to this flashcard"
-                className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              >
-                Show Answer
-              </button>
-            ) : (
-              /* Rating Buttons */
+            {/* Rating Buttons */}
+            <div className="w-full max-w-2xl mt-auto">
               <RatingButtons onRate={handleRating} disabled={isRatingDisabled} />
-            )}
+            </div>
           </div>
         </div>
       </div>

@@ -597,34 +597,9 @@ export default function QuizInterface({ initialFlashcards = [] }: QuizInterfaceP
         <QuizProgress current={currentIndex + 1} total={flashcards.length} showPercentage />
       </div>
 
-      {/* Card stack - current card + up to 2 behind */}
-      <div className="mb-8 card-stack">
-        {/* Current card */}
-        <div className="card-stack-item">
-          <QuizCard flashcard={currentFlashcard} onRate={handleRate} onDelete={handleDelete} />
-        </div>
-
-        {/* Card behind (if exists) */}
-        {currentIndex + 1 < flashcards.length && (
-          <div className="card-stack-item card-stack-behind-1 z-20 pointer-events-none">
-            <QuizCard
-              flashcard={flashcards[currentIndex + 1]}
-              onRate={handleRate}
-              onDelete={handleDelete}
-            />
-          </div>
-        )}
-
-        {/* Second card behind (if exists) */}
-        {currentIndex + 2 < flashcards.length && (
-          <div className="card-stack-item card-stack-behind-2 z-10 pointer-events-none">
-            <QuizCard
-              flashcard={flashcards[currentIndex + 2]}
-              onRate={handleRate}
-              onDelete={handleDelete}
-            />
-          </div>
-        )}
+      {/* Current flashcard */}
+      <div className="mb-8">
+        <QuizCard flashcard={currentFlashcard} onRate={handleRate} onDelete={handleDelete} />
       </div>
 
       {/* Undo snackbar - shows briefly after rating */}
