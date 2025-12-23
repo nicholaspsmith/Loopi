@@ -185,10 +185,10 @@
 
 **Purpose**: Final validation and documentation
 
-- [ ] T036 Run full test suite: `npm test -- tests/unit/lib/db/`
-- [ ] T037 Run quickstart.md validation scenarios (9 test scenarios)
-- [ ] T038 Verify all success criteria (SC-001 through SC-010)
-- [ ] T039 Update CLAUDE.md with completion of 001-lancedb-schema-fixes
+- [x] T036 Run full test suite: `npm test -- tests/unit/lib/db/`
+- [x] T037 Run quickstart.md validation scenarios (9 test scenarios)
+- [x] T038 Verify all success criteria (SC-001 through SC-010)
+- [x] T039 Update CLAUDE.md with completion of 001-lancedb-schema-fixes
 
 ---
 
