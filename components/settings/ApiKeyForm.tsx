@@ -137,7 +137,10 @@ export default function ApiKeyForm({ onSave, onDelete, existingKeyPreview }: Api
       )}
 
       <div>
-        <label htmlFor="api-key" className="block text-sm font-medium mb-2">
+        <label
+          htmlFor="api-key"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+        >
           API Key
         </label>
         <input
@@ -146,7 +149,7 @@ export default function ApiKeyForm({ onSave, onDelete, existingKeyPreview }: Api
           value={apiKey}
           onChange={handleInputChange}
           onBlur={handleBlur}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="sk-ant-api03-..."
           aria-describedby={error ? 'api-key-error' : undefined}
         />
