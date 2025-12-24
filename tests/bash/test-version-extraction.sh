@@ -48,8 +48,13 @@ source_script_functions() {
     # Create a temporary script that sources the functions without executing main
     local temp_script=$(mktemp)
     sed '/^if \[\[ "\${BASH_SOURCE\[0\]}" == "\${0}" \]\]; then/,$d' "$UPDATE_SCRIPT" > "$temp_script"
+
+    # Remove 'set -e' from the temp script to prevent it from re-enabling errexit in our shell
+    # GitHub Actions runs with 'bash -e' which conflicts with sourcing scripts that have 'set -e'
+    sed -i.bak '/^set -e$/d' "$temp_script"
+
     source "$temp_script"
-    rm -f "$temp_script"
+    rm -f "$temp_script" "$temp_script.bak"
 
     # Override paths to use mock files
     PACKAGE_JSON="$MOCK_DIR/package.json"
