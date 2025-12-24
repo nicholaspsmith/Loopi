@@ -131,7 +131,7 @@ Evaluated three approaches:
 - Native to all Unix-like platforms
 - No code duplication (violates DRY principle)
 
-**Validation**: Tested on macOS 14, Ubuntu 22.04, WSL2 (Windows 11) - all successful.
+**Validation**: Tested on macOS 14, Ubuntu 22.04 - all successful.
 
 ---
 

@@ -347,7 +347,7 @@ As a developer, I want Claude to automatically open a PR when implementation is 
 
 ### Technology Assumptions
 
-- **A-015**: Bash is available on the development environment (macOS, Linux, or WSL on Windows)
+- **A-015**: Bash is available on the development environment (macOS or Linux)
 - **A-016**: Git is installed and configured
 - **A-017**: The repository uses the spec-kit workflow structure with `.specify/` directory
 - **A-018**: Node.js and npm are available for package.json operations

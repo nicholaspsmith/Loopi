@@ -30,7 +30,7 @@ Improve developer experience with spec-kit workflow through three phases:
 - **Phase 2**: Bash test script with mock files
 - **Phase 3**: Integration tests for command aliases and automation
 
-**Target Platform**: macOS, Linux, WSL on Windows (developer environments with Bash)
+**Target Platform**: macOS, Linux (developer environments with Bash)
 **Project Type**: Workflow tooling (scripts + command infrastructure)
 **Performance Goals**:
 
