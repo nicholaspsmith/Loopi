@@ -7,7 +7,7 @@
 
 import { db } from '@/lib/db'
 import { rateLimits, type RateLimit, type NewRateLimit } from '@/lib/db/drizzle-schema'
-import { eq } from 'drizzle-orm'
+import { eq, lt } from 'drizzle-orm'
 
 /**
  * Get rate limit entry by email
@@ -55,7 +55,7 @@ export async function upsertRateLimit(data: NewRateLimit): Promise<RateLimit> {
 export async function deleteOldRateLimits(): Promise<number> {
   const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000)
 
-  await db.delete(rateLimits).where(eq(rateLimits.windowStart, fifteenMinutesAgo))
+  await db.delete(rateLimits).where(lt(rateLimits.windowStart, fifteenMinutesAgo))
 
   // Return number of deleted rows (if available)
   return 0 // Drizzle doesn't return count by default
