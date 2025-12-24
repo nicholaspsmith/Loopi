@@ -130,3 +130,36 @@ export async function emailExists(email: string): Promise<boolean> {
   const user = await getUserByEmail(email)
   return user !== null
 }
+
+/**
+ * Update user email verification status
+ *
+ * @param userId - User ID to update
+ * @returns Updated user
+ */
+export async function updateUserEmailVerified(userId: string): Promise<User> {
+  const db = getDb()
+
+  const [updatedUser] = await db
+    .update(users)
+    .set({
+      emailVerified: true,
+      emailVerifiedAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, userId))
+    .returning()
+
+  if (!updatedUser) {
+    throw new Error(`User not found: ${userId}`)
+  }
+
+  return {
+    id: updatedUser.id,
+    email: updatedUser.email,
+    passwordHash: updatedUser.passwordHash,
+    name: updatedUser.name,
+    createdAt: updatedUser.createdAt.getTime(),
+    updatedAt: updatedUser.updatedAt.getTime(),
+  }
+}
