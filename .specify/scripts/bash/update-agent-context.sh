@@ -1,71 +1,89 @@
 #!/usr/bin/env bash
 
-# Update CLAUDE.md with package versions and feature context
+# Update agent context files with information from plan.md
 #
-# This script performs two operations:
+# This script maintains AI agent context files by parsing feature specifications 
+# and updating agent-specific configuration files with project information.
 #
-# 1. PACKAGE VERSION SYNC
-#    - Reads package.json and updates the Technology Stack section
-#    - Syncs 16 tracked packages with strict semver validation
-#    - Updates both inline versions (e.g., "TypeScript 5.7.0")
-#    - Updates parenthetical versions (e.g., "postgres 3.4.7, drizzle-orm 0.45.1")
+# MAIN FUNCTIONS:
+# 1. Environment Validation
+#    - Verifies git repository structure and branch information
+#    - Checks for required plan.md files and templates
+#    - Validates file permissions and accessibility
 #
-# 2. FEATURE CONTEXT MANAGEMENT
-#    - Parses all plan.md files in specs/ directories
-#    - Extracts: Language/Version, Primary Dependencies, Storage
-#    - Updates "Active Technologies" section with tech stack per feature
-#    - Updates "Recent Changes" section with last 3 features
+# 2. Plan Data Extraction
+#    - Parses plan.md files to extract project metadata
+#    - Identifies language/version, frameworks, databases, and project types
+#    - Handles missing or incomplete specification data gracefully
 #
-# Run this script after:
-#   - Installing or updating npm packages (to sync versions)
-#   - Completing a new feature (to update Active Technologies/Recent Changes)
+# 3. Agent File Management
+#    - Creates new agent context files from templates when needed
+#    - Updates existing agent files with new project information
+#    - Preserves manual additions and custom configurations
+#    - Supports multiple AI agent formats and directory structures
 #
-# Usage: ./update-agent-context.sh [OPTIONS]
-#        ./update-agent-context.sh --validate   (test package tracking and plan.md parsing)
-#        ./update-agent-context.sh --help       (show full usage information)
+# 4. Content Generation
+#    - Generates language-specific build/test commands
+#    - Creates appropriate project directory structures
+#    - Updates technology stacks and recent changes sections
+#    - Maintains consistent formatting and timestamps
+#
+# 5. Multi-Agent Support
+#    - Handles agent-specific file paths and naming conventions
+#    - Supports: Claude, Gemini, Copilot, Cursor, Qwen, opencode, Codex, Windsurf, Kilo Code, Auggie CLI, Roo Code, CodeBuddy CLI, Qoder CLI, Amp, SHAI, or Amazon Q Developer CLI
+#    - Can update single agents or all existing agent files
+#    - Creates default Claude file if no agent files exist
+#
+# Usage: ./update-agent-context.sh [agent_type]
+# Agent types: claude|gemini|copilot|cursor-agent|qwen|opencode|codex|windsurf|kilocode|auggie|shai|q|bob|qoder
+# Leave empty to update all existing agent files
 
 set -e
+
+# Enable strict error handling
+set -u
 set -o pipefail
 
 #==============================================================================
-# Configuration
+# Configuration and Global Variables
 #==============================================================================
 
+# Get script directory and load common functions
 SCRIPT_DIR="$(CDPATH="" cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
-PACKAGE_JSON="$REPO_ROOT/package.json"
-CLAUDE_MD="$REPO_ROOT/CLAUDE.md"
+source "$SCRIPT_DIR/common.sh"
 
-# Source common.sh for additional utilities (optional - provides get_feature_paths if available)
-COMMON_SH="$SCRIPT_DIR/common.sh"
-if [[ -f "$COMMON_SH" ]]; then
-    # Don't source yet - not needed for current functionality
-    # Can be enabled later if we need get_feature_paths()
-    :
-fi
+# Get all paths and variables from common functions
+eval $(get_feature_paths)
 
-# List of packages tracked for version synchronization
-# NOTE: This is the single source of truth. When adding a new package:
-#   1. Add the npm package name to this array
-#   2. Add corresponding update_version() call in update_claude_md() function
-TRACKED_PACKAGES=(
-    "typescript"
-    "next"
-    "react"
-    "tailwindcss"
-    "@lancedb/lancedb"
-    "pgvector"
-    "@anthropic-ai/sdk"
-    "ts-fsrs"
-    "next-auth"
-    "vitest"
-    "@playwright/test"
-    "eslint"
-    "prettier"
-    "lint-staged"
-    "postgres"
-    "drizzle-orm"
-)
+NEW_PLAN="$IMPL_PLAN"  # Alias for compatibility with existing code
+AGENT_TYPE="${1:-}"
+
+# Agent-specific file paths  
+CLAUDE_FILE="$REPO_ROOT/CLAUDE.md"
+GEMINI_FILE="$REPO_ROOT/GEMINI.md"
+COPILOT_FILE="$REPO_ROOT/.github/agents/copilot-instructions.md"
+CURSOR_FILE="$REPO_ROOT/.cursor/rules/specify-rules.mdc"
+QWEN_FILE="$REPO_ROOT/QWEN.md"
+AGENTS_FILE="$REPO_ROOT/AGENTS.md"
+WINDSURF_FILE="$REPO_ROOT/.windsurf/rules/specify-rules.md"
+KILOCODE_FILE="$REPO_ROOT/.kilocode/rules/specify-rules.md"
+AUGGIE_FILE="$REPO_ROOT/.augment/rules/specify-rules.md"
+ROO_FILE="$REPO_ROOT/.roo/rules/specify-rules.md"
+CODEBUDDY_FILE="$REPO_ROOT/CODEBUDDY.md"
+QODER_FILE="$REPO_ROOT/QODER.md"
+AMP_FILE="$REPO_ROOT/AGENTS.md"
+SHAI_FILE="$REPO_ROOT/SHAI.md"
+Q_FILE="$REPO_ROOT/AGENTS.md"
+BOB_FILE="$REPO_ROOT/AGENTS.md"
+
+# Template file
+TEMPLATE_FILE="$REPO_ROOT/.specify/templates/agent-file-template.md"
+
+# Global variables for parsed plan data
+NEW_LANG=""
+NEW_FRAMEWORK=""
+NEW_DB=""
+NEW_PROJECT_TYPE=""
 
 #==============================================================================
 # Utility Functions
@@ -87,78 +105,58 @@ log_warning() {
     echo "WARNING: $1" >&2
 }
 
-# Check if a required dependency is installed
-check_dependency() {
-    local cmd="$1"
-    local min_version="$2"
-    local install_cmd="$3"
+# Cleanup function for temporary files
+cleanup() {
+    local exit_code=$?
+    rm -f /tmp/agent_update_*_$$
+    rm -f /tmp/manual_additions_$$
+    exit $exit_code
+}
 
-    # Check if command exists
-    if ! command -v "$cmd" &> /dev/null; then
-        log_error "$cmd is required but not found."
-        log_error "Install with: $install_cmd"
+# Set up cleanup trap
+trap cleanup EXIT INT TERM
+
+#==============================================================================
+# Validation Functions
+#==============================================================================
+
+validate_environment() {
+    # Check if we have a current branch/feature (git or non-git)
+    if [[ -z "$CURRENT_BRANCH" ]]; then
+        log_error "Unable to determine current feature"
+        if [[ "$HAS_GIT" == "true" ]]; then
+            log_info "Make sure you're on a feature branch"
+        else
+            log_info "Set SPECIFY_FEATURE environment variable or create a feature first"
+        fi
         exit 1
     fi
-
-    # Version check (best-effort, warn but don't fail)
-    if [[ -n "$min_version" ]]; then
-        local version=""
-        case "$cmd" in
-            jq)
-                version=$(jq --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+' | head -1)
-                ;;
-            perl)
-                version=$(perl --version 2>/dev/null | grep -oE 'version [0-9]+' | grep -oE '[0-9]+' | head -1)
-                ;;
-        esac
-
-        if [[ -n "$version" ]]; then
-            # Simple version comparison (works for major version numbers)
-            if [[ $(echo "$version" | cut -d. -f1) -lt $(echo "$min_version" | cut -d. -f1) ]]; then
-                log_warning "$cmd version $version detected, recommend $min_version+"
-            fi
+    
+    # Check if plan.md exists
+    if [[ ! -f "$NEW_PLAN" ]]; then
+        log_error "No plan.md found at $NEW_PLAN"
+        log_info "Make sure you're working on a feature with a corresponding spec directory"
+        if [[ "$HAS_GIT" != "true" ]]; then
+            log_info "Use: export SPECIFY_FEATURE=your-feature-name or create a new feature first"
         fi
+        exit 1
     fi
-}
-
-# Extract version from package.json (strips ^ ~ and other prefixes, preserves full semver)
-get_version() {
-    local package="$1"
-    local version
-    local cleaned_version
-
-    # Try dependencies first, then devDependencies
-    version=$(jq -r ".dependencies[\"$package\"] // .devDependencies[\"$package\"] // empty" "$PACKAGE_JSON" 2>/dev/null)
-
-    if [[ -n "$version" ]]; then
-        # Strip version prefixes (^, ~, >=, etc.) but preserve full semver (major.minor.patch-prerelease)
-        cleaned_version=$(echo "$version" | sed 's/^[\^~>=<]*//')
-
-        # Validate strict semver format: major.minor[.patch][-prerelease][+build]
-        # - major.minor.patch: Required (patch optional for npm compatibility)
-        # - prerelease: Optional, starts with '-', followed by alphanumeric+dots (no leading/trailing dots)
-        # - build: Optional, starts with '+', followed by alphanumeric+dots (no leading/trailing dots)
-        # Examples: 1.0, 1.0.0, 1.0.0-alpha, 1.0.0-beta.1, 1.0.0+20130313144700, 1.0.0-rc.1+build.123
-        # Rejects: 1.2.-beta, 1.2+, 1.2.-, 1.2-., 1.2+.
-        if [[ "$cleaned_version" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?(-[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?(\+[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?$ ]]; then
-            echo "$cleaned_version"
-        else
-            echo "Warning: Invalid semver format for $package: $cleaned_version" >&2
-            return 1
-        fi
+    
+    # Check if template exists (needed for new files)
+    if [[ ! -f "$TEMPLATE_FILE" ]]; then
+        log_warning "Template file not found at $TEMPLATE_FILE"
+        log_warning "Creating new agent files will fail"
     fi
 }
 
 #==============================================================================
-# Plan.md Parsing Functions
+# Plan Parsing Functions
 #==============================================================================
 
-# Extract field from plan.md Technical Context section
-# Usage: extract_plan_field "Language/Version" "$plan_file"
 extract_plan_field() {
     local field_pattern="$1"
     local plan_file="$2"
-
+    
     grep "^\*\*${field_pattern}\*\*: " "$plan_file" 2>/dev/null | \
         head -1 | \
         sed "s|^\*\*${field_pattern}\*\*: ||" | \
@@ -167,668 +165,635 @@ extract_plan_field() {
         grep -v "^N/A$" || echo ""
 }
 
-# Parse single plan.md file and return key data
-# Returns: branch|lang|framework|storage as pipe-delimited string
-parse_plan_file() {
+parse_plan_data() {
     local plan_file="$1"
-    local branch_name="$(basename "$(dirname "$plan_file")")"
-
-    local lang=$(extract_plan_field "Language/Version" "$plan_file")
-    local framework=$(extract_plan_field "Primary Dependencies" "$plan_file")
-    local storage=$(extract_plan_field "Storage" "$plan_file")
-
-    echo "$branch_name|$lang|$framework|$storage"
-}
-
-# Find all plan.md files and parse them
-# Returns lines of pipe-delimited strings (one per plan.md file)
-collect_all_plan_data() {
-    local specs_dir="$REPO_ROOT/specs"
-
-    if [[ ! -d "$specs_dir" ]]; then
-        log_warning "specs/ directory not found at $specs_dir"
-        return 0
-    fi
-
-    # Find all plan.md files and parse each one
-    while IFS= read -r plan_file; do
-        if [[ -f "$plan_file" && -r "$plan_file" ]]; then
-            parse_plan_file "$plan_file"
-        fi
-    done < <(find "$specs_dir" -name "plan.md" -type f 2>/dev/null | sort)
-}
-
-#==============================================================================
-# Version Update Functions
-#==============================================================================
-
-# Update parenthetical versions (e.g., "via postgres 3.4, drizzle-orm 0.45")
-# These appear inline rather than as standalone entries
-update_parenthetical_version() {
-    local temp_file="$1"
-    local package_name="$2"
-    local version="$3"
-
-    if [[ -n "$version" ]]; then
-        if grep -q "${package_name} [0-9]" "$temp_file" 2>/dev/null; then
-            # Pattern matches: major.minor[.patch][-prerelease][+build]
-            # Handles both "postgres 3.4," and "postgres 3.4)" formats
-            # Note: $version is validated by semver regex in get_version(), safe from injection
-            perl -i -pe "s/${package_name} [0-9]+\.[0-9]+(\.[0-9]+)?(-[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?(\+[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?/${package_name} ${version}/g" "$temp_file"
-            log_info "Updated ${package_name} to $version"
-            return 0
-        else
-            log_warning "${package_name} not found in CLAUDE.md (parenthetical format)"
-            return 1
-        fi
-    else
-        log_warning "Could not extract version for ${package_name}"
+    
+    if [[ ! -f "$plan_file" ]]; then
+        log_error "Plan file not found: $plan_file"
         return 1
     fi
-}
-
-update_version() {
-    local temp_file="$1"
-    local display_name="$2"
-    local package_name="$3"
-
-    local version
-    version=$(get_version "$package_name")
-
-    if [[ -n "$version" ]]; then
-        # Check if the display name exists in the file with a version number
-        if grep -q "$display_name [0-9]" "$temp_file" 2>/dev/null; then
-            # Use perl for more reliable substitution with special characters
-            # Pattern matches: major.minor[.patch][-prerelease][+build]
-            # Note: $version is validated by semver regex (line 121) before use here,
-            # ensuring it contains only: digits, dots, hyphens, alphanumeric, and plus
-            # This prevents regex injection as no regex metacharacters are allowed
-            perl -i -pe "s/(\Q$display_name\E) [0-9]+\.[0-9]+(\.[0-9]+)?(-[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?(\+[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?/\$1 $version/" "$temp_file"
-            log_info "Updated $display_name to $version"
-            return 0
-        else
-            log_warning "$display_name not found in CLAUDE.md (package: $package_name)"
-            return 1
-        fi
-    else
-        log_warning "Could not extract version for $package_name (package not found or invalid semver)"
+    
+    if [[ ! -r "$plan_file" ]]; then
+        log_error "Plan file is not readable: $plan_file"
         return 1
+    fi
+    
+    log_info "Parsing plan data from $plan_file"
+    
+    NEW_LANG=$(extract_plan_field "Language/Version" "$plan_file")
+    NEW_FRAMEWORK=$(extract_plan_field "Primary Dependencies" "$plan_file")
+    NEW_DB=$(extract_plan_field "Storage" "$plan_file")
+    NEW_PROJECT_TYPE=$(extract_plan_field "Project Type" "$plan_file")
+    
+    # Log what we found
+    if [[ -n "$NEW_LANG" ]]; then
+        log_info "Found language: $NEW_LANG"
+    else
+        log_warning "No language information found in plan"
+    fi
+    
+    if [[ -n "$NEW_FRAMEWORK" ]]; then
+        log_info "Found framework: $NEW_FRAMEWORK"
+    fi
+    
+    if [[ -n "$NEW_DB" ]] && [[ "$NEW_DB" != "N/A" ]]; then
+        log_info "Found database: $NEW_DB"
+    fi
+    
+    if [[ -n "$NEW_PROJECT_TYPE" ]]; then
+        log_info "Found project type: $NEW_PROJECT_TYPE"
     fi
 }
 
-#==============================================================================
-# Section Update Functions
-#==============================================================================
-
-# Format technology stack entry from plan.md data
-# Usage: format_tech_entry "TypeScript 5.7" "Next.js 16, React 19" "004-claude-api"
-format_tech_entry() {
+format_technology_stack() {
     local lang="$1"
     local framework="$2"
-    local branch="$3"
-
     local parts=()
-    [[ -n "$lang" ]] && parts+=("$lang")
-    # Only take first framework if multiple (e.g., "Next.js 16, React 19" → "Next.js 16")
-    if [[ -n "$framework" ]]; then
-        # Use awk to extract first comma-separated value and trim whitespace
-        local first_framework=$(echo "$framework" | awk -F',' '{gsub(/^[ \t]+|[ \t]+$/, "", $1); print $1}')
-        parts+=("$first_framework")
-    fi
-
+    
+    # Add non-empty parts
+    [[ -n "$lang" && "$lang" != "NEEDS CLARIFICATION" ]] && parts+=("$lang")
+    [[ -n "$framework" && "$framework" != "NEEDS CLARIFICATION" && "$framework" != "N/A" ]] && parts+=("$framework")
+    
+    # Join with proper formatting
     if [[ ${#parts[@]} -eq 0 ]]; then
         echo ""
     elif [[ ${#parts[@]} -eq 1 ]]; then
-        echo "- ${parts[0]} ($branch)"
+        echo "${parts[0]}"
     else
-        echo "- ${parts[0]} + ${parts[1]} ($branch)"
+        # Join multiple parts with " + "
+        local result="${parts[0]}"
+        for ((i=1; i<${#parts[@]}; i++)); do
+            result="$result + ${parts[i]}"
+        done
+        echo "$result"
     fi
 }
 
-# Update Active Technologies section in temp file
-# Adds or updates section after Technology Stack
-update_active_technologies() {
-    local temp_file="$1"
-    shift
-    local plan_data_array=("$@")
+#==============================================================================
+# Template and Content Generation Functions
+#==============================================================================
 
-    if [[ ${#plan_data_array[@]} -eq 0 ]]; then
-        log_info "No plan data to add to Active Technologies"
-        return 0
+get_project_structure() {
+    local project_type="$1"
+    
+    if [[ "$project_type" == *"web"* ]]; then
+        echo "backend/\\nfrontend/\\ntests/"
+    else
+        echo "src/\\ntests/"
+    fi
+}
+
+get_commands_for_language() {
+    local lang="$1"
+    
+    case "$lang" in
+        *"Python"*)
+            echo "cd src && pytest && ruff check ."
+            ;;
+        *"Rust"*)
+            echo "cargo test && cargo clippy"
+            ;;
+        *"JavaScript"*|*"TypeScript"*)
+            echo "npm test \\&\\& npm run lint"
+            ;;
+        *)
+            echo "# Add commands for $lang"
+            ;;
+    esac
+}
+
+get_language_conventions() {
+    local lang="$1"
+    echo "$lang: Follow standard conventions"
+}
+
+create_new_agent_file() {
+    local target_file="$1"
+    local temp_file="$2"
+    local project_name="$3"
+    local current_date="$4"
+    
+    if [[ ! -f "$TEMPLATE_FILE" ]]; then
+        log_error "Template not found at $TEMPLATE_FILE"
+        return 1
+    fi
+    
+    if [[ ! -r "$TEMPLATE_FILE" ]]; then
+        log_error "Template file is not readable: $TEMPLATE_FILE"
+        return 1
+    fi
+    
+    log_info "Creating new agent context file from template..."
+    
+    if ! cp "$TEMPLATE_FILE" "$temp_file"; then
+        log_error "Failed to copy template file"
+        return 1
+    fi
+    
+    # Replace template placeholders
+    local project_structure
+    project_structure=$(get_project_structure "$NEW_PROJECT_TYPE")
+    
+    local commands
+    commands=$(get_commands_for_language "$NEW_LANG")
+    
+    local language_conventions
+    language_conventions=$(get_language_conventions "$NEW_LANG")
+    
+    # Perform substitutions with error checking using safer approach
+    # Escape special characters for sed by using a different delimiter or escaping
+    local escaped_lang=$(printf '%s\n' "$NEW_LANG" | sed 's/[\[\.*^$()+{}|]/\\&/g')
+    local escaped_framework=$(printf '%s\n' "$NEW_FRAMEWORK" | sed 's/[\[\.*^$()+{}|]/\\&/g')
+    local escaped_branch=$(printf '%s\n' "$CURRENT_BRANCH" | sed 's/[\[\.*^$()+{}|]/\\&/g')
+    
+    # Build technology stack and recent change strings conditionally
+    local tech_stack
+    if [[ -n "$escaped_lang" && -n "$escaped_framework" ]]; then
+        tech_stack="- $escaped_lang + $escaped_framework ($escaped_branch)"
+    elif [[ -n "$escaped_lang" ]]; then
+        tech_stack="- $escaped_lang ($escaped_branch)"
+    elif [[ -n "$escaped_framework" ]]; then
+        tech_stack="- $escaped_framework ($escaped_branch)"
+    else
+        tech_stack="- ($escaped_branch)"
     fi
 
-    # Build list of technology entries (only for unmerged branches)
-    local tech_entries=()
-    for data in "${plan_data_array[@]}"; do
-        IFS='|' read -r branch lang framework storage <<< "$data"
+    local recent_change
+    if [[ -n "$escaped_lang" && -n "$escaped_framework" ]]; then
+        recent_change="- $escaped_branch: Added $escaped_lang + $escaped_framework"
+    elif [[ -n "$escaped_lang" ]]; then
+        recent_change="- $escaped_branch: Added $escaped_lang"
+    elif [[ -n "$escaped_framework" ]]; then
+        recent_change="- $escaped_branch: Added $escaped_framework"
+    else
+        recent_change="- $escaped_branch: Added"
+    fi
 
-        # Skip if branch has been merged (no longer exists)
-        if ! git rev-parse --verify "$branch" >/dev/null 2>&1; then
-            log_info "Skipping merged branch: $branch"
-            continue
-        fi
-
-        # Add main tech stack entry
-        local entry=$(format_tech_entry "$lang" "$framework" "$branch")
-        [[ -n "$entry" ]] && tech_entries+=("$entry")
-
-        # Add storage if present and not N/A
-        if [[ -n "$storage" && "$storage" != "N/A" ]]; then
-            tech_entries+=("- $storage ($branch)")
+    local substitutions=(
+        "s|\[PROJECT NAME\]|$project_name|"
+        "s|\[DATE\]|$current_date|"
+        "s|\[EXTRACTED FROM ALL PLAN.MD FILES\]|$tech_stack|"
+        "s|\[ACTUAL STRUCTURE FROM PLANS\]|$project_structure|g"
+        "s|\[ONLY COMMANDS FOR ACTIVE TECHNOLOGIES\]|$commands|"
+        "s|\[LANGUAGE-SPECIFIC, ONLY FOR LANGUAGES IN USE\]|$language_conventions|"
+        "s|\[LAST 3 FEATURES AND WHAT THEY ADDED\]|$recent_change|"
+    )
+    
+    for substitution in "${substitutions[@]}"; do
+        if ! sed -i.bak -e "$substitution" "$temp_file"; then
+            log_error "Failed to perform substitution: $substitution"
+            rm -f "$temp_file" "$temp_file.bak"
+            return 1
         fi
     done
-
-    if [[ ${#tech_entries[@]} -eq 0 ]]; then
-        log_info "No technology entries to add"
-        return 0
-    fi
-
-    # Check if section already exists
-    if grep -q "^## Active Technologies" "$temp_file"; then
-        # Section exists - replace content between ## Active Technologies and next ##
-        local output_file=$(mktemp)
-        local in_section=false
-
-        while IFS= read -r line || [[ -n "$line" ]]; do
-            if [[ "$line" == "## Active Technologies" ]]; then
-                echo "$line" >> "$output_file"
-                echo "" >> "$output_file"
-                printf '%s\n' "${tech_entries[@]}" >> "$output_file"
-                in_section=true
-            elif [[ $in_section == true ]] && [[ "$line" =~ ^##[[:space:]] ]]; then
-                # Hit next section, stop skipping
-                echo "" >> "$output_file"
-                echo "$line" >> "$output_file"
-                in_section=false
-            elif [[ $in_section == false ]]; then
-                echo "$line" >> "$output_file"
-            fi
-            # Skip lines inside Active Technologies section (they'll be replaced)
-        done < "$temp_file"
-
-        mv "$output_file" "$temp_file"
-        log_info "Updated Active Technologies section"
-    else
-        # Section doesn't exist - add after Technology Stack
-        local output_file=$(mktemp)
-        local added=false
-
-        while IFS= read -r line || [[ -n "$line" ]]; do
-            echo "$line" >> "$output_file"
-
-            # After Technology Stack section heading, skip until we find blank line or next ##
-            if [[ "$line" == "## Technology Stack" ]] && [[ $added == false ]]; then
-                # Skip content of Technology Stack section
-                while IFS= read -r next_line || [[ -n "$next_line" ]]; do
-                    echo "$next_line" >> "$output_file"
-                    if [[ "$next_line" =~ ^##[[:space:]] ]]; then
-                        # Hit next section - insert before it
-                        echo "" >> "$output_file"
-                        echo "## Active Technologies" >> "$output_file"
-                        echo "" >> "$output_file"
-                        printf '%s\n' "${tech_entries[@]}" >> "$output_file"
-                        added=true
-                        break
-                    fi
-                done < <(tail -n +$(($(grep -n "^## Technology Stack" "$temp_file" | cut -d: -f1) + 1)) "$temp_file")
-
-                if [[ $added == true ]]; then
-                    break
-                fi
-            fi
-        done < "$temp_file"
-
-        # If we didn't add it (no next section after Technology Stack), add at end
-        if [[ $added == false ]]; then
-            echo "" >> "$output_file"
-            echo "## Active Technologies" >> "$output_file"
-            echo "" >> "$output_file"
-            printf '%s\n' "${tech_entries[@]}" >> "$output_file"
-        fi
-
-        mv "$output_file" "$temp_file"
-        log_info "Created Active Technologies section"
-    fi
-
+    
+    # Convert \n sequences to actual newlines
+    newline=$(printf '\n')
+    sed -i.bak2 "s/\\\\n/${newline}/g" "$temp_file"
+    
+    # Clean up backup files
+    rm -f "$temp_file.bak" "$temp_file.bak2"
+    
     return 0
 }
 
-# Update Recent Changes section in temp file
-# Adds or updates section with last 3 features
-update_recent_changes() {
-    local temp_file="$1"
-    shift
-    local plan_data_array=("$@")
 
-    if [[ ${#plan_data_array[@]} -eq 0 ]]; then
-        log_info "No plan data for Recent Changes"
-        return 0
+
+
+update_existing_agent_file() {
+    local target_file="$1"
+    local current_date="$2"
+    
+    log_info "Updating existing agent context file..."
+    
+    # Use a single temporary file for atomic update
+    local temp_file
+    temp_file=$(mktemp) || {
+        log_error "Failed to create temporary file"
+        return 1
+    }
+    
+    # Process the file in one pass
+    local tech_stack=$(format_technology_stack "$NEW_LANG" "$NEW_FRAMEWORK")
+    local new_tech_entries=()
+    local new_change_entry=""
+    
+    # Prepare new technology entries
+    if [[ -n "$tech_stack" ]] && ! grep -q "$tech_stack" "$target_file"; then
+        new_tech_entries+=("- $tech_stack ($CURRENT_BRANCH)")
     fi
-
-    # Get last 3 features (array is already sorted by find ... | sort)
-    # Reverse sort to get most recent first
-    local changes=()
-    local count=0
-    local -a reversed=()
-
-    # Reverse the array
-    for ((i=${#plan_data_array[@]}-1; i>=0; i--)); do
-        reversed+=("${plan_data_array[$i]}")
-    done
-
-    # Take first 3 from reversed array (only for unmerged branches)
-    for data in "${reversed[@]}"; do
-        if [[ $count -ge 3 ]]; then break; fi
-
-        IFS='|' read -r branch lang framework storage <<< "$data"
-
-        # Skip if branch has been merged (no longer exists)
-        if ! git rev-parse --verify "$branch" >/dev/null 2>&1; then
-            log_info "Skipping merged branch in Recent Changes: $branch"
+    
+    if [[ -n "$NEW_DB" ]] && [[ "$NEW_DB" != "N/A" ]] && [[ "$NEW_DB" != "NEEDS CLARIFICATION" ]] && ! grep -q "$NEW_DB" "$target_file"; then
+        new_tech_entries+=("- $NEW_DB ($CURRENT_BRANCH)")
+    fi
+    
+    # Prepare new change entry
+    if [[ -n "$tech_stack" ]]; then
+        new_change_entry="- $CURRENT_BRANCH: Added $tech_stack"
+    elif [[ -n "$NEW_DB" ]] && [[ "$NEW_DB" != "N/A" ]] && [[ "$NEW_DB" != "NEEDS CLARIFICATION" ]]; then
+        new_change_entry="- $CURRENT_BRANCH: Added $NEW_DB"
+    fi
+    
+    # Check if sections exist in the file
+    local has_active_technologies=0
+    local has_recent_changes=0
+    
+    if grep -q "^## Active Technologies" "$target_file" 2>/dev/null; then
+        has_active_technologies=1
+    fi
+    
+    if grep -q "^## Recent Changes" "$target_file" 2>/dev/null; then
+        has_recent_changes=1
+    fi
+    
+    # Process file line by line
+    local in_tech_section=false
+    local in_changes_section=false
+    local tech_entries_added=false
+    local changes_entries_added=false
+    local existing_changes_count=0
+    local file_ended=false
+    
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        # Handle Active Technologies section
+        if [[ "$line" == "## Active Technologies" ]]; then
+            echo "$line" >> "$temp_file"
+            in_tech_section=true
+            continue
+        elif [[ $in_tech_section == true ]] && [[ "$line" =~ ^##[[:space:]] ]]; then
+            # Add new tech entries before closing the section
+            if [[ $tech_entries_added == false ]] && [[ ${#new_tech_entries[@]} -gt 0 ]]; then
+                printf '%s\n' "${new_tech_entries[@]}" >> "$temp_file"
+                tech_entries_added=true
+            fi
+            echo "$line" >> "$temp_file"
+            in_tech_section=false
+            continue
+        elif [[ $in_tech_section == true ]] && [[ -z "$line" ]]; then
+            # Add new tech entries before empty line in tech section
+            if [[ $tech_entries_added == false ]] && [[ ${#new_tech_entries[@]} -gt 0 ]]; then
+                printf '%s\n' "${new_tech_entries[@]}" >> "$temp_file"
+                tech_entries_added=true
+            fi
+            echo "$line" >> "$temp_file"
             continue
         fi
-
-        local change_text="- $branch: Added"
-        if [[ -n "$lang" && -n "$framework" ]]; then
-            local first_framework=$(echo "$framework" | awk -F',' '{gsub(/^[ \t]+|[ \t]+$/, "", $1); print $1}')
-            change_text="$change_text $lang + $first_framework"
-        elif [[ -n "$lang" ]]; then
-            change_text="$change_text $lang"
-        elif [[ -n "$framework" ]]; then
-            local first_framework=$(echo "$framework" | awk -F',' '{gsub(/^[ \t]+|[ \t]+$/, "", $1); print $1}')
-            change_text="$change_text $first_framework"
-        fi
-
-        changes+=("$change_text")
-        ((count++))
-    done
-
-    if [[ ${#changes[@]} -eq 0 ]]; then
-        log_info "No changes to add to Recent Changes"
-        return 0
-    fi
-
-    # Check if section already exists
-    if grep -q "^## Recent Changes" "$temp_file"; then
-        # Section exists - replace content
-        local output_file=$(mktemp)
-        local in_section=false
-
-        while IFS= read -r line || [[ -n "$line" ]]; do
-            if [[ "$line" == "## Recent Changes" ]]; then
-                echo "$line" >> "$output_file"
-                echo "" >> "$output_file"
-                printf '%s\n' "${changes[@]}" >> "$output_file"
-                in_section=true
-            elif [[ $in_section == true ]] && [[ "$line" =~ ^##[[:space:]] ]]; then
-                echo "" >> "$output_file"
-                echo "$line" >> "$output_file"
-                in_section=false
-            elif [[ $in_section == false ]]; then
-                echo "$line" >> "$output_file"
+        
+        # Handle Recent Changes section
+        if [[ "$line" == "## Recent Changes" ]]; then
+            echo "$line" >> "$temp_file"
+            # Add new change entry right after the heading
+            if [[ -n "$new_change_entry" ]]; then
+                echo "$new_change_entry" >> "$temp_file"
             fi
-        done < "$temp_file"
-
-        mv "$output_file" "$temp_file"
-        log_info "Updated Recent Changes section"
-    else
-        # Section doesn't exist - add after Active Technologies (or after Technology Stack if no Active Technologies)
+            in_changes_section=true
+            changes_entries_added=true
+            continue
+        elif [[ $in_changes_section == true ]] && [[ "$line" =~ ^##[[:space:]] ]]; then
+            echo "$line" >> "$temp_file"
+            in_changes_section=false
+            continue
+        elif [[ $in_changes_section == true ]] && [[ "$line" == "- "* ]]; then
+            # Keep only first 2 existing changes
+            if [[ $existing_changes_count -lt 2 ]]; then
+                echo "$line" >> "$temp_file"
+                ((existing_changes_count++))
+            fi
+            continue
+        fi
+        
+        # Update timestamp
+        if [[ "$line" =~ \*\*Last\ updated\*\*:.*[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] ]]; then
+            echo "$line" | sed "s/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/$current_date/" >> "$temp_file"
+        else
+            echo "$line" >> "$temp_file"
+        fi
+    done < "$target_file"
+    
+    # Post-loop check: if we're still in the Active Technologies section and haven't added new entries
+    if [[ $in_tech_section == true ]] && [[ $tech_entries_added == false ]] && [[ ${#new_tech_entries[@]} -gt 0 ]]; then
+        printf '%s\n' "${new_tech_entries[@]}" >> "$temp_file"
+        tech_entries_added=true
+    fi
+    
+    # If sections don't exist, add them at the end of the file
+    if [[ $has_active_technologies -eq 0 ]] && [[ ${#new_tech_entries[@]} -gt 0 ]]; then
+        echo "" >> "$temp_file"
+        echo "## Active Technologies" >> "$temp_file"
+        printf '%s\n' "${new_tech_entries[@]}" >> "$temp_file"
+        tech_entries_added=true
+    fi
+    
+    if [[ $has_recent_changes -eq 0 ]] && [[ -n "$new_change_entry" ]]; then
         echo "" >> "$temp_file"
         echo "## Recent Changes" >> "$temp_file"
-        echo "" >> "$temp_file"
-        printf '%s\n' "${changes[@]}" >> "$temp_file"
-        log_info "Created Recent Changes section"
+        echo "$new_change_entry" >> "$temp_file"
+        changes_entries_added=true
     fi
+    
+    # Move temp file to target atomically
+    if ! mv "$temp_file" "$target_file"; then
+        log_error "Failed to update target file"
+        rm -f "$temp_file"
+        return 1
+    fi
+    
+    return 0
+}
+#==============================================================================
+# Main Agent File Update Function
+#==============================================================================
 
+update_agent_file() {
+    local target_file="$1"
+    local agent_name="$2"
+    
+    if [[ -z "$target_file" ]] || [[ -z "$agent_name" ]]; then
+        log_error "update_agent_file requires target_file and agent_name parameters"
+        return 1
+    fi
+    
+    log_info "Updating $agent_name context file: $target_file"
+    
+    local project_name
+    project_name=$(basename "$REPO_ROOT")
+    local current_date
+    current_date=$(date +%Y-%m-%d)
+    
+    # Create directory if it doesn't exist
+    local target_dir
+    target_dir=$(dirname "$target_file")
+    if [[ ! -d "$target_dir" ]]; then
+        if ! mkdir -p "$target_dir"; then
+            log_error "Failed to create directory: $target_dir"
+            return 1
+        fi
+    fi
+    
+    if [[ ! -f "$target_file" ]]; then
+        # Create new file from template
+        local temp_file
+        temp_file=$(mktemp) || {
+            log_error "Failed to create temporary file"
+            return 1
+        }
+        
+        if create_new_agent_file "$target_file" "$temp_file" "$project_name" "$current_date"; then
+            if mv "$temp_file" "$target_file"; then
+                log_success "Created new $agent_name context file"
+            else
+                log_error "Failed to move temporary file to $target_file"
+                rm -f "$temp_file"
+                return 1
+            fi
+        else
+            log_error "Failed to create new agent file"
+            rm -f "$temp_file"
+            return 1
+        fi
+    else
+        # Update existing file
+        if [[ ! -r "$target_file" ]]; then
+            log_error "Cannot read existing file: $target_file"
+            return 1
+        fi
+        
+        if [[ ! -w "$target_file" ]]; then
+            log_error "Cannot write to existing file: $target_file"
+            return 1
+        fi
+        
+        if update_existing_agent_file "$target_file" "$current_date"; then
+            log_success "Updated existing $agent_name context file"
+        else
+            log_error "Failed to update existing agent file"
+            return 1
+        fi
+    fi
+    
     return 0
 }
 
 #==============================================================================
-# Main Update Function
+# Agent Selection and Processing
 #==============================================================================
 
-# Update CLAUDE.md with package versions and feature context
-# This is the main entry point that orchestrates both operations:
-#   1. Sync package versions from package.json to Technology Stack section
-#   2. Parse plan.md files and update Active Technologies / Recent Changes sections
-#
-# The function uses atomic operations with backup/restore for safety
-update_claude_md() {
-    log_info "Reading versions from $PACKAGE_JSON"
-
-    if [[ ! -f "$PACKAGE_JSON" ]]; then
-        log_error "package.json not found at $PACKAGE_JSON"
-        exit 1
-    fi
-
-    if [[ ! -f "$CLAUDE_MD" ]]; then
-        log_error "CLAUDE.md not found at $CLAUDE_MD"
-        exit 1
-    fi
-
-    # Create a temporary file for the updated content
-    local temp_file
-    temp_file=$(mktemp)
-    chmod 600 "$temp_file"  # Set restrictive permissions (owner read/write only)
-
-    # Set up trap to ensure temp file cleanup on exit
-    # Note: SIGKILL (kill -9) cannot be trapped and will leave temp file orphaned
-    # This is a kernel-level limitation affecting all bash scripts
-    trap 'rm -f "$temp_file"' EXIT INT TERM
-
-    cp "$CLAUDE_MD" "$temp_file"
-
-    local updates_made=0
-
-    #==========================================================================
-    # PART 1: Package Version Synchronization
-    #==========================================================================
-    # Sync package versions from package.json to CLAUDE.md Technology Stack
-    # This updates inline versions (e.g., "TypeScript 5.7.0") and parenthetical
-    # versions (e.g., "postgres 3.4.7, drizzle-orm 0.45.1")
-    #==========================================================================
-    # This section defines which packages are synchronized from package.json
-    # to CLAUDE.md. Each line follows the format:
-    #
-    #   update_version "$temp_file" "Display Name" "package-name"
-    #
-    # Where:
-    #   - "Display Name" = How the package appears in CLAUDE.md (e.g., "TypeScript")
-    #   - "package-name" = Exact package name from package.json (e.g., "typescript")
-    #
-    # To ADD a new package to sync:
-    #   1. Add a new update_version line below with the correct display name and package name
-    #   2. Ensure the display name exists in CLAUDE.md Technology Stack section
-    #   3. Run the script to sync the version
-    #
-    # To REMOVE a package from sync:
-    #   1. Comment out or delete the update_version line
-    #   2. The package will remain in CLAUDE.md but won't be updated automatically
-    #
-    # Note: Special cases (parenthetical versions like "postgres" and "drizzle-orm")
-    # are handled separately below this section.
-    #==========================================================================
-
-    update_version "$temp_file" "TypeScript" "typescript" && ((updates_made++)) || true
-    update_version "$temp_file" "Next.js" "next" && ((updates_made++)) || true
-    update_version "$temp_file" "React" "react" && ((updates_made++)) || true
-    update_version "$temp_file" "Tailwind CSS" "tailwindcss" && ((updates_made++)) || true
-    update_version "$temp_file" "LanceDB" "@lancedb/lancedb" && ((updates_made++)) || true
-    update_version "$temp_file" "pgvector" "pgvector" && ((updates_made++)) || true
-    update_version "$temp_file" "Anthropic Claude SDK" "@anthropic-ai/sdk" && ((updates_made++)) || true
-    update_version "$temp_file" "ts-fsrs" "ts-fsrs" && ((updates_made++)) || true
-    update_version "$temp_file" "NextAuth" "next-auth" && ((updates_made++)) || true
-    update_version "$temp_file" "Vitest" "vitest" && ((updates_made++)) || true
-    update_version "$temp_file" "Playwright" "@playwright/test" && ((updates_made++)) || true
-    update_version "$temp_file" "ESLint" "eslint" && ((updates_made++)) || true
-    update_version "$temp_file" "Prettier" "prettier" && ((updates_made++)) || true
-    update_version "$temp_file" "lint-staged" "lint-staged" && ((updates_made++)) || true
-
-    # Handle special cases with parenthetical versions like "PostgreSQL (via postgres 3.4, drizzle-orm 0.45)"
-    local postgres_ver drizzle_ver
-    postgres_ver=$(get_version "postgres")
-    drizzle_ver=$(get_version "drizzle-orm")
-
-    update_parenthetical_version "$temp_file" "postgres" "$postgres_ver" && ((updates_made++)) || true
-    update_parenthetical_version "$temp_file" "drizzle-orm" "$drizzle_ver" && ((updates_made++)) || true
-
-    #==========================================================================
-    # PART 2: Feature Context Management
-    #==========================================================================
-    # Parse all plan.md files in specs/ directories and update:
-    #   - Active Technologies section (tech stack per feature)
-    #   - Recent Changes section (last 3 features)
-    #==========================================================================
-
-    log_info "Parsing plan.md files for Active Technologies and Recent Changes"
-
-    local plan_data_array=()
-    while IFS= read -r line; do
-        [[ -n "$line" ]] && plan_data_array+=("$line")
-    done < <(collect_all_plan_data)
-
-    if [[ ${#plan_data_array[@]} -gt 0 ]]; then
-        log_info "Found ${#plan_data_array[@]} plan.md file(s)"
-        update_active_technologies "$temp_file" "${plan_data_array[@]}" || log_warning "Failed to update Active Technologies"
-        update_recent_changes "$temp_file" "${plan_data_array[@]}" || log_warning "Failed to update Recent Changes"
-    else
-        log_info "No plan.md files found, skipping section updates"
-    fi
-
-    #==========================================================================
-    # PART 3: Apply Changes with Atomic Operations
-    #==========================================================================
-    # Use diff to detect changes, then atomically update CLAUDE.md with
-    # backup/restore error recovery for safety
-    #==========================================================================
-
-    local diff_result diff_exit_code
-    # Prevent diff exit codes from triggering set -e (0=same, 1=differ, 2=error)
-    set +e
-    diff_result=$(diff -q "$CLAUDE_MD" "$temp_file" 2>&1)
-    diff_exit_code=$?
-    set -e
-
-    if [[ $diff_exit_code -eq 0 ]]; then
-        # Files are identical - no updates needed
-        rm -f "$temp_file"
-        log_info "No version updates needed - CLAUDE.md is already current"
-    elif [[ $diff_exit_code -eq 1 ]]; then
-        # Files differ - update CLAUDE.md with safety backup
-        local backup_file="${CLAUDE_MD}.backup.$$"
-
-        # Create backup before modifying
-        if ! cp "$CLAUDE_MD" "$backup_file"; then
-            log_error "Failed to create backup of CLAUDE.md"
-            log_error "Temp file preserved at: $temp_file"
+update_specific_agent() {
+    local agent_type="$1"
+    
+    case "$agent_type" in
+        claude)
+            update_agent_file "$CLAUDE_FILE" "Claude Code"
+            ;;
+        gemini)
+            update_agent_file "$GEMINI_FILE" "Gemini CLI"
+            ;;
+        copilot)
+            update_agent_file "$COPILOT_FILE" "GitHub Copilot"
+            ;;
+        cursor-agent)
+            update_agent_file "$CURSOR_FILE" "Cursor IDE"
+            ;;
+        qwen)
+            update_agent_file "$QWEN_FILE" "Qwen Code"
+            ;;
+        opencode)
+            update_agent_file "$AGENTS_FILE" "opencode"
+            ;;
+        codex)
+            update_agent_file "$AGENTS_FILE" "Codex CLI"
+            ;;
+        windsurf)
+            update_agent_file "$WINDSURF_FILE" "Windsurf"
+            ;;
+        kilocode)
+            update_agent_file "$KILOCODE_FILE" "Kilo Code"
+            ;;
+        auggie)
+            update_agent_file "$AUGGIE_FILE" "Auggie CLI"
+            ;;
+        roo)
+            update_agent_file "$ROO_FILE" "Roo Code"
+            ;;
+        codebuddy)
+            update_agent_file "$CODEBUDDY_FILE" "CodeBuddy CLI"
+            ;;
+        qoder)
+            update_agent_file "$QODER_FILE" "Qoder CLI"
+            ;;
+        amp)
+            update_agent_file "$AMP_FILE" "Amp"
+            ;;
+        shai)
+            update_agent_file "$SHAI_FILE" "SHAI"
+            ;;
+        q)
+            update_agent_file "$Q_FILE" "Amazon Q Developer CLI"
+            ;;
+        bob)
+            update_agent_file "$BOB_FILE" "IBM Bob"
+            ;;
+        *)
+            log_error "Unknown agent type '$agent_type'"
+            log_error "Expected: claude|gemini|copilot|cursor-agent|qwen|opencode|codex|windsurf|kilocode|auggie|roo|amp|shai|q|bob|qoder"
             exit 1
-        fi
+            ;;
+    esac
+}
 
-        # Disable trap before mv to prevent premature temp file deletion
-        trap - EXIT INT TERM
-
-        # Attempt atomic move
-        if mv "$temp_file" "$CLAUDE_MD"; then
-            rm -f "$backup_file"  # Success - remove backup
-            temp_file=""  # Clear variable so trap doesn't try to delete moved file
-            log_success "Updated CLAUDE.md with $updates_made package version(s)"
-        else
-            # Move failed - restore from backup
-            log_error "Failed to update CLAUDE.md - restoring from backup"
-            if mv "$backup_file" "$CLAUDE_MD"; then
-                log_success "CLAUDE.md restored successfully"
-            else
-                log_error "CRITICAL: Failed to restore CLAUDE.md from backup!"
-                log_error "Backup file: $backup_file"
-            fi
-            log_error "Updated content preserved at: $temp_file"
-            exit 1
-        fi
-    else
-        # diff command failed (exit code 2 or other error)
-        log_error "Failed to compare files: $diff_result"
-        rm -f "$temp_file"
-        exit 1
+update_all_existing_agents() {
+    local found_agent=false
+    
+    # Check each possible agent file and update if it exists
+    if [[ -f "$CLAUDE_FILE" ]]; then
+        update_agent_file "$CLAUDE_FILE" "Claude Code"
+        found_agent=true
     fi
+    
+    if [[ -f "$GEMINI_FILE" ]]; then
+        update_agent_file "$GEMINI_FILE" "Gemini CLI"
+        found_agent=true
+    fi
+    
+    if [[ -f "$COPILOT_FILE" ]]; then
+        update_agent_file "$COPILOT_FILE" "GitHub Copilot"
+        found_agent=true
+    fi
+    
+    if [[ -f "$CURSOR_FILE" ]]; then
+        update_agent_file "$CURSOR_FILE" "Cursor IDE"
+        found_agent=true
+    fi
+    
+    if [[ -f "$QWEN_FILE" ]]; then
+        update_agent_file "$QWEN_FILE" "Qwen Code"
+        found_agent=true
+    fi
+    
+    if [[ -f "$AGENTS_FILE" ]]; then
+        update_agent_file "$AGENTS_FILE" "Codex/opencode"
+        found_agent=true
+    fi
+    
+    if [[ -f "$WINDSURF_FILE" ]]; then
+        update_agent_file "$WINDSURF_FILE" "Windsurf"
+        found_agent=true
+    fi
+    
+    if [[ -f "$KILOCODE_FILE" ]]; then
+        update_agent_file "$KILOCODE_FILE" "Kilo Code"
+        found_agent=true
+    fi
+
+    if [[ -f "$AUGGIE_FILE" ]]; then
+        update_agent_file "$AUGGIE_FILE" "Auggie CLI"
+        found_agent=true
+    fi
+    
+    if [[ -f "$ROO_FILE" ]]; then
+        update_agent_file "$ROO_FILE" "Roo Code"
+        found_agent=true
+    fi
+
+    if [[ -f "$CODEBUDDY_FILE" ]]; then
+        update_agent_file "$CODEBUDDY_FILE" "CodeBuddy CLI"
+        found_agent=true
+    fi
+
+    if [[ -f "$SHAI_FILE" ]]; then
+        update_agent_file "$SHAI_FILE" "SHAI"
+        found_agent=true
+    fi
+
+    if [[ -f "$QODER_FILE" ]]; then
+        update_agent_file "$QODER_FILE" "Qoder CLI"
+        found_agent=true
+    fi
+
+    if [[ -f "$Q_FILE" ]]; then
+        update_agent_file "$Q_FILE" "Amazon Q Developer CLI"
+        found_agent=true
+    fi
+    
+    if [[ -f "$BOB_FILE" ]]; then
+        update_agent_file "$BOB_FILE" "IBM Bob"
+        found_agent=true
+    fi
+    
+    # If no agent files exist, create a default Claude file
+    if [[ "$found_agent" == false ]]; then
+        log_info "No existing agent files found, creating default Claude file..."
+        update_agent_file "$CLAUDE_FILE" "Claude Code"
+    fi
+}
+print_summary() {
+    echo
+    log_info "Summary of changes:"
+    
+    if [[ -n "$NEW_LANG" ]]; then
+        echo "  - Added language: $NEW_LANG"
+    fi
+    
+    if [[ -n "$NEW_FRAMEWORK" ]]; then
+        echo "  - Added framework: $NEW_FRAMEWORK"
+    fi
+    
+    if [[ -n "$NEW_DB" ]] && [[ "$NEW_DB" != "N/A" ]]; then
+        echo "  - Added database: $NEW_DB"
+    fi
+    
+    echo
+
+    log_info "Usage: $0 [claude|gemini|copilot|cursor-agent|qwen|opencode|codex|windsurf|kilocode|auggie|codebuddy|shai|q|bob|qoder]"
 }
 
 #==============================================================================
-# Help and Usage
+# Main Execution
 #==============================================================================
 
-show_help() {
-    cat <<EOF
-Usage: ./update-agent-context.sh [OPTIONS]
-
-Sync package versions from package.json and update context from plan.md files
-
-Operations:
-  1. Sync package versions from package.json to CLAUDE.md Technology Stack
-  2. Parse all plan.md files and update Active Technologies section
-  3. Update Recent Changes section with last 3 features
-
-Options:
-  --validate    Validate package tracking and plan.md parsing
-  --help        Display this help message
-
-Tracked Packages: (16 total)
-  TypeScript, Next.js, React, Tailwind CSS, LanceDB, pgvector,
-  Anthropic Claude SDK, ts-fsrs, NextAuth, Vitest, Playwright,
-  ESLint, Prettier, lint-staged, postgres, drizzle-orm
-
-Plan.md Fields Tracked:
-  Language/Version, Primary Dependencies, Storage
-
-Adding New Packages:
-  1. Add package name to TRACKED_PACKAGES array (line ~30)
-  2. Add update_version() call in update_claude_md() function
-
-For more details, see: specs/001-speckit-workflow-improvements/contracts/
-EOF
-}
-
-#==============================================================================
-# Main
-#==============================================================================
-
-# Main entry point - parses command-line arguments and executes requested operation
-# Supports two modes:
-#   1. Default mode: Updates CLAUDE.md (package versions + feature context)
-#   2. Validate mode (--validate): Tests package tracking and plan.md parsing
 main() {
-    local VALIDATE_MODE=false
-
-    # Parse command-line arguments
-    while [[ $# -gt 0 ]]; do
-        case $1 in
-            --validate)
-                VALIDATE_MODE=true
-                shift
-                ;;
-            --help)
-                show_help
-                exit 0
-                ;;
-            *)
-                log_error "Unknown option: $1"
-                show_help
-                exit 1
-                ;;
-        esac
-    done
-
-    # Check required dependencies
-    check_dependency "jq" "1.6" "brew install jq (macOS) or apt install jq (Ubuntu)"
-    check_dependency "perl" "5.10" "brew install perl (macOS) or apt install perl (Ubuntu)"
-
-    if [[ "$VALIDATE_MODE" == "true" ]]; then
-        log_info "=== Validating package tracking ==="
-
-        # Get all packages from package.json
-        local all_packages
-        all_packages=$(jq -r '.dependencies // {} + .devDependencies // {} | keys[]' "$PACKAGE_JSON" 2>/dev/null | sort)
-
-        local untracked=()
-        local tracked_count=0
-
-        while IFS= read -r package; do
-            if printf '%s\n' "${TRACKED_PACKAGES[@]}" | grep -q "^${package}$"; then
-                ((tracked_count++))
-            else
-                untracked+=("$package")
-            fi
-        done <<< "$all_packages"
-
-        log_info "Tracked: $tracked_count packages"
-
-        # Verify update_version() calls exist for tracked packages
-        local missing_updates=()
-        for package in "${TRACKED_PACKAGES[@]}"; do
-            # Check if package has update_version() call or special case handling
-            # Special cases: postgres, drizzle-orm (use update_parenthetical_version)
-            if [[ "$package" == "postgres" ]] || [[ "$package" == "drizzle-orm" ]]; then
-                # Check for update_parenthetical_version call
-                if ! grep -q "update_parenthetical_version.*\"${package}\"" "$0"; then
-                    missing_updates+=("$package (special case)")
-                fi
-            else
-                # Check for update_version() call with this package name
-                if ! grep -q "update_version.*\"${package}\"" "$0"; then
-                    missing_updates+=("$package")
-                fi
-            fi
-        done
-
-        # Report validation results
-        local has_errors=false
-
-        if [[ ${#untracked[@]} -gt 0 ]]; then
-            has_errors=true
-            log_warning "Untracked packages found in package.json:"
-            printf '  - %s\n' "${untracked[@]}"
-            log_info ""
-            log_info "To track a package:"
-            log_info "  1. Add package name to TRACKED_PACKAGES array (line 29)"
-            log_info "  2. Add update_version() call in update_claude_md() function"
+    # Validate environment before proceeding
+    validate_environment
+    
+    log_info "=== Updating agent context files for feature $CURRENT_BRANCH ==="
+    
+    # Parse the plan file to extract project information
+    if ! parse_plan_data "$NEW_PLAN"; then
+        log_error "Failed to parse plan data"
+        exit 1
+    fi
+    
+    # Process based on agent type argument
+    local success=true
+    
+    if [[ -z "$AGENT_TYPE" ]]; then
+        # No specific agent provided - update all existing agent files
+        log_info "No agent specified, updating all existing agent files..."
+        if ! update_all_existing_agents; then
+            success=false
         fi
-
-        if [[ ${#missing_updates[@]} -gt 0 ]]; then
-            has_errors=true
-            log_warning "Tracked packages missing update_version() calls:"
-            printf '  - %s\n' "${missing_updates[@]}"
-            log_info ""
-            log_info "These packages are in TRACKED_PACKAGES but have no corresponding update logic."
-            log_info "Add update_version() call in update_claude_md() function for each."
+    else
+        # Specific agent provided - update only that agent
+        log_info "Updating specific agent: $AGENT_TYPE"
+        if ! update_specific_agent "$AGENT_TYPE"; then
+            success=false
         fi
-
-        if [[ "$has_errors" == "true" ]]; then
-            exit 1
-        else
-            log_success "All packages are properly tracked with update logic!"
-        fi
-
-        # Validate plan.md parsing
-        log_info ""
-        log_info "=== Validating plan.md parsing ==="
-
-        if [[ ! -d "$REPO_ROOT/specs" ]]; then
-            log_warning "specs/ directory not found at $REPO_ROOT/specs"
-        else
-            local plan_count=0
-            local plan_file
-
-            while IFS= read -r plan_file; do
-                ((plan_count++))
-            done < <(find "$REPO_ROOT/specs" -name "plan.md" -type f 2>/dev/null)
-
-            log_info "Found $plan_count plan.md file(s)"
-
-            if [[ $plan_count -gt 0 ]]; then
-                # Test parse a sample plan.md
-                local sample_plan=$(find "$REPO_ROOT/specs" -name "plan.md" -type f 2>/dev/null | head -1)
-                if [[ -n "$sample_plan" ]]; then
-                    log_info "Testing parse of $(basename "$(dirname "$sample_plan")")/plan.md"
-                    local parsed=$(parse_plan_file "$sample_plan")
-                    log_info "Result: $parsed"
-
-                    # Verify we got some data
-                    if [[ -z "$parsed" ]] || [[ "$parsed" == "|" ]]; then
-                        log_warning "No data extracted from sample plan.md"
-                    else
-                        log_success "Plan.md parsing validated successfully"
-                    fi
-                fi
-            fi
-        fi
-
+    fi
+    
+    # Print summary
+    print_summary
+    
+    if [[ "$success" == true ]]; then
+        log_success "Agent context update completed successfully"
         exit 0
     else
-        log_info "=== Syncing package versions to CLAUDE.md ==="
-        update_claude_md
-        log_success "Package version sync completed"
+        log_error "Agent context update completed with errors"
+        exit 1
     fi
 }
 
+# Execute main function if script is run directly
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     main "$@"
 fi
+
