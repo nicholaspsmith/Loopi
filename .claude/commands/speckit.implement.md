@@ -187,9 +187,11 @@ d. **Generate PR content**:
 
 e. **Create PR**:
 
-- Run: `gh pr create --title "[title]" --body "[body]" --base main`
+- Write PR body to temporary file: `FEATURE_DIR/pr-body.md`
+- Run: `gh pr create --title "[title]" --body-file "FEATURE_DIR/pr-body.md" --base main`
 - If successful: Display PR URL and number
 - If failed: Show error and manual fallback instructions
+- Clean up temporary file after PR creation (success or failure)
 
 f. **Error handling (non-blocking)**:
 
@@ -199,7 +201,7 @@ f. **Error handling (non-blocking)**:
 - Manual fallback template:
   ```bash
   # Create PR manually:
-  gh pr create --title "[NNN] Feature Name" --body "$(cat FEATURE_DIR/pr-body.md)" --base main
+  gh pr create --title "[NNN] Feature Name" --body-file "FEATURE_DIR/pr-body.md" --base main
   ```
 
 g. **Success message**:

@@ -80,13 +80,23 @@ check_dependency() {
 get_version() {
     local package="$1"
     local version
+    local cleaned_version
 
     # Try dependencies first, then devDependencies
     version=$(jq -r ".dependencies[\"$package\"] // .devDependencies[\"$package\"] // empty" "$PACKAGE_JSON" 2>/dev/null)
 
     if [[ -n "$version" ]]; then
         # Strip version prefixes (^, ~, >=, etc.) but preserve full semver (major.minor.patch-prerelease)
-        echo "$version" | sed 's/^[\^~>=<]*//'
+        cleaned_version=$(echo "$version" | sed 's/^[\^~>=<]*//')
+
+        # Validate semver format: major.minor[.patch][-prerelease][+build]
+        # Examples: 1.0, 1.0.0, 1.0.0-alpha, 1.0.0-beta.1, 1.0.0+20130313144700
+        if [[ "$cleaned_version" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$ ]]; then
+            echo "$cleaned_version"
+        else
+            echo "Warning: Invalid semver format for $package: $cleaned_version" >&2
+            return 1
+        fi
     fi
 }
 
@@ -266,10 +276,55 @@ main() {
     check_dependency "perl" "5.10" "brew install perl (macOS) or apt install perl (Ubuntu)"
 
     if [[ "$VALIDATE_MODE" == "true" ]]; then
-        log_info "=== Validating package versions ==="
-        # Validation logic will be added here
-        log_info "Validation mode not yet implemented"
-        exit 0
+        log_info "=== Validating package tracking ==="
+
+        # List of tracked packages (must match update_version calls in update_claude_md)
+        local tracked_packages=(
+            "typescript"
+            "next"
+            "react"
+            "tailwindcss"
+            "@lancedb/lancedb"
+            "pgvector"
+            "@anthropic-ai/sdk"
+            "ts-fsrs"
+            "next-auth"
+            "vitest"
+            "@playwright/test"
+            "eslint"
+            "prettier"
+            "lint-staged"
+            "postgres"
+            "drizzle-orm"
+        )
+
+        # Get all packages from package.json
+        local all_packages
+        all_packages=$(jq -r '.dependencies // {} + .devDependencies // {} | keys[]' "$PACKAGE_JSON" 2>/dev/null | sort)
+
+        local untracked=()
+        local tracked_count=0
+
+        while IFS= read -r package; do
+            if printf '%s\n' "${tracked_packages[@]}" | grep -q "^${package}$"; then
+                ((tracked_count++))
+            else
+                untracked+=("$package")
+            fi
+        done <<< "$all_packages"
+
+        log_info "Tracked: $tracked_count packages"
+
+        if [[ ${#untracked[@]} -gt 0 ]]; then
+            log_warning "Untracked packages found in package.json:"
+            printf '  - %s\n' "${untracked[@]}"
+            log_info ""
+            log_info "To track a package, add it to update_claude_md() function"
+            exit 1
+        else
+            log_success "All packages are being tracked!"
+            exit 0
+        fi
     else
         log_info "=== Syncing package versions to CLAUDE.md ==="
         update_claude_md
