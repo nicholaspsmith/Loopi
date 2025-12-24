@@ -10,35 +10,6 @@ handoffs:
     send: true
 ---
 
-## Workflow Mode Selection
-
-**IMPORTANT**: Before proceeding, check if workflow mode has been set for this session.
-
-1. Check for mode preference:
-
-   ```bash
-   cat .specify/tmp/workflow-mode.txt 2>/dev/null || echo "NOT_SET"
-   ```
-
-2. If mode is "NOT_SET", use AskUserQuestion to prompt:
-
-   **Question**: "How would you like to proceed with this workflow?"
-
-   **Options**:
-   - **Automatic** (Recommended): Complete all steps automatically, suggesting next actions at the end
-   - **User-Guided**: Pause after each step and ask which action to take next
-
-   Store the user's choice:
-
-   ```bash
-   mkdir -p .specify/tmp
-   echo "[selected_mode]" > .specify/tmp/workflow-mode.txt
-   ```
-
-3. Remember the selected mode for use at the end of this command.
-
----
-
 ## User Input
 
 ```text
@@ -219,24 +190,17 @@ Given that feature description, do this:
 
 7. Report completion with branch name, spec file path, checklist results, and readiness for the next phase (`/speckit.clarify` or `/speckit.plan`).
 
-8. **Workflow Mode Completion**:
+8. **Next Steps**:
 
-   a. **If Automatic Mode**:
-   - Display completion summary
-   - Suggest next step: "Specification complete! Recommended next step: Run `/3.plan` to create the implementation plan, or `/2.1.clarify` if you need to resolve ambiguities first."
-   - Do NOT prompt for action - let the user decide
+   After completion, use AskUserQuestion to ask what to do next:
 
-   b. **If User-Guided Mode**:
-   - Display completion summary
-   - Use AskUserQuestion to explicitly ask what to do next:
+   **Question**: "Specification complete! What would you like to do next?"
 
-     **Question**: "Specification complete! What would you like to do next?"
-
-     **Options**:
-     - **Create Implementation Plan** (`/3.plan`): Generate detailed technical implementation plan
-     - **Clarify Requirements** (`/2.1.clarify`): Resolve any specification ambiguities first
-     - **Review Specification**: I'll review the spec file myself before continuing
-     - **Exit**: I'm done for now
+   **Options**:
+   - **Create Implementation Plan** (`/3.plan`): Generate detailed technical implementation plan
+   - **Clarify Requirements** (`/2.1.clarify`): Resolve any specification ambiguities first
+   - **Review Specification**: I'll review the spec file myself before continuing
+   - **Exit**: I'm done for now
 
    - If user selects "Create Implementation Plan", execute `/3.plan`
    - If user selects "Clarify Requirements", execute `/2.1.clarify`

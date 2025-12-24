@@ -10,22 +10,6 @@ handoffs:
     prompt: Create a checklist for the following domain...
 ---
 
-## Workflow Mode Selection
-
-**IMPORTANT**: Check if workflow mode has been set for this session.
-
-1. Check for mode preference:
-
-   ```bash
-   cat .specify/tmp/workflow-mode.txt 2>/dev/null || echo "NOT_SET"
-   ```
-
-2. If mode is "NOT_SET", use AskUserQuestion to prompt (see speckit.specify.md for format), then store the selection.
-
-3. Remember the selected mode for use at the end of this command.
-
----
-
 ## User Input
 
 ```text
@@ -51,22 +35,17 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 4. **Stop and report**: Command ends after Phase 2 planning. Report branch, IMPL_PLAN path, and generated artifacts.
 
-5. **Workflow Mode Completion**:
+5. **Next Steps**:
 
-   a. **If Automatic Mode**:
-   - Display completion summary
-   - Suggest next step: "Implementation plan complete! Recommended next step: Run `/4.tasks` to generate task breakdown, or `/3.1.validate` to validate the plan first."
-   - Do NOT prompt for action
+   After completion, use AskUserQuestion to ask what to do next:
 
-   b. **If User-Guided Mode**:
-   - Display completion summary
-   - Use AskUserQuestion to ask what to do next:
+   **Question**: "Implementation plan complete! What would you like to do next?"
 
-     **Options**:
-     - **Generate Tasks** (`/4.tasks`): Create detailed task breakdown
-     - **Validate Plan** (`/3.1.validate`): Audit plan for completeness
-     - **Review Plan**: I'll review the plan myself before continuing
-     - **Exit**: I'm done for now
+   **Options**:
+   - **Generate Tasks** (`/4.tasks`): Create detailed task breakdown
+   - **Validate Plan** (`/3.1.validate`): Audit plan for completeness
+   - **Review Plan**: I'll review the plan myself before continuing
+   - **Exit**: I'm done for now
 
    - Execute the selected command if applicable
 
