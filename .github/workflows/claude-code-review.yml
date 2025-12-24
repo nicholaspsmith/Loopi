@@ -52,6 +52,8 @@ jobs:
             - Performance issues
             - Missing error handling
 
+            Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
+
             If there are no issues, respond with: "No issues found."
 
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
