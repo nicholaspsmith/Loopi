@@ -52,11 +52,11 @@ User Stories 1-3 cover:
 
 ### Implementation for User Story 4
 
-- [ ] T001 [US4] Update get_version() function in `.specify/scripts/bash/update-agent-context.sh` to preserve patch versions
-- [ ] T002 [US4] Update version extraction regex to capture major.minor.patch in `.specify/scripts/bash/update-agent-context.sh`
-- [ ] T003 [US4] Update perl substitution pattern to match major.minor.patch format in `.specify/scripts/bash/update-agent-context.sh`
-- [ ] T004 [US4] Preserve pre-release tags (e.g., -beta.2, -alpha.1) in version extraction in `.specify/scripts/bash/update-agent-context.sh`
-- [ ] T005 [US4] Test version extraction with various formats (^1.2.3, ~1.2.3, >=1.2.3, 1.2.3-beta.4) and verify full semver preserved
+- [x] T001 [US4] Update get_version() function in `.specify/scripts/bash/update-agent-context.sh` to preserve patch versions
+- [x] T002 [US4] Update version extraction regex to capture major.minor.patch in `.specify/scripts/bash/update-agent-context.sh`
+- [x] T003 [US4] Update perl substitution pattern to match major.minor.patch format in `.specify/scripts/bash/update-agent-context.sh`
+- [x] T004 [US4] Preserve pre-release tags (e.g., -beta.2, -alpha.1) in version extraction in `.specify/scripts/bash/update-agent-context.sh`
+- [x] T005 [US4] Test version extraction with various formats (^1.2.3, ~1.2.3, >=1.2.3, 1.2.3-beta.4) and verify full semver preserved
 
 **Checkpoint**: At this point, full semantic versions should be preserved correctly in CLAUDE.md
 
@@ -70,12 +70,12 @@ User Stories 1-3 cover:
 
 ### Implementation for User Story 5
 
-- [ ] T006 [P] [US5] Create check_dependency() function in `.specify/scripts/bash/update-agent-context.sh`
-- [ ] T007 [US5] Add dependency check for jq with installation instructions (brew/apt) in `.specify/scripts/bash/update-agent-context.sh`
-- [ ] T008 [US5] Add dependency check for perl with installation instructions in `.specify/scripts/bash/update-agent-context.sh`
-- [ ] T009 [P] [US5] Add version detection for jq (minimum 1.6) with warning for old versions in `.specify/scripts/bash/update-agent-context.sh`
-- [ ] T010 [P] [US5] Add version detection for perl (minimum 5.10) with warning for old versions in `.specify/scripts/bash/update-agent-context.sh`
-- [ ] T011 [US5] Update main() to call dependency checks before processing in `.specify/scripts/bash/update-agent-context.sh`
+- [x] T006 [P] [US5] Create check_dependency() function in `.specify/scripts/bash/update-agent-context.sh`
+- [x] T007 [US5] Add dependency check for jq with installation instructions (brew/apt) in `.specify/scripts/bash/update-agent-context.sh`
+- [x] T008 [US5] Add dependency check for perl with installation instructions in `.specify/scripts/bash/update-agent-context.sh`
+- [x] T009 [P] [US5] Add version detection for jq (minimum 1.6) with warning for old versions in `.specify/scripts/bash/update-agent-context.sh`
+- [x] T010 [P] [US5] Add version detection for perl (minimum 5.10) with warning for old versions in `.specify/scripts/bash/update-agent-context.sh`
+- [x] T011 [US5] Update main() to call dependency checks before processing in `.specify/scripts/bash/update-agent-context.sh`
 - [ ] T012 [US5] Test error messages by temporarily hiding jq/perl from PATH and verifying helpful output
 
 **Checkpoint**: At this point, missing dependencies should produce clear, actionable error messages
@@ -90,13 +90,13 @@ User Stories 1-3 cover:
 
 ### Implementation for User Story 6
 
-- [ ] T013 [P] [US6] Add inline comment block documenting tracked package list format in `.specify/scripts/bash/update-agent-context.sh`
-- [ ] T014 [P] [US6] Add inline instructions for adding new packages to sync list in `.specify/scripts/bash/update-agent-context.sh`
-- [ ] T015 [US6] Add --validate flag to script option parsing in `.specify/scripts/bash/update-agent-context.sh`
-- [ ] T016 [US6] Implement validate_package_list() function to compare package.json against tracked packages in `.specify/scripts/bash/update-agent-context.sh`
-- [ ] T017 [US6] Display warning for packages in package.json but not in sync list when --validate flag used in `.specify/scripts/bash/update-agent-context.sh`
-- [ ] T018 [US6] Add --help flag with usage documentation to `.specify/scripts/bash/update-agent-context.sh`
-- [ ] T019 [US6] Test validation mode by adding a new dependency and verifying warning is displayed
+- [x] T013 [P] [US6] Add inline comment block documenting tracked package list format in `.specify/scripts/bash/update-agent-context.sh`
+- [x] T014 [P] [US6] Add inline instructions for adding new packages to sync list in `.specify/scripts/bash/update-agent-context.sh`
+- [x] T015 [US6] Add --validate flag to script option parsing in `.specify/scripts/bash/update-agent-context.sh`
+- [x] T016 [US6] Implement validate_package_list() function to compare package.json against tracked packages in `.specify/scripts/bash/update-agent-context.sh`
+- [x] T017 [US6] Display warning for packages in package.json but not in sync list when --validate flag used in `.specify/scripts/bash/update-agent-context.sh`
+- [x] T018 [US6] Add --help flag with usage documentation to `.specify/scripts/bash/update-agent-context.sh`
+- [x] T019 [US6] Test validation mode by adding a new dependency and verifying warning is displayed
 
 **Checkpoint**: At this point, the package list should be well-documented and validation should detect drift
 
@@ -110,22 +110,22 @@ User Stories 1-3 cover:
 
 ### Implementation for User Story 7
 
-- [ ] T020 [US7] Create test directory structure at `tests/bash/` with subdirectories `mocks/` and `fixtures/`
-- [ ] T021 [P] [US7] Create mock package.json with known versions for testing in `tests/bash/mocks/package.json`
-- [ ] T022 [P] [US7] Create mock CLAUDE.md with outdated versions in `tests/bash/mocks/CLAUDE.md`
-- [ ] T023 [P] [US7] Create expected CLAUDE.md output in `tests/bash/fixtures/expected-output.md`
-- [ ] T024 [US7] Create `tests/bash/test-version-extraction.sh` with run_test() assertion function
-- [ ] T025 [P] [US7] Add test case: Valid package.json extraction in `tests/bash/test-version-extraction.sh`
-- [ ] T026 [P] [US7] Add test case: npm prefix stripping (^, ~, >=) in `tests/bash/test-version-extraction.sh`
-- [ ] T027 [P] [US7] Add test case: Full semver preservation (major.minor.patch) in `tests/bash/test-version-extraction.sh`
-- [ ] T028 [P] [US7] Add test case: Pre-release tag handling (-beta.2, -alpha.1) in `tests/bash/test-version-extraction.sh`
-- [ ] T029 [P] [US7] Add test case: Missing package graceful skip in `tests/bash/test-version-extraction.sh`
+- [x] T020 [US7] Create test directory structure at `tests/bash/` with subdirectories `mocks/` and `fixtures/`
+- [x] T021 [P] [US7] Create mock package.json with known versions for testing in `tests/bash/mocks/package.json`
+- [x] T022 [P] [US7] Create mock CLAUDE.md with outdated versions in `tests/bash/mocks/CLAUDE.md`
+- [x] T023 [P] [US7] Create expected CLAUDE.md output in `tests/bash/fixtures/expected-output.md`
+- [x] T024 [US7] Create `tests/bash/test-version-extraction.sh` with run_test() assertion function
+- [x] T025 [P] [US7] Add test case: Valid package.json extraction in `tests/bash/test-version-extraction.sh`
+- [x] T026 [P] [US7] Add test case: npm prefix stripping (^, ~, >=) in `tests/bash/test-version-extraction.sh`
+- [x] T027 [P] [US7] Add test case: Full semver preservation (major.minor.patch) in `tests/bash/test-version-extraction.sh`
+- [x] T028 [P] [US7] Add test case: Pre-release tag handling (-beta.2, -alpha.1) in `tests/bash/test-version-extraction.sh`
+- [x] T029 [P] [US7] Add test case: Missing package graceful skip in `tests/bash/test-version-extraction.sh`
 - [ ] T030 [P] [US7] Add test case: Invalid JSON error handling in `tests/bash/test-version-extraction.sh`
 - [ ] T031 [P] [US7] Add test case: Missing jq dependency error in `tests/bash/test-version-extraction.sh`
 - [ ] T032 [P] [US7] Add test case: Idempotency (no changes needed) in `tests/bash/test-version-extraction.sh`
 - [ ] T033 [P] [US7] Add test case: Parenthetical version update (postgres, drizzle-orm) in `tests/bash/test-version-extraction.sh`
 - [ ] T034 [P] [US7] Add test case: Special characters in display name in `tests/bash/test-version-extraction.sh`
-- [ ] T035 [US7] Make test script executable and add shebang to `tests/bash/test-version-extraction.sh`
+- [x] T035 [US7] Make test script executable and add shebang to `tests/bash/test-version-extraction.sh`
 - [ ] T036 [US7] Run complete test suite and verify all 10 test cases pass
 - [ ] T037 [US7] Add test execution to GitHub Actions workflow (if .github/workflows/ exists)
 
