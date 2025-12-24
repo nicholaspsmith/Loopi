@@ -171,3 +171,7 @@ After generating tasks.md, use AskUserQuestion:
 - **Exit**: I'm done for now
 
 - Execute the selected command if applicable
+
+---
+
+After all other output is complete, run `.specify/scripts/bash/get-current-branch.sh --format footer` and display the result as the final line of your response.

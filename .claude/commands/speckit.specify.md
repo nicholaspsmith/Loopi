@@ -206,6 +206,10 @@ Given that feature description, do this:
    - If user selects "Clarify Requirements", execute `/2.1.clarify`
    - Otherwise, acknowledge and wait for user's next action
 
+9. **Branch Footer**:
+
+   After all other output is complete, run `.specify/scripts/bash/get-current-branch.sh --format footer` and display the result as the final line of your response.
+
 **NOTE:** The script creates and checks out the new branch and initializes the spec file before writing.
 
 ## General Guidelines

@@ -223,7 +223,7 @@ User Stories 1-3 cover:
 - [x] T078 [US11] Handle detached HEAD: return commit SHA (first 7 chars) with "(detached)" prefix
 - [x] T079 [US11] Handle no git repository: return "N/A" or omit line entirely
 - [x] T080 [US11] Implement response footer template: `---\nCurrent branch: {branch}`
-- [ ] T081 [US11] Add footer to Claude Code response pipeline (if hook available) or template-based footer in command files
+- [x] T081 [US11] Add footer to Claude Code response pipeline (if hook available) or template-based footer in command files
 - [x] T082 [US11] Ensure branch detection completes in < 50ms (performance requirement)
 - [x] T083 [US11] Test branch visibility on normal branch
 - [x] T084 [US11] Test branch visibility on detached HEAD state

@@ -49,6 +49,10 @@ You **MUST** consider the user input before proceeding (if not empty).
 
    - Execute the selected command if applicable
 
+6. **Branch Footer**:
+
+   After all other output is complete, run `.specify/scripts/bash/get-current-branch.sh --format footer` and display the result as the final line of your response.
+
 ## Phases
 
 ### Phase 0: Outline & Research
