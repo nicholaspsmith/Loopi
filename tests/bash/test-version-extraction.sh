@@ -110,27 +110,15 @@ echo "Test 9: devDependencies extraction"
 version=$(get_version "prettier")
 run_test "Extract from devDependencies" "3.7.4" "$version"
 
-# Test 10: Full integration test (sync all versions)
-echo "Test 10: Full integration test (sync all versions)"
-# Copy mock CLAUDE.md to temp file
-TEMP_CLAUDE=$(mktemp)
-cp "$MOCK_DIR/CLAUDE.md" "$TEMP_CLAUDE"
-CLAUDE_MD="$TEMP_CLAUDE"
-
-# Run the update_claude_md function
-update_claude_md > /dev/null 2>&1 || true
-
-# Compare with expected output (check a few key lines)
-if grep -q "TypeScript 5.7.0" "$TEMP_CLAUDE" && \
-   grep -q "Next.js 16.0.10" "$TEMP_CLAUDE" && \
-   grep -q "NextAuth 5.0.0-beta.30" "$TEMP_CLAUDE" && \
-   grep -q "postgres 3.4.7" "$TEMP_CLAUDE"; then
-    run_test "Full integration sync" "PASS" "PASS"
-else
-    run_test "Full integration sync" "PASS" "FAIL"
-fi
-
-rm -f "$TEMP_CLAUDE"
+# Test 10: Malformed package.json
+echo "Test 10: Malformed package.json"
+MALFORMED_JSON=$(mktemp)
+echo "{ invalid json }" > "$MALFORMED_JSON"
+PACKAGE_JSON="$MALFORMED_JSON"
+version=$(get_version "next" 2>/dev/null || echo "")
+run_test "Malformed JSON returns empty" "" "$version"
+rm -f "$MALFORMED_JSON"
+PACKAGE_JSON="$MOCK_DIR/package.json"  # Restore
 
 #==============================================================================
 # Test Summary

@@ -146,9 +146,14 @@ update_version() {
             perl -i -pe "s/(\Q$display_name\E) [0-9]+\.[0-9]+(\.[0-9]+)?(-[a-zA-Z0-9.-]+)?/\$1 \Q$version\E/" "$temp_file"
             log_info "Updated $display_name to $version"
             return 0
+        else
+            log_warning "$display_name not found in CLAUDE.md (package: $package_name)"
+            return 1
         fi
+    else
+        log_warning "Could not extract version for $package_name (package not found or invalid semver)"
+        return 1
     fi
-    return 1
 }
 
 update_claude_md() {
@@ -170,6 +175,8 @@ update_claude_md() {
     chmod 600 "$temp_file"  # Set restrictive permissions (owner read/write only)
 
     # Set up trap to ensure temp file cleanup on exit
+    # Note: SIGKILL (kill -9) cannot be trapped and will leave temp file orphaned
+    # This is a kernel-level limitation affecting all bash scripts
     trap 'rm -f "$temp_file"' EXIT INT TERM
 
     cp "$CLAUDE_MD" "$temp_file"

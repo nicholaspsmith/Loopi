@@ -77,12 +77,12 @@ main() {
     case "$FORMAT" in
         footer)
             if [[ "$branch" != "N/A" ]]; then
-                echo "---"
-                echo "Current branch: $branch"
+                printf "%s\n" "---"
+                printf "Current branch: %s\n" "$branch"
             fi
             ;;
         plain)
-            echo "$branch"
+            printf "%s\n" "$branch"
             ;;
     esac
 }

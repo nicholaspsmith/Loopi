@@ -149,6 +149,7 @@ b. **Offer PR creation** (only if 100% tasks complete):
 c. **Gather PR metadata** (if user accepts):
 
 - Get current branch: `git rev-parse --abbrev-ref HEAD`
+- Validate branch name matches pattern `^[0-9]{3}-[a-z0-9-]+$` (reject if invalid)
 - Parse branch format `NNN-short-name` to extract feature number
 - Get feature directory from check-prerequisites.sh output (FEATURE_DIR)
 - Read spec.md for feature summary/description
@@ -187,11 +188,14 @@ d. **Generate PR content**:
 
 e. **Create PR**:
 
-- Write PR body to temporary file: `FEATURE_DIR/pr-body.md`
-- Run: `gh pr create --title "[title]" --body-file "FEATURE_DIR/pr-body.md" --base main`
+- Create temporary file in /tmp: `PR_BODY_FILE=$(mktemp /tmp/pr-body-XXXXXX.md)`
+- Set restrictive permissions: `chmod 600 "$PR_BODY_FILE"`
+- Set up cleanup trap: `trap 'rm -f "$PR_BODY_FILE"' EXIT INT TERM`
+- Write PR body to temporary file
+- Run: `gh pr create --title "[title]" --body-file "$PR_BODY_FILE" --base main`
 - If successful: Display PR URL and number
 - If failed: Show error and manual fallback instructions
-- Clean up temporary file after PR creation (success or failure)
+- Temporary file automatically cleaned up by trap on all exit paths
 
 f. **Error handling (non-blocking)**:
 
