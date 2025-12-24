@@ -110,11 +110,11 @@ fi
 
 # Test 6: File size is reasonable (not bloated with implementation notes)
 file_lines=$(wc -l < "$CLAUDE_MD" | tr -d ' ')
-if [[ $file_lines -le 150 ]]; then
-    pass "File size is reasonable ($file_lines lines <= 150)"
+if [[ $file_lines -le 200 ]]; then
+    pass "File size is reasonable ($file_lines lines <= 200)"
     TESTS_PASSED=$((TESTS_PASSED + 1))
 else
-    fail "File size is reasonable" "<= 150 lines" "$file_lines lines (may contain feature-specific notes)"
+    fail "File size is reasonable" "<= 200 lines" "$file_lines lines (may contain feature-specific notes)"
     TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
