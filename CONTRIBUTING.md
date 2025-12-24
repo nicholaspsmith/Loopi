@@ -11,23 +11,6 @@ Thank you for your interest in contributing to MemoryLoop! This document provide
 - Git
 - Anthropic API key
 
-#### Windows Users: Enable Developer Mode
-
-This repository uses symbolic links in `.claude/commands/` which require Developer Mode on Windows.
-
-**To enable Developer Mode on Windows 10/11:**
-
-1. Open **Settings** → **Update & Security** → **For developers**
-2. Toggle **Developer Mode** to **On**
-3. Restart your computer if prompted
-
-**Alternative (if Developer Mode is not available):**
-
-- Clone the repository using WSL2 (Windows Subsystem for Linux)
-- Or manually copy the target files instead of using symlinks (see `.claude/commands/README.md` if it exists)
-
-**Note**: Without Developer Mode, symlinks will appear as regular files containing the link target path as text, causing the spec-kit commands to fail.
-
 ### Initial Setup
 
 1. Fork the repository

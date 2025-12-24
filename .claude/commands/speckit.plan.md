@@ -35,21 +35,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 4. **Stop and report**: Command ends after Phase 2 planning. Report branch, IMPL_PLAN path, and generated artifacts.
 
-5. **Next Steps**:
-
-   After completion, use AskUserQuestion to ask what to do next:
-
-   **Question**: "Implementation plan complete! What would you like to do next?"
-
-   **Options**:
-   - **Generate Tasks** (`/4.tasks`): Create detailed task breakdown
-   - **Validate Plan** (`/3.1.validate`): Audit plan for completeness
-   - **Review Plan**: I'll review the plan myself before continuing
-   - **Exit**: I'm done for now
-
-   - Execute the selected command if applicable
-
-6. **Branch Footer**:
+5. **Branch Footer**:
 
    After all other output is complete, run `.specify/scripts/bash/get-current-branch.sh --format footer` and display the result as the final line of your response.
 
@@ -92,10 +78,12 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Use standard REST/GraphQL patterns
    - Output OpenAPI/GraphQL schema to `/contracts/`
 
-3. **Sync package versions**:
+3. **Sync package versions and update agent context**:
    - Run `.specify/scripts/bash/update-agent-context.sh`
    - Updates CLAUDE.md Technology Stack with current versions from package.json
-   - Ensures Claude has accurate dependency info for planning decisions
+   - Updates CLAUDE.md Active Technologies with tech stack from plan.md files
+   - Updates CLAUDE.md Recent Changes with last 3 features
+   - Ensures Claude has accurate dependency info and feature context for planning decisions
 
 **Output**: data-model.md, /contracts/\*, quickstart.md
 
@@ -103,3 +91,18 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 - Use absolute paths
 - ERROR on gate failures or unresolved clarifications
+
+## Next Steps
+
+After completion, use AskUserQuestion to ask what to do next:
+
+**Question**: "Implementation plan complete! What would you like to do next?"
+
+**Options**:
+
+- **Generate Tasks** (`/4.tasks`): Create detailed task breakdown
+- **Validate Plan** (`/3.1.validate`): Audit plan for completeness
+- **Review Plan**: I'll review the plan myself before continuing
+- **Exit**: I'm done for now
+
+- Execute the selected command if applicable
