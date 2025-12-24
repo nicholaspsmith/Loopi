@@ -918,6 +918,69 @@ ln -sf speckit.specify.md 2.specify.md
 
 ---
 
+#### Issue: "Symlinks not working on Windows"
+
+**Background**:
+
+Symbolic links on Windows require special permissions or Developer Mode to be enabled. The numbered command aliases (e.g., `/2.specify`) use filesystem symlinks.
+
+**Diagnosis**:
+
+```powershell
+# Check if Developer Mode is enabled (Windows 10/11)
+# Settings > Update & Security > For developers > Developer Mode
+
+# Or check from PowerShell (requires admin)
+Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" -Name AllowDevelopmentWithoutDevLicense
+```
+
+**Solutions**:
+
+**Option 1: Enable Developer Mode (Recommended)**
+
+1. Open Windows Settings
+2. Navigate to "Update & Security" > "For developers"
+3. Enable "Developer Mode"
+4. Restart your terminal/IDE
+
+**Option 2: Create symlinks with admin privileges**
+
+```powershell
+# Run PowerShell as Administrator
+cd .claude/commands
+New-Item -ItemType SymbolicLink -Path "2.specify.md" -Target "speckit.specify.md"
+```
+
+**Option 3: Use directory junctions (no admin required)**
+
+```powershell
+# Directory junctions work for folders without admin rights
+# Note: File symlinks still require admin or Developer Mode
+cmd /c mklink /D numbered-commands speckit-commands
+```
+
+**Option 4: Use original command names**
+
+If symlinks are not feasible, use the original command names:
+
+- `/speckit.constitution` instead of `/1.constitution`
+- `/speckit.specify` instead of `/2.specify`
+- `/speckit.plan` instead of `/3.plan`
+- etc.
+
+**Verification**:
+
+```powershell
+# Verify symlink creation
+Get-Item .claude/commands/2.specify.md | Select-Object LinkType, Target
+
+# Expected output:
+# LinkType: SymbolicLink
+# Target: speckit.specify.md
+```
+
+---
+
 ## Performance Benchmarks
 
 ### Phase 1: Package Sync Performance

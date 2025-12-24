@@ -126,6 +126,37 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
 
+  bash-tests:
+    name: Bash Script Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck jq
+
+      - name: Run shellcheck on bash scripts
+        run: |
+          find .specify/scripts/bash -name "*.sh" -type f -exec shellcheck {} \;
+
+      - name: Run version extraction tests
+        run: |
+          cd tests/bash
+          chmod +x test-version-extraction.sh
+          ./test-version-extraction.sh
+
+      - name: Run branch detection tests
+        run: |
+          cd tests/bash
+          chmod +x test-branch-detection.sh
+          ./test-branch-detection.sh
+
+      - name: Run CLAUDE.md format validation
+        run: |
+          cd tests/bash
+          chmod +x test-claude-md-format.sh
+          ./test-claude-md-format.sh
+
   build:
     name: Build Next.js App
     runs-on: ubuntu-latest
