@@ -1,14 +1,28 @@
 #!/usr/bin/env bash
 
-# Sync package versions from package.json to CLAUDE.md Technology Stack
+# Update CLAUDE.md with package versions and feature context
 #
-# This script reads package.json and updates the Technology Stack section
-# in CLAUDE.md with the current package versions.
+# This script performs two operations:
 #
-# Run this script after installing or updating packages to keep CLAUDE.md
-# in sync with actual dependency versions.
+# 1. PACKAGE VERSION SYNC
+#    - Reads package.json and updates the Technology Stack section
+#    - Syncs 16 tracked packages with strict semver validation
+#    - Updates both inline versions (e.g., "TypeScript 5.7.0")
+#    - Updates parenthetical versions (e.g., "postgres 3.4.7, drizzle-orm 0.45.1")
 #
-# Usage: ./update-agent-context.sh
+# 2. FEATURE CONTEXT MANAGEMENT
+#    - Parses all plan.md files in specs/ directories
+#    - Extracts: Language/Version, Primary Dependencies, Storage
+#    - Updates "Active Technologies" section with tech stack per feature
+#    - Updates "Recent Changes" section with last 3 features
+#
+# Run this script after:
+#   - Installing or updating npm packages (to sync versions)
+#   - Completing a new feature (to update Active Technologies/Recent Changes)
+#
+# Usage: ./update-agent-context.sh [OPTIONS]
+#        ./update-agent-context.sh --validate   (test package tracking and plan.md parsing)
+#        ./update-agent-context.sh --help       (show full usage information)
 
 set -e
 set -o pipefail
@@ -457,6 +471,16 @@ update_recent_changes() {
     return 0
 }
 
+#==============================================================================
+# Main Update Function
+#==============================================================================
+
+# Update CLAUDE.md with package versions and feature context
+# This is the main entry point that orchestrates both operations:
+#   1. Sync package versions from package.json to Technology Stack section
+#   2. Parse plan.md files and update Active Technologies / Recent Changes sections
+#
+# The function uses atomic operations with backup/restore for safety
 update_claude_md() {
     log_info "Reading versions from $PACKAGE_JSON"
 
@@ -485,7 +509,11 @@ update_claude_md() {
     local updates_made=0
 
     #==========================================================================
-    # Package Version Synchronization List
+    # PART 1: Package Version Synchronization
+    #==========================================================================
+    # Sync package versions from package.json to CLAUDE.md Technology Stack
+    # This updates inline versions (e.g., "TypeScript 5.7.0") and parenthetical
+    # versions (e.g., "postgres 3.4.7, drizzle-orm 0.45.1")
     #==========================================================================
     # This section defines which packages are synchronized from package.json
     # to CLAUDE.md. Each line follows the format:
@@ -533,7 +561,11 @@ update_claude_md() {
     update_parenthetical_version "$temp_file" "drizzle-orm" "$drizzle_ver" && ((updates_made++)) || true
 
     #==========================================================================
-    # Parse plan.md files and update Active Technologies / Recent Changes
+    # PART 2: Feature Context Management
+    #==========================================================================
+    # Parse all plan.md files in specs/ directories and update:
+    #   - Active Technologies section (tech stack per feature)
+    #   - Recent Changes section (last 3 features)
     #==========================================================================
 
     log_info "Parsing plan.md files for Active Technologies and Recent Changes"
@@ -551,7 +583,13 @@ update_claude_md() {
         log_info "No plan.md files found, skipping section updates"
     fi
 
-    # Only update if changes were made
+    #==========================================================================
+    # PART 3: Apply Changes with Atomic Operations
+    #==========================================================================
+    # Use diff to detect changes, then atomically update CLAUDE.md with
+    # backup/restore error recovery for safety
+    #==========================================================================
+
     local diff_result diff_exit_code
     # Prevent diff exit codes from triggering set -e (0=same, 1=differ, 2=error)
     set +e
@@ -641,6 +679,10 @@ EOF
 # Main
 #==============================================================================
 
+# Main entry point - parses command-line arguments and executes requested operation
+# Supports two modes:
+#   1. Default mode: Updates CLAUDE.md (package versions + feature context)
+#   2. Validate mode (--validate): Tests package tracking and plan.md parsing
 main() {
     local VALIDATE_MODE=false
 
