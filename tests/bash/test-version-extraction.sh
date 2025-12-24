@@ -69,11 +69,13 @@ source_script_functions
 echo "Test 1: Valid package.json extraction"
 version=$(get_version "typescript")
 run_test "Extract TypeScript version" "5.7.0" "$version"
+echo "DEBUG: Test 1 completed, TESTS_FAILED=$TESTS_FAILED"
 
 # Test 2: npm prefix stripping (^)
 echo "Test 2: npm prefix stripping (^)"
 version=$(get_version "next")
 run_test "Strip caret prefix" "16.0.10" "$version"
+echo "DEBUG: Test 2 completed, TESTS_FAILED=$TESTS_FAILED"
 
 # Test 3: npm prefix stripping (~)
 echo "Test 3: npm prefix stripping (~)"
