@@ -117,7 +117,10 @@ update_version() {
         if grep -q "$display_name [0-9]" "$temp_file" 2>/dev/null; then
             # Use perl for more reliable substitution with special characters
             # Pattern matches: major.minor[.patch][-prerelease]
-            perl -i -pe "s/(\Q$display_name\E) [0-9]+\.[0-9]+(\.[0-9]+)?(-[a-z0-9.]+)?/\$1 $version/" "$temp_file"
+            # Note: $version is validated by semver regex (line 94) before use here,
+            # ensuring it contains only: digits, dots, hyphens, alphanumeric, and plus
+            # This prevents regex injection as no regex metacharacters are allowed
+            perl -i -pe "s/(\Q$display_name\E) [0-9]+\.[0-9]+(\.[0-9]+)?(-[a-z0-9.]+)?/\$1 \Q$version\E/" "$temp_file"
             log_info "Updated $display_name to $version"
             return 0
         fi
@@ -142,6 +145,10 @@ update_claude_md() {
     local temp_file
     temp_file=$(mktemp)
     chmod 600 "$temp_file"  # Set restrictive permissions (owner read/write only)
+
+    # Set up trap to ensure temp file cleanup on exit
+    trap 'rm -f "$temp_file"' EXIT INT TERM
+
     cp "$CLAUDE_MD" "$temp_file"
 
     local updates_made=0
@@ -194,7 +201,8 @@ update_claude_md() {
     if [[ -n "$postgres_ver" ]]; then
         if grep -q "postgres [0-9]" "$temp_file" 2>/dev/null; then
             # Pattern matches: major.minor[.patch][-prerelease]
-            perl -i -pe "s/postgres [0-9]+\.[0-9]+(\.[0-9]+)?(-[a-z0-9.]+)?/postgres $postgres_ver/" "$temp_file"
+            # Note: $postgres_ver validated by semver regex, safe from injection
+            perl -i -pe "s/postgres [0-9]+\.[0-9]+(\.[0-9]+)?(-[a-z0-9.]+)?/postgres \Q$postgres_ver\E/" "$temp_file"
             log_info "Updated postgres to $postgres_ver"
             ((updates_made++)) || true
         fi
@@ -203,19 +211,23 @@ update_claude_md() {
     if [[ -n "$drizzle_ver" ]]; then
         if grep -q "drizzle-orm [0-9]" "$temp_file" 2>/dev/null; then
             # Pattern matches: major.minor[.patch][-prerelease]
-            perl -i -pe "s/drizzle-orm [0-9]+\.[0-9]+(\.[0-9]+)?(-[a-z0-9.]+)?/drizzle-orm $drizzle_ver/" "$temp_file"
+            # Note: $drizzle_ver validated by semver regex, safe from injection
+            perl -i -pe "s/drizzle-orm [0-9]+\.[0-9]+(\.[0-9]+)?(-[a-z0-9.]+)?/drizzle-orm \Q$drizzle_ver\E/" "$temp_file"
             log_info "Updated drizzle-orm to $drizzle_ver"
             ((updates_made++)) || true
         fi
     fi
 
     # Only update if changes were made
-    local diff_result
-    if diff_result=$(diff -q "$CLAUDE_MD" "$temp_file" 2>&1); then
+    local diff_result diff_exit_code
+    diff_result=$(diff -q "$CLAUDE_MD" "$temp_file" 2>&1)
+    diff_exit_code=$?
+
+    if [[ $diff_exit_code -eq 0 ]]; then
         # Files are identical - no updates needed
         rm -f "$temp_file"
         log_info "No version updates needed - CLAUDE.md is already current"
-    elif [[ $? -eq 1 ]]; then
+    elif [[ $diff_exit_code -eq 1 ]]; then
         # Files differ - update CLAUDE.md
         if mv "$temp_file" "$CLAUDE_MD"; then
             log_success "Updated CLAUDE.md with $updates_made package version(s)"
