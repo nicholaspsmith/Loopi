@@ -3,7 +3,9 @@
 # Test script for update-agent-context.sh version extraction logic
 # Tests various edge cases and version formats
 
-set -euo pipefail
+# Temporarily disable set -e to debug CI issue
+# set -euo pipefail
+set -uo pipefail
 
 SCRIPT_DIR="$(CDPATH="" cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -63,12 +65,17 @@ echo "=== Running update-agent-context.sh Tests ==="
 echo ""
 
 # Source the script functions
+echo "DEBUG: About to source script functions"
 source_script_functions
+echo "DEBUG: Script functions sourced successfully"
+echo "DEBUG: PACKAGE_JSON=$PACKAGE_JSON"
+echo "DEBUG: MOCK_DIR=$MOCK_DIR"
 
 # Test 1: Valid package.json extraction
 echo "Test 1: Valid package.json extraction"
-version=$(get_version "typescript")
-run_test "Extract TypeScript version" "5.7.0" "$version"
+version=$(get_version "typescript") || { echo "DEBUG: get_version failed with exit code $?"; exit 1; }
+echo "DEBUG: Version extracted: '$version'"
+run_test "Extract TypeScript version" "5.7.0" "$version" || { echo "DEBUG: run_test failed"; exit 1; }
 echo "DEBUG: Test 1 completed, TESTS_FAILED=$TESTS_FAILED"
 
 # Test 2: npm prefix stripping (^)
