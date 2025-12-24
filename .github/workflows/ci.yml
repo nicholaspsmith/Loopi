@@ -139,6 +139,40 @@ jobs:
         run: |
           find .specify/scripts/bash -name "*.sh" -type f -exec shellcheck {} \;
 
+      - name: Validate symlinks
+        run: |
+          echo "Checking .claude/commands/ symlinks..."
+
+          # Find all symlinks in .claude/commands/
+          symlinks=$(find .claude/commands -type l 2>/dev/null || true)
+
+          if [ -z "$symlinks" ]; then
+            echo "No symlinks found in .claude/commands/"
+            exit 1
+          fi
+
+          # Validate each symlink
+          failed=0
+          while IFS= read -r link; do
+            if [ ! -e "$link" ]; then
+              echo "ERROR: Broken symlink: $link -> $(readlink "$link")"
+              failed=1
+            else
+              echo "OK: $link -> $(readlink "$link")"
+            fi
+          done <<< "$symlinks"
+
+          if [ $failed -eq 1 ]; then
+            echo ""
+            echo "Some symlinks are broken. This can happen when:"
+            echo "  1. Target files were deleted or renamed"
+            echo "  2. Git didn't properly clone symlinks (rare on Linux/macOS)"
+            echo "  3. Windows without Developer Mode (see README.md)"
+            exit 1
+          fi
+
+          echo "All symlinks are valid!"
+
       - name: Run version extraction tests
         run: |
           cd tests/bash
