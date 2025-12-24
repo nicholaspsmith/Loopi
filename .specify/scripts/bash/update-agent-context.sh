@@ -22,6 +22,29 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 PACKAGE_JSON="$REPO_ROOT/package.json"
 CLAUDE_MD="$REPO_ROOT/CLAUDE.md"
 
+# List of packages tracked for version synchronization
+# NOTE: This is the single source of truth. When adding a new package:
+#   1. Add the npm package name to this array
+#   2. Add corresponding update_version() call in update_claude_md() function
+TRACKED_PACKAGES=(
+    "typescript"
+    "next"
+    "react"
+    "tailwindcss"
+    "@lancedb/lancedb"
+    "pgvector"
+    "@anthropic-ai/sdk"
+    "ts-fsrs"
+    "next-auth"
+    "vitest"
+    "@playwright/test"
+    "eslint"
+    "prettier"
+    "lint-staged"
+    "postgres"
+    "drizzle-orm"
+)
+
 #==============================================================================
 # Utility Functions
 #==============================================================================
@@ -120,7 +143,7 @@ update_version() {
             # Note: $version is validated by semver regex (line 94) before use here,
             # ensuring it contains only: digits, dots, hyphens, alphanumeric, and plus
             # This prevents regex injection as no regex metacharacters are allowed
-            perl -i -pe "s/(\Q$display_name\E) [0-9]+\.[0-9]+(\.[0-9]+)?(-[a-z0-9.]+)?/\$1 \Q$version\E/" "$temp_file"
+            perl -i -pe "s/(\Q$display_name\E) [0-9]+\.[0-9]+(\.[0-9]+)?(-[a-zA-Z0-9.-]+)?/\$1 \Q$version\E/" "$temp_file"
             log_info "Updated $display_name to $version"
             return 0
         fi
@@ -202,7 +225,7 @@ update_claude_md() {
         if grep -q "postgres [0-9]" "$temp_file" 2>/dev/null; then
             # Pattern matches: major.minor[.patch][-prerelease]
             # Note: $postgres_ver validated by semver regex, safe from injection
-            perl -i -pe "s/postgres [0-9]+\.[0-9]+(\.[0-9]+)?(-[a-z0-9.]+)?/postgres \Q$postgres_ver\E/" "$temp_file"
+            perl -i -pe "s/postgres [0-9]+\.[0-9]+(\.[0-9]+)?(-[a-zA-Z0-9.-]+)?/postgres \Q$postgres_ver\E/" "$temp_file"
             log_info "Updated postgres to $postgres_ver"
             ((updates_made++)) || true
         fi
@@ -212,7 +235,7 @@ update_claude_md() {
         if grep -q "drizzle-orm [0-9]" "$temp_file" 2>/dev/null; then
             # Pattern matches: major.minor[.patch][-prerelease]
             # Note: $drizzle_ver validated by semver regex, safe from injection
-            perl -i -pe "s/drizzle-orm [0-9]+\.[0-9]+(\.[0-9]+)?(-[a-z0-9.]+)?/drizzle-orm \Q$drizzle_ver\E/" "$temp_file"
+            perl -i -pe "s/drizzle-orm [0-9]+\.[0-9]+(\.[0-9]+)?(-[a-zA-Z0-9.-]+)?/drizzle-orm \Q$drizzle_ver\E/" "$temp_file"
             log_info "Updated drizzle-orm to $drizzle_ver"
             ((updates_made++)) || true
         fi
@@ -304,26 +327,6 @@ main() {
     if [[ "$VALIDATE_MODE" == "true" ]]; then
         log_info "=== Validating package tracking ==="
 
-        # List of tracked packages (must match update_version calls in update_claude_md)
-        local tracked_packages=(
-            "typescript"
-            "next"
-            "react"
-            "tailwindcss"
-            "@lancedb/lancedb"
-            "pgvector"
-            "@anthropic-ai/sdk"
-            "ts-fsrs"
-            "next-auth"
-            "vitest"
-            "@playwright/test"
-            "eslint"
-            "prettier"
-            "lint-staged"
-            "postgres"
-            "drizzle-orm"
-        )
-
         # Get all packages from package.json
         local all_packages
         all_packages=$(jq -r '.dependencies // {} + .devDependencies // {} | keys[]' "$PACKAGE_JSON" 2>/dev/null | sort)
@@ -332,7 +335,7 @@ main() {
         local tracked_count=0
 
         while IFS= read -r package; do
-            if printf '%s\n' "${tracked_packages[@]}" | grep -q "^${package}$"; then
+            if printf '%s\n' "${TRACKED_PACKAGES[@]}" | grep -q "^${package}$"; then
                 ((tracked_count++))
             else
                 untracked+=("$package")
@@ -345,7 +348,9 @@ main() {
             log_warning "Untracked packages found in package.json:"
             printf '  - %s\n' "${untracked[@]}"
             log_info ""
-            log_info "To track a package, add it to update_claude_md() function"
+            log_info "To track a package:"
+            log_info "  1. Add package name to TRACKED_PACKAGES array (line 29)"
+            log_info "  2. Add update_version() call in update_claude_md() function"
             exit 1
         else
             log_success "All packages are being tracked!"
