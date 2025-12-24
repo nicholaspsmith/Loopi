@@ -141,6 +141,7 @@ update_claude_md() {
     # Create a temporary file for the updated content
     local temp_file
     temp_file=$(mktemp)
+    chmod 600 "$temp_file"  # Set restrictive permissions (owner read/write only)
     cp "$CLAUDE_MD" "$temp_file"
 
     local updates_made=0
@@ -209,12 +210,25 @@ update_claude_md() {
     fi
 
     # Only update if changes were made
-    if ! diff -q "$CLAUDE_MD" "$temp_file" > /dev/null 2>&1; then
-        mv "$temp_file" "$CLAUDE_MD"
-        log_success "Updated CLAUDE.md with $updates_made package version(s)"
-    else
+    local diff_result
+    if diff_result=$(diff -q "$CLAUDE_MD" "$temp_file" 2>&1); then
+        # Files are identical - no updates needed
         rm -f "$temp_file"
         log_info "No version updates needed - CLAUDE.md is already current"
+    elif [[ $? -eq 1 ]]; then
+        # Files differ - update CLAUDE.md
+        if mv "$temp_file" "$CLAUDE_MD"; then
+            log_success "Updated CLAUDE.md with $updates_made package version(s)"
+        else
+            log_error "Failed to update CLAUDE.md"
+            rm -f "$temp_file"
+            exit 1
+        fi
+    else
+        # diff command failed (exit code 2 or other error)
+        log_error "Failed to compare files: $diff_result"
+        rm -f "$temp_file"
+        exit 1
     fi
 }
 

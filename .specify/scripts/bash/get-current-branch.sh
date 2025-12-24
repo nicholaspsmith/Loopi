@@ -27,6 +27,11 @@ set -euo pipefail
 FORMAT="plain"  # Default format
 if [[ "${1:-}" == "--format" ]] && [[ -n "${2:-}" ]]; then
     FORMAT="$2"
+    # Validate format parameter
+    if [[ "$FORMAT" != "plain" ]] && [[ "$FORMAT" != "footer" ]]; then
+        echo "Error: Invalid format '$FORMAT'. Valid options: plain, footer" >&2
+        exit 1
+    fi
 fi
 
 #==============================================================================
@@ -76,7 +81,7 @@ main() {
                 echo "Current branch: $branch"
             fi
             ;;
-        plain|*)
+        plain)
             echo "$branch"
             ;;
     esac
