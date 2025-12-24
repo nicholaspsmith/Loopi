@@ -141,18 +141,18 @@ User Stories 1-3 cover:
 
 ### Implementation for User Story 8
 
-- [ ] T038 [P] [US8] Create symlink `.claude/commands/1.constitution.md` → `speckit.constitution.md`
-- [ ] T039 [P] [US8] Create symlink `.claude/commands/2.specify.md` → `speckit.specify.md`
-- [ ] T040 [P] [US8] Create symlink `.claude/commands/2.1.clarify.md` → `speckit.clarify.md`
-- [ ] T041 [P] [US8] Create symlink `.claude/commands/3.plan.md` → `speckit.plan.md`
-- [ ] T042 [P] [US8] Create symlink `.claude/commands/3.1.validate.md` → `speckit.plan.validate.md`
-- [ ] T043 [P] [US8] Create symlink `.claude/commands/4.tasks.md` → `speckit.tasks.md`
-- [ ] T044 [P] [US8] Create symlink `.claude/commands/5.implement.md` → `speckit.implement.md`
-- [ ] T045 [P] [US8] Create symlink `.claude/commands/6.analyze.md` → `speckit.analyze.md`
-- [ ] T046 [P] [US8] Create symlink `.claude/commands/7.checklist.md` → `speckit.checklist.md`
-- [ ] T047 [P] [US8] Create symlink `.claude/commands/8.taskstoissues.md` → `speckit.taskstoissues.md`
-- [ ] T048 [US8] Test numbered alias invocation (e.g., /2.specify) behaves identically to original (/speckit.specify)
-- [ ] T049 [US8] Verify symlinks remain valid on macOS, Linux, and WSL platforms
+- [x] T038 [P] [US8] Create symlink `.claude/commands/1.constitution.md` → `speckit.constitution.md`
+- [x] T039 [P] [US8] Create symlink `.claude/commands/2.specify.md` → `speckit.specify.md`
+- [x] T040 [P] [US8] Create symlink `.claude/commands/2.1.clarify.md` → `speckit.clarify.md`
+- [x] T041 [P] [US8] Create symlink `.claude/commands/3.plan.md` → `speckit.plan.md`
+- [x] T042 [P] [US8] Create symlink `.claude/commands/3.1.validate.md` → `speckit.plan.validate.md`
+- [x] T043 [P] [US8] Create symlink `.claude/commands/4.tasks.md` → `speckit.tasks.md`
+- [x] T044 [P] [US8] Create symlink `.claude/commands/5.implement.md` → `speckit.implement.md`
+- [x] T045 [P] [US8] Create symlink `.claude/commands/6.analyze.md` → `speckit.analyze.md`
+- [x] T046 [P] [US8] Create symlink `.claude/commands/7.checklist.md` → `speckit.checklist.md`
+- [x] T047 [P] [US8] Create symlink `.claude/commands/8.taskstoissues.md` → `speckit.taskstoissues.md`
+- [x] T048 [US8] Test numbered alias invocation (e.g., /2.specify) behaves identically to original (/speckit.specify)
+- [x] T049 [US8] Verify symlinks remain valid on macOS, Linux, and WSL platforms
 
 **Checkpoint**: At this point, numbered aliases should be functional and backward compatible
 
