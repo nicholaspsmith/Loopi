@@ -47,11 +47,23 @@ run_test() {
 source_script_functions() {
     # Create a temporary script that sources the functions without executing main
     local temp_script=$(mktemp)
-    sed '/^if \[\[ "\${BASH_SOURCE\[0\]}" == "\${0}" \]\]; then/,$d' "$UPDATE_SCRIPT" > "$temp_script"
+
+    # Copy everything except:
+    # 1. The source common.sh line (we don't need common.sh for testing get_version)
+    # 2. The eval get_feature_paths line (we don't need feature paths)
+    # 3. The NEW_PLAN alias line (depends on IMPL_PLAN from get_feature_paths)
+    # 4. The main execution block
+    sed '/^if \[\[ "\${BASH_SOURCE\[0\]}" == "\${0}" \]\]; then/,$d' "$UPDATE_SCRIPT" | \
+        sed '/^source.*common\.sh/d' | \
+        sed '/^eval.*get_feature_paths/d' | \
+        sed '/^NEW_PLAN=.*IMPL_PLAN/d' > "$temp_script"
 
     # Remove 'set -e' from the temp script to prevent it from re-enabling errexit in our shell
     # GitHub Actions runs with 'bash -e' which conflicts with sourcing scripts that have 'set -e'
     sed -i.bak '/^set -e$/d' "$temp_script"
+
+    # Set REPO_ROOT for the get_version function
+    export REPO_ROOT="$SCRIPT_DIR/../.."
 
     source "$temp_script"
     rm -f "$temp_script" "$temp_script.bak"

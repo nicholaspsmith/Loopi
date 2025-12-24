@@ -267,7 +267,7 @@ get_version() {
 
     # Strip npm version prefixes (^, ~, >=, >, <, <=)
     version="${version#^}"
-    version="${version#~}"
+    version="${version#'~'}"
     version="${version#>=}"
     version="${version#>}"
     version="${version#<=}"
