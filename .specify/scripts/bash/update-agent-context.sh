@@ -180,6 +180,66 @@ parse_plan_data() {
     fi
 }
 
+# Generate documentation URL for a package
+# Usage: get_package_doc_url "package-name" "version"
+get_package_doc_url() {
+    local package="$1"
+    local version="$2"
+
+    # Special cases for popular packages with dedicated documentation sites
+    case "$package" in
+        "next")
+            echo "https://nextjs.org/docs"
+            ;;
+        "react")
+            echo "https://react.dev"
+            ;;
+        "react-dom")
+            echo "https://react.dev/reference/react-dom"
+            ;;
+        "typescript")
+            echo "https://www.typescriptlang.org/docs"
+            ;;
+        "@anthropic-ai/sdk")
+            echo "https://docs.anthropic.com/en/api/client-sdks"
+            ;;
+        "tailwindcss")
+            echo "https://tailwindcss.com/docs"
+            ;;
+        "@lancedb/lancedb")
+            echo "https://lancedb.github.io/lancedb"
+            ;;
+        "postgres")
+            echo "https://www.npmjs.com/package/postgres/v/$version"
+            ;;
+        "drizzle-orm")
+            echo "https://orm.drizzle.team/docs/overview"
+            ;;
+        "next-auth")
+            echo "https://next-auth.js.org"
+            ;;
+        "vitest")
+            echo "https://vitest.dev"
+            ;;
+        "@playwright/test")
+            echo "https://playwright.dev/docs/intro"
+            ;;
+        "eslint")
+            echo "https://eslint.org/docs/latest"
+            ;;
+        "prettier")
+            echo "https://prettier.io/docs/en"
+            ;;
+        "ts-fsrs")
+            echo "https://www.npmjs.com/package/ts-fsrs/v/$version"
+            ;;
+        *)
+            # Default to npm package page with specific version
+            echo "https://www.npmjs.com/package/$package/v/$version"
+            ;;
+    esac
+}
+
 format_technology_stack() {
     local lang="$1"
     local framework="$2"
@@ -348,21 +408,35 @@ update_existing_agent_file() {
         return 1
     }
     
-    # Process the file in one pass
-    local tech_stack=$(format_technology_stack "$NEW_LANG" "$NEW_FRAMEWORK")
+    # Generate Active Technologies from package.json dependencies
     local new_tech_entries=()
     local new_change_entry=""
-    
-    # Prepare new technology entries
-    if [[ -n "$tech_stack" ]] && ! grep -q "$tech_stack" "$target_file"; then
-        new_tech_entries+=("- $tech_stack ($CURRENT_BRANCH)")
+
+    # Read dependencies from package.json
+    local package_json="$REPO_ROOT/package.json"
+    if [[ ! -f "$package_json" ]]; then
+        log_error "package.json not found at $package_json"
+        return 1
     fi
-    
-    if [[ -n "$NEW_DB" ]] && [[ "$NEW_DB" != "N/A" ]] && [[ "$NEW_DB" != "NEEDS CLARIFICATION" ]] && ! grep -q "$NEW_DB" "$target_file"; then
-        new_tech_entries+=("- $NEW_DB ($CURRENT_BRANCH)")
-    fi
-    
-    # Prepare new change entry
+
+    # Parse dependencies and generate entries with documentation links
+    while IFS='|' read -r package_name package_version; do
+        # Skip if empty
+        [[ -z "$package_name" ]] && continue
+
+        # Remove ^ or ~ from version
+        local clean_version="${package_version#^}"
+        clean_version="${clean_version#~}"
+
+        # Generate documentation URL
+        local doc_url=$(get_package_doc_url "$package_name" "$clean_version")
+
+        # Format entry: - package-name version ([docs](url))
+        new_tech_entries+=("- $package_name $clean_version ([docs]($doc_url))")
+    done < <(jq -r '.dependencies // {} | to_entries | sort_by(.key) | .[] | "\(.key)|\(.value)"' "$package_json")
+
+    # Prepare new change entry for Recent Changes
+    local tech_stack=$(format_technology_stack "$NEW_LANG" "$NEW_FRAMEWORK")
     if [[ -n "$tech_stack" ]]; then
         new_change_entry="- $CURRENT_BRANCH: Added $tech_stack"
     elif [[ -n "$NEW_DB" ]] && [[ "$NEW_DB" != "N/A" ]] && [[ "$NEW_DB" != "NEEDS CLARIFICATION" ]]; then
@@ -390,27 +464,24 @@ update_existing_agent_file() {
     local file_ended=false
     
     while IFS= read -r line || [[ -n "$line" ]]; do
-        # Handle Active Technologies section
+        # Handle Active Technologies section - REPLACE all existing entries
         if [[ "$line" == "## Active Technologies" ]]; then
             echo "$line" >> "$temp_file"
             in_tech_section=true
             continue
         elif [[ $in_tech_section == true ]] && [[ "$line" =~ ^##[[:space:]] ]]; then
-            # Add new tech entries before closing the section
+            # Add new tech entries before closing the section (replacing old ones)
             if [[ $tech_entries_added == false ]] && [[ ${#new_tech_entries[@]} -gt 0 ]]; then
                 printf '%s\n' "${new_tech_entries[@]}" >> "$temp_file"
+                echo "" >> "$temp_file"
                 tech_entries_added=true
             fi
             echo "$line" >> "$temp_file"
             in_tech_section=false
             continue
-        elif [[ $in_tech_section == true ]] && [[ -z "$line" ]]; then
-            # Add new tech entries before empty line in tech section
-            if [[ $tech_entries_added == false ]] && [[ ${#new_tech_entries[@]} -gt 0 ]]; then
-                printf '%s\n' "${new_tech_entries[@]}" >> "$temp_file"
-                tech_entries_added=true
-            fi
-            echo "$line" >> "$temp_file"
+        elif [[ $in_tech_section == true ]]; then
+            # Skip all existing lines in Active Technologies section
+            # They will be replaced with new package.json-based entries
             continue
         fi
         
