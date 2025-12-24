@@ -101,8 +101,8 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 
 ## Active Technologies
 
-- File-based (CLAUDE.md, package.json, .claude/commands/\*, specs directories) (001-speckit-workflow-improvements)
-- File-based (CLAUDE.md, package.json, .claude/commands/\*, specs directories) (001-speckit-workflow-improvements)
+**IMPORTANT**: The versions listed below are the exact versions used in this project. If your knowledge is based on a different version of any technology, you MUST reference the documentation links provided to ensure version-specific accuracy. Use the WebFetch tool when needed.
+
 - @anthropic-ai/sdk 0.71.2 ([docs](https://docs.anthropic.com/en/api/client-sdks))
 - @lancedb/lancedb 0.22.3 ([docs](https://lancedb.github.io/lancedb))
 - bcryptjs 3.0.3 ([docs](https://www.npmjs.com/package/bcryptjs/v/3.0.3))
@@ -121,19 +121,6 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 - ts-fsrs 5.2.3 ([docs](https://www.npmjs.com/package/ts-fsrs/v/5.2.3))
 - uuid 13.0.0 ([docs](https://www.npmjs.com/package/uuid/v/13.0.0))
 - zod 4.2.0 ([docs](https://www.npmjs.com/package/zod/v/4.2.0))
-
-- File-based (CLAUDE.md, package.json, .claude/commands/\*, specs directories) (001-speckit-workflow-improvements)
-
-- TypeScript 5.7.x with Next.js 15.1.x (App Router with React 19) (001-claude-flashcard)
-- LanceDB (vector database) for user data, conversations, messages, flashcards, and review history with vector embeddings for future semantic search (001-claude-flashcard)
-- Bash 4+ (for scripts), TypeScript/Node.js (for Claude command integration in Phase 3) (001-speckit-workflow-improvements)
-- File-based (CLAUDE.md, package.json, .claude/commands/\*, specs directories) (001-speckit-workflow-improvements)
-- TypeScript 5.x with React 18 (Next.js 16) + React (003-flashcard-rating-labels)
-- N/A (UI-only change, no data model changes) (003-flashcard-rating-labels)
-- TypeScript 5.7 / Node.js (Next.js 16), Bash + Next.js (009-ollama-model-deployment)
-- PostgreSQL (existing), LanceDB (existing), Ollama models volume (009-ollama-model-deployment)
-- TypeScript 5.7 (strict mode) + Next.js 16.0.10 App Router (010-ui-polish)
-- N/A (presentation layer only, no data persistence) (010-ui-polish)
 
 ## Recent Changes
 
