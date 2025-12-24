@@ -190,21 +190,21 @@ User Stories 1-3 cover:
 
 ### Implementation for User Story 10
 
-- [ ] T061 [US10] Add post-hook trigger after tasks.md write in `.claude/commands/speckit.tasks.md`
-- [ ] T062 [US10] Extract feature metadata (number, name, spec path) from current branch in post-hook
-- [ ] T063 [US10] Generate issue title format: `[NNN] Feature Short Name` in post-hook
-- [ ] T064 [US10] Generate issue body from tasks.md content with task checklist in post-hook
-- [ ] T065 [US10] Add links to spec.md and plan.md in issue body
-- [ ] T066 [US10] Implement create_github_issue_with_retry() function with exponential backoff
-- [ ] T067 [US10] Add error classification: 401 (auth failure - fatal), 403 (rate limit - retry), 404 (repo not found - fatal)
-- [ ] T068 [US10] Implement exponential backoff schedule: 1s, 2s, 4s for retry attempts
-- [ ] T069 [US10] Add manual fallback instructions when auto-creation fails
-- [ ] T070 [US10] Call gh issue create command with title and body parameters
-- [ ] T071 [US10] Display issue URL in success message after creation
-- [ ] T072 [US10] Ensure workflow continues (non-blocking) even if issue creation fails
-- [ ] T073 [US10] Test issue creation with valid GitHub authentication
-- [ ] T074 [US10] Test retry logic by simulating rate limit error
-- [ ] T075 [US10] Test manual fallback by simulating auth failure
+- [x] T061 [US10] Add GitHub remote check to `.claude/commands/speckit.tasks.md` (step 6a)
+- [x] T062 [US10] Add automatic invocation of `/speckit.taskstoissues` after tasks.md generation (step 6b)
+- [x] T063 [US10] Implement non-blocking error handling for issue creation failures (step 6c)
+- [x] T064 [US10] Add manual fallback instructions when auto-creation fails (step 6c)
+- [x] T065 [US10] Ensure workflow continues to Next Steps regardless of issue creation outcome (step 6c)
+- [x] T066 [US10] Display success message with issue URLs when creation succeeds (step 6d)
+- [x] T067 [US10] Note that tasks.md remains source of truth for task status (step 6d)
+- [ ] T068 [US10] Test automatic issue creation flow with valid GitHub authentication
+- [ ] T069 [US10] Test non-blocking behavior when issue creation fails
+- [ ] T070 [US10] Test manual fallback by intentionally causing issue creation to fail
+- [ ] T071 [US10] REMOVED - Retry logic handled by existing taskstoissues command
+- [ ] T072 [US10] REMOVED - Error classification handled by existing taskstoissues command
+- [ ] T073 [US10] REMOVED - Exponential backoff handled by existing taskstoissues command
+- [ ] T074 [US10] REMOVED - Issue title/body generation handled by existing taskstoissues command
+- [ ] T075 [US10] REMOVED - Feature metadata extraction handled by existing taskstoissues command
 
 **Checkpoint**: At this point, GitHub issues should be automatically created after task generation with proper error handling
 

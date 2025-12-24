@@ -60,6 +60,27 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Suggested MVP scope (typically just User Story 1)
    - Format validation: Confirm ALL tasks follow the checklist format (checkbox, ID, labels, file paths)
 
+6. **Automatic GitHub Issue Creation**: After tasks.md is generated and reported, automatically create GitHub issues:
+
+   a. **Check GitHub remote**:
+   - Verify the repository has a GitHub remote URL (non-blocking - skip if not GitHub)
+   - Run: `git config --get remote.origin.url`
+   - Only proceed if the remote is a GitHub URL
+
+   b. **Invoke taskstoissues command**:
+   - Execute `/speckit.taskstoissues` using the Skill tool
+   - This will automatically create GitHub issues for task phases/user stories
+   - Issues will contain checklists mirroring tasks.md
+
+   c. **Error handling (non-blocking)**:
+   - If GitHub remote check fails: Skip issue creation, continue to Next Steps
+   - If taskstoissues fails: Log error, show manual fallback instructions, continue to Next Steps
+   - Manual fallback: User can run `/speckit.taskstoissues` manually later
+
+   d. **Success behavior**:
+   - Display created issue URLs and numbers
+   - Note that tasks.md remains the source of truth for task status
+
 Context for task generation: $ARGUMENTS
 
 The tasks.md should be immediately executable - each task must be specific enough that an LLM can complete it without additional context.
