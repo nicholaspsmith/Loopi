@@ -16,19 +16,23 @@ import { processEmailQueue } from '@/lib/email/background-worker'
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify cron secret (required for security)
+    // Verify cron secret for security
     const cronSecret = process.env.CRON_SECRET
-
-    if (!cronSecret) {
-      console.error('CRON_SECRET environment variable not set - rejecting request')
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const authHeader = request.headers.get('authorization')
     const providedSecret = authHeader?.replace('Bearer ', '')
 
-    if (providedSecret !== cronSecret) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // If CRON_SECRET is configured (production), require authentication
+    if (cronSecret) {
+      if (providedSecret !== cronSecret) {
+        console.error('Invalid CRON_SECRET provided')
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+    } else {
+      // Development/testing mode - CRON_SECRET not set
+      // Allow request but log warning
+      console.warn(
+        '⚠️  CRON_SECRET not configured - email queue processing running in development mode (insecure)'
+      )
     }
 
     // Process queued emails

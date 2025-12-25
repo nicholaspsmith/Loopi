@@ -82,6 +82,14 @@ export async function getGeolocation(ipAddress: string): Promise<GeolocationData
 
     clearTimeout(timeoutId)
 
+    // Validate that we weren't redirected to HTTP (security risk)
+    if (!response.url.startsWith('https://')) {
+      console.warn(
+        `⚠️  Geolocation lookup for ${ipAddress} was redirected to insecure URL: ${response.url}`
+      )
+      return null
+    }
+
     if (!response.ok) {
       console.warn(`⚠️  Geolocation lookup failed for ${ipAddress}: ${response.statusText}`)
       return null
