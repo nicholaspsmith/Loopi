@@ -34,7 +34,8 @@ paths:
             default: false
         - name: sortBy
           in: query
-          description: Sort order (default: last_studied_at descending)
+          description: >-
+            Sort order (default: last_studied_at descending)
           required: false
           schema:
             type: string
@@ -88,7 +89,7 @@ paths:
                   minLength: 1
                   maxLength: 200
                   description: Deck name (1-200 characters)
-                  example: "Spanish Vocabulary"
+                  example: 'Spanish Vocabulary'
                 newCardsPerDayOverride:
                   type: integer
                   nullable: true
@@ -118,11 +119,11 @@ paths:
                 emptyName:
                   summary: Empty deck name
                   value:
-                    error: "Deck name cannot be empty"
+                    error: 'Deck name cannot be empty'
                 tooLong:
                   summary: Name too long
                   value:
-                    error: "Deck name must not exceed 200 characters"
+                    error: 'Deck name must not exceed 200 characters'
         '403':
           description: Deck limit exceeded
           content:
@@ -130,7 +131,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                error: "Maximum deck limit reached (100 decks). Please delete unused decks before creating new ones."
+                error: 'Maximum deck limit reached (100 decks). Please delete unused decks before creating new ones.'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '500':
@@ -163,7 +164,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                error: "Deck not found"
+                error: 'Deck not found'
         '500':
           $ref: '#/components/responses/InternalError'
 
@@ -271,7 +272,7 @@ paths:
                     format: uuid
                   minItems: 1
                   description: Array of flashcard IDs to add
-                  example: ["123e4567-e89b-12d3-a456-426614174000"]
+                  example: ['123e4567-e89b-12d3-a456-426614174000']
       responses:
         '200':
           description: Cards added successfully
@@ -303,7 +304,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                error: "Deck limit reached (1000 cards maximum). Please create a new deck or remove cards before adding more."
+                error: 'Deck limit reached (1000 cards maximum). Please create a new deck or remove cards before adding more.'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -498,7 +499,7 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            error: "Authentication required"
+            error: 'Authentication required'
 
     NotFound:
       description: Resource not found
@@ -507,7 +508,7 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            error: "Resource not found"
+            error: 'Resource not found'
 
     ValidationError:
       description: Request validation failed
@@ -523,4 +524,4 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            error: "Internal server error"
+            error: 'Internal server error'
