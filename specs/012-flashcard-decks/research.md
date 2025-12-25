@@ -615,11 +615,23 @@ export async function POST(request: NextRequest) {
     })
 
     if (dueCards.length === 0) {
+      // Calculate next due date from deck flashcards
+      const allDeckCards = await getDueFlashcardsForDeck(session.user.id, { deckId })
+      const nextDue =
+        allDeckCards.length > 0
+          ? allDeckCards.sort((a, b) => a.fsrsState.due.getTime() - b.fsrsState.due.getTime())[0]
+          : null
+
       return NextResponse.json({
         success: true,
         message: 'No cards due in this deck',
         dueCards: [],
-        nextDueDate: null, // TODO: Calculate from deck flashcards
+        nextDueCard: nextDue
+          ? {
+              dueDate: nextDue.fsrsState.due.toISOString(),
+              count: 1,
+            }
+          : null,
       })
     }
 
