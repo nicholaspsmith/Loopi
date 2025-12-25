@@ -26,7 +26,8 @@ paths:
       parameters:
         - name: archived
           in: query
-          description: Filter by archived status (default: false, active decks only)
+          description: >-
+            Filter by archived status (default: false, active decks only)
           required: false
           schema:
             type: boolean
