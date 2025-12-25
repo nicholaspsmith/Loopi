@@ -185,7 +185,7 @@ components:
       description: NextAuth.js session cookie
 
 security:
-  - cookieAuth: []  # Default: require authentication
+  - cookieAuth: [] # Default: require authentication
 
 tags:
   - name: Email Verification
