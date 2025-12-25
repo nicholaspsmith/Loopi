@@ -54,14 +54,7 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get('user-agent')
     const geolocation = await getGeolocation(ipAddress)
 
-    // Validate reset token
-    const { valid, userId, tokenId, error } = await validateResetToken(token)
-
-    // Rate limiting: Applied AFTER token validation to prevent timing attacks
-    // Only well-formed requests with valid tokens consume rate limit quota
-    const { recordAttempt } = await import('@/lib/auth/rate-limit')
-    await recordAttempt(`reset-password:${ipAddress}`)
-
+    // Check rate limit BEFORE token validation to prevent consuming quota
     const rateLimitResult = await checkRateLimit(`reset-password:${ipAddress}`)
 
     if (!rateLimitResult.allowed) {
@@ -74,6 +67,14 @@ export async function POST(request: NextRequest) {
         { status: 429 }
       )
     }
+
+    // Validate reset token
+    const { valid, userId, tokenId, error } = await validateResetToken(token)
+
+    // Record attempt AFTER rate limit check but regardless of token validity
+    // This ensures invalid tokens count towards rate limit without consuming quota when already limited
+    const { recordAttempt } = await import('@/lib/auth/rate-limit')
+    await recordAttempt(`reset-password:${ipAddress}`)
 
     if (!valid || !userId) {
       // Log failed attempt

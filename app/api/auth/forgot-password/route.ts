@@ -38,15 +38,16 @@ export async function POST(request: NextRequest) {
 
     const { email } = validation.data
 
+    // Get IP and user agent once at the beginning for consistent timing
+    const ipAddress = getClientIpAddress(request)
+    const userAgent = request.headers.get('user-agent')
+    const geolocation = await getGeolocation(ipAddress)
+
     // Check rate limiting
     const { allowed, retryAfter } = await checkRateLimit(email)
 
     if (!allowed) {
       // Log rate limit event
-      const ipAddress = getClientIpAddress(request)
-      const userAgent = request.headers.get('user-agent')
-      const geolocation = await getGeolocation(ipAddress)
-
       await logSecurityEvent({
         eventType: 'password_reset_request',
         email,
@@ -68,11 +69,6 @@ export async function POST(request: NextRequest) {
 
     // Record rate limit attempt
     await recordAttempt(email)
-
-    // Get IP and user agent for logging
-    const ipAddress = getClientIpAddress(request)
-    const userAgent = request.headers.get('user-agent')
-    const geolocation = await getGeolocation(ipAddress)
 
     // Look up user
     const user = await getUserByEmail(email)

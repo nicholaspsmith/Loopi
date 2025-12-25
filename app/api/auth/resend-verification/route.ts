@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     await recordAttempt(user.email)
 
     // Get IP and user agent for logging
-    const ipAddress = request.headers.get('x-forwarded-for') || 'unknown'
+    const ipAddress = getClientIpAddress(request)
     const userAgent = request.headers.get('user-agent')
     const geolocation = await getGeolocation(ipAddress)
 

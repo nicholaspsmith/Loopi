@@ -20,9 +20,11 @@ interface CacheEntry {
 }
 
 // In-memory cache: IP -> {data, timestamp}
+// Using Map to preserve insertion order for LRU eviction
 const cache = new Map<string, CacheEntry>()
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000 // 24 hours
+const MAX_CACHE_SIZE = 10000 // Maximum number of entries to prevent unbounded growth
 
 // Cleanup counter: Run cleanup every 100 lookups to prevent unbounded growth
 let lookupCounter = 0
@@ -59,6 +61,9 @@ export async function getGeolocation(ipAddress: string): Promise<GeolocationData
   // Check cache
   const cached = cache.get(ipAddress)
   if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    // LRU: Move to end by deleting and re-inserting
+    cache.delete(ipAddress)
+    cache.set(ipAddress, cached)
     return cached.data
   }
 
@@ -95,7 +100,15 @@ export async function getGeolocation(ipAddress: string): Promise<GeolocationData
       city: data.city || 'Unknown',
     }
 
-    // Cache result
+    // Cache result with LRU eviction
+    // If cache is at max size, remove oldest entry (first entry in Map)
+    if (cache.size >= MAX_CACHE_SIZE) {
+      const firstKey = cache.keys().next().value
+      if (firstKey) {
+        cache.delete(firstKey)
+      }
+    }
+
     cache.set(ipAddress, {
       data: geoData,
       timestamp: Date.now(),
