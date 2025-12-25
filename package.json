@@ -21,7 +21,10 @@
     "db:check": "tsx scripts/db-check.ts",
     "db:migrate": "tsx scripts/db-migrate.ts",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "review": "bash scripts/local-code-review.sh",
+    "review:staged": "bash scripts/local-code-review.sh --staged",
+    "review:branch": "bash scripts/local-code-review.sh --branch"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
