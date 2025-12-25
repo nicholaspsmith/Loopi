@@ -1,4 +1,8 @@
 import { describe, it, expect, beforeAll } from 'vitest'
+import { isServerAvailable } from '@/tests/helpers/server-check'
+
+const serverRunning = await isServerAvailable()
+
 import { initializeSchema } from '@/lib/db/schema'
 
 /**
@@ -14,7 +18,7 @@ import { initializeSchema } from '@/lib/db/schema'
 const BASE_URL = 'http://localhost:3000'
 let authCookie: string
 
-describe('API Key Settings Contract Tests', () => {
+describe.skipIf(!serverRunning)('API Key Settings Contract Tests', () => {
   beforeAll(async () => {
     // Initialize test database
     await initializeSchema()

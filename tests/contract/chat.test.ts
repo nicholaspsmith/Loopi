@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { initializeSchema } from '@/lib/db/schema'
+import { isServerAvailable } from '@/tests/helpers/server-check'
+
+const serverRunning = await isServerAvailable()
 
 /**
  * Contract Tests for Chat API
@@ -16,7 +19,7 @@ let testUserId: string
 let testConversationId: string
 let authCookie: string
 
-describe('Chat API Contract Tests', () => {
+describe.skipIf(!serverRunning)('Chat API Contract Tests', () => {
   beforeAll(async () => {
     // Initialize test database
     await initializeSchema()

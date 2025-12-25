@@ -1,4 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { isServerAvailable } from '@/tests/helpers/server-check'
+
+const serverRunning = await isServerAvailable()
+
 import { hashPassword } from '@/lib/auth/helpers'
 import { createUser } from '@/lib/db/operations/users'
 import { createFlashcard } from '@/lib/db/operations/flashcards'
@@ -20,7 +24,7 @@ import { closeDbConnection } from '@/lib/db/client'
  * Maps to User Story 3 (T072)
  */
 
-describe('AI Deck Generation API Contract Tests', () => {
+describe.skipIf(!serverRunning)('AI Deck Generation API Contract Tests', () => {
   let testUserId: string
 
   beforeAll(async () => {

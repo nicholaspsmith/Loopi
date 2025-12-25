@@ -1,4 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { isServerAvailable } from '@/tests/helpers/server-check'
+
+const serverRunning = await isServerAvailable()
+
 import { hashPassword } from '@/lib/auth/helpers'
 import { createUser } from '@/lib/db/operations/users'
 import { createConversation } from '@/lib/db/operations/conversations'
@@ -14,7 +18,7 @@ import { closeDbConnection } from '@/lib/db/client'
  * Maps to FR-008, FR-009, FR-010, FR-017, FR-018, FR-019, FR-024
  */
 
-describe('Flashcard API Contract Tests', () => {
+describe.skipIf(!serverRunning)('Flashcard API Contract Tests', () => {
   let testUserId: string
   let testConversationId: string
   let assistantMessageId: string

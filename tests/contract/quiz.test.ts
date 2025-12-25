@@ -1,4 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { isServerAvailable } from '@/tests/helpers/server-check'
+
+const serverRunning = await isServerAvailable()
+
 import { hashPassword } from '@/lib/auth/helpers'
 import { createUser } from '@/lib/db/operations/users'
 import { createConversation } from '@/lib/db/operations/conversations'
@@ -18,7 +22,7 @@ import { closeDbConnection } from '@/lib/db/client'
  * Need to implement session authentication for contract tests.
  */
 
-describe('Quiz API Contract Tests', () => {
+describe.skipIf(!serverRunning)('Quiz API Contract Tests', () => {
   let testUserId: string
   let testConversationId: string
   let testMessageId: string
