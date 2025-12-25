@@ -50,13 +50,13 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
 
   if (success) {
     return (
-      <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-        <h3 className="mb-2 font-semibold text-green-900">Check your email</h3>
-        <p className="text-sm text-green-800">
+      <div className="rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900 p-4">
+        <h3 className="mb-2 font-semibold text-green-900 dark:text-green-100">Check your email</h3>
+        <p className="text-sm text-green-800 dark:text-green-200">
           If an account exists with that email address, you will receive a password reset link
           shortly.
         </p>
-        <p className="mt-2 text-sm text-green-700">
+        <p className="mt-2 text-sm text-green-700 dark:text-green-300">
           The link will expire in 1 hour for security reasons.
         </p>
       </div>
@@ -66,13 +66,16 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+        <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900 p-3 text-sm text-red-800 dark:text-red-200">
           {error}
         </div>
       )}
 
       <div>
-        <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="email"
+          className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
           Email address
         </label>
         <input
@@ -82,10 +85,10 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
           onChange={(e) => setEmail(e.target.value)}
           required
           disabled={isLoading}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+          className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:text-gray-500 dark:disabled:text-gray-400"
           placeholder="you@example.com"
         />
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
           Enter the email address associated with your account.
         </p>
       </div>
@@ -93,13 +96,16 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
       <button
         type="submit"
         disabled={isLoading || !email}
-        className="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-300 disabled:text-gray-500"
+        className="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:text-gray-500 dark:disabled:text-gray-400"
       >
         {isLoading ? 'Sending...' : 'Send reset link'}
       </button>
 
-      <div className="text-center text-sm text-gray-600">
-        <a href="/login" className="font-medium text-blue-600 hover:text-blue-700">
+      <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+        <a
+          href="/login"
+          className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+        >
           Back to login
         </a>
       </div>
