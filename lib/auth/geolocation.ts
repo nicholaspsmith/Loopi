@@ -51,14 +51,20 @@ export async function getGeolocation(ipAddress: string): Promise<GeolocationData
     return cached.data
   }
 
+  // Create timeout controller for compatibility with all Node versions
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 5000)
+
   try {
     // Call ip-api.com (HTTPS for security)
     const response = await fetch(
       `https://ip-api.com/json/${ipAddress}?fields=country,regionName,city`,
       {
-        signal: AbortSignal.timeout(5000), // 5 second timeout
+        signal: controller.signal,
       }
     )
+
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       console.warn(`⚠️  Geolocation lookup failed for ${ipAddress}: ${response.statusText}`)
@@ -86,6 +92,7 @@ export async function getGeolocation(ipAddress: string): Promise<GeolocationData
 
     return geoData
   } catch (error) {
+    clearTimeout(timeoutId)
     // Non-blocking - log error but return null
     console.warn(`⚠️  Geolocation lookup error for ${ipAddress}:`, error)
     return null

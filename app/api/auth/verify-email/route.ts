@@ -12,10 +12,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { validateVerificationToken } from '@/lib/db/operations/email-verification-tokens'
-import { updateUserEmailVerified, getUserById } from '@/lib/db/operations/users'
+import { getUserById } from '@/lib/db/operations/users'
 import { logSecurityEvent } from '@/lib/db/operations/security-logs'
 import { getGeolocation } from '@/lib/auth/geolocation'
 import { hashToken } from '@/lib/auth/tokens'
+import { checkRateLimit } from '@/lib/auth/rate-limit'
 
 // Request validation schema
 const verifyEmailSchema = z.object({
@@ -24,6 +25,30 @@ const verifyEmailSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 3 attempts per 15 minutes per IP (reuses email-based rate limiting)
+    const ipAddress =
+      request.headers.get('x-real-ip') ||
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      'unknown'
+
+    // Use composite identifier for rate limiting (email field repurposed for IP-based limiting)
+    const rateLimitResult = await checkRateLimit(`verify-email:${ipAddress}`)
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: `Too many verification attempts. Please try again in ${Math.ceil(
+            (rateLimitResult.retryAfter || 900) / 60
+          )} minutes.`,
+        },
+        { status: 429 }
+      )
+    }
+
+    // Record this attempt for rate limiting
+    const { recordAttempt } = await import('@/lib/auth/rate-limit')
+    await recordAttempt(`verify-email:${ipAddress}`)
+
     // Parse and validate request body
     const body = await request.json()
     const validation = verifyEmailSchema.safeParse(body)
@@ -38,7 +63,6 @@ export async function POST(request: NextRequest) {
     const { token } = validation.data
 
     // Get IP and user agent for logging
-    const ipAddress = request.headers.get('x-forwarded-for') || 'unknown'
     const userAgent = request.headers.get('user-agent')
     const geolocation = await getGeolocation(ipAddress)
 
@@ -87,13 +111,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Update user email verification status
-    await updateUserEmailVerified(userId)
-
-    // Mark token as used
+    // Execute verification in transaction (atomic: both succeed or both fail)
+    const { getDb } = await import('@/lib/db/pg-client')
+    const db = getDb()
     const tokenHash = hashToken(token)
-    const { markTokenUsed } = await import('@/lib/db/operations/email-verification-tokens')
-    await markTokenUsed(tokenHash)
+
+    await db.transaction(async (tx) => {
+      const { users, emailVerificationTokens } = await import('@/lib/db/drizzle-schema')
+      const { eq } = await import('drizzle-orm')
+
+      // 1. Update user email verification status FIRST
+      await tx
+        .update(users)
+        .set({
+          emailVerified: true,
+          emailVerifiedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, userId))
+
+      // 2. Mark token as used AFTER user update succeeds
+      //    If user update failed, transaction rolls back and token remains valid for retry
+      await tx
+        .update(emailVerificationTokens)
+        .set({ used: true, usedAt: new Date() })
+        .where(eq(emailVerificationTokens.tokenHash, tokenHash))
+    })
 
     // Log successful email verification
     await logSecurityEvent({

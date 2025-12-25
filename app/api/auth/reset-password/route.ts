@@ -17,6 +17,7 @@ import { validateResetToken } from '@/lib/db/operations/password-reset-tokens'
 import { logSecurityEvent } from '@/lib/db/operations/security-logs'
 import { getGeolocation } from '@/lib/auth/geolocation'
 import { hashToken } from '@/lib/auth/tokens'
+import { checkRateLimit } from '@/lib/auth/rate-limit'
 
 // Password validation schema
 const resetPasswordSchema = z.object({
@@ -24,6 +25,7 @@ const resetPasswordSchema = z.object({
   password: z
     .string()
     .min(8, 'Password must be at least 8 characters')
+    .max(72, 'Password must not exceed 72 characters') // Prevent bcrypt DoS
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
     .regex(/[0-9]/, 'Password must contain at least one number'),
@@ -31,6 +33,30 @@ const resetPasswordSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 3 attempts per 15 minutes per IP
+    const ipAddress =
+      request.headers.get('x-real-ip') ||
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      'unknown'
+
+    // Use composite identifier for rate limiting (email field repurposed for IP-based limiting)
+    const rateLimitResult = await checkRateLimit(`reset-password:${ipAddress}`)
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: `Too many password reset attempts. Please try again in ${Math.ceil(
+            (rateLimitResult.retryAfter || 900) / 60
+          )} minutes.`,
+        },
+        { status: 429 }
+      )
+    }
+
+    // Record this attempt for rate limiting
+    const { recordAttempt } = await import('@/lib/auth/rate-limit')
+    await recordAttempt(`reset-password:${ipAddress}`)
+
     // Parse and validate request body
     const body = await request.json()
     const validation = resetPasswordSchema.safeParse(body)
@@ -45,7 +71,6 @@ export async function POST(request: NextRequest) {
     const { token, password } = validation.data
 
     // Get IP and user agent for logging
-    const ipAddress = request.headers.get('x-forwarded-for') || 'unknown'
     const userAgent = request.headers.get('user-agent')
     const geolocation = await getGeolocation(ipAddress)
 
@@ -95,16 +120,10 @@ export async function POST(request: NextRequest) {
     const db = getDb()
 
     const updatedUser = await db.transaction(async (tx) => {
-      // 1. Mark token as used FIRST (prevents reuse if password update fails)
-      const { passwordResetTokens } = await import('@/lib/db/drizzle-schema')
+      const { users, passwordResetTokens } = await import('@/lib/db/drizzle-schema')
       const { eq } = await import('drizzle-orm')
-      await tx
-        .update(passwordResetTokens)
-        .set({ used: true, usedAt: new Date() })
-        .where(eq(passwordResetTokens.tokenHash, tokenHash))
 
-      // 2. Update user password
-      const { users } = await import('@/lib/db/drizzle-schema')
+      // 1. Update user password FIRST
       const [user] = await tx
         .update(users)
         .set({ passwordHash, updatedAt: new Date() })
@@ -114,6 +133,13 @@ export async function POST(request: NextRequest) {
       if (!user) {
         throw new Error(`User not found: ${userId}`)
       }
+
+      // 2. Mark token as used AFTER password update succeeds
+      //    If password update failed, transaction rolls back and token remains valid for retry
+      await tx
+        .update(passwordResetTokens)
+        .set({ used: true, usedAt: new Date() })
+        .where(eq(passwordResetTokens.tokenHash, tokenHash))
 
       // Return user in application format
       return {
@@ -128,9 +154,14 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Send password change notification email
-    const { sendPasswordChangedEmail } = await import('@/lib/email/templates')
-    await sendPasswordChangedEmail(updatedUser.email, updatedUser.name || undefined)
+    // Send password change notification email (non-blocking)
+    try {
+      const { sendPasswordChangedEmail } = await import('@/lib/email/templates')
+      await sendPasswordChangedEmail(updatedUser.email, updatedUser.name || undefined)
+    } catch (emailError) {
+      // Log error but don't fail the request - password was already changed successfully
+      console.error('Failed to send password change notification:', emailError)
+    }
 
     // Note: With JWT-based sessions, existing sessions remain valid until expiry (7 days).
     // Users should manually log out and log back in with their new password.

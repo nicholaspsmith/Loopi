@@ -16,15 +16,19 @@ import { processEmailQueue } from '@/lib/email/background-worker'
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify cron secret (if configured)
-    const authHeader = request.headers.get('authorization')
+    // Verify cron secret (required for security)
     const cronSecret = process.env.CRON_SECRET
 
-    if (cronSecret) {
-      const providedSecret = authHeader?.replace('Bearer ', '')
-      if (providedSecret !== cronSecret) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
+    if (!cronSecret) {
+      console.error('CRON_SECRET environment variable not set')
+      return NextResponse.json({ error: 'Service misconfigured' }, { status: 500 })
+    }
+
+    const authHeader = request.headers.get('authorization')
+    const providedSecret = authHeader?.replace('Bearer ', '')
+
+    if (providedSecret !== cronSecret) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Process queued emails
