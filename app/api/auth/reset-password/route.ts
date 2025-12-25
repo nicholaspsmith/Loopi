@@ -18,6 +18,7 @@ import { logSecurityEvent } from '@/lib/db/operations/security-logs'
 import { getGeolocation } from '@/lib/auth/geolocation'
 import { hashToken } from '@/lib/auth/tokens'
 import { checkRateLimit } from '@/lib/auth/rate-limit'
+import { getClientIpAddress } from '@/lib/auth/helpers'
 
 // Password validation schema
 const resetPasswordSchema = z.object({
@@ -33,31 +34,10 @@ const resetPasswordSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting: 3 attempts per 15 minutes per IP
-    const ipAddress =
-      request.headers.get('x-real-ip') ||
-      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-      'unknown'
+    // Extract client IP address for rate limiting and logging
+    const ipAddress = getClientIpAddress(request)
 
-    // Use composite identifier for rate limiting (email field repurposed for IP-based limiting)
-    const rateLimitResult = await checkRateLimit(`reset-password:${ipAddress}`)
-
-    if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        {
-          error: `Too many password reset attempts. Please try again in ${Math.ceil(
-            (rateLimitResult.retryAfter || 900) / 60
-          )} minutes.`,
-        },
-        { status: 429 }
-      )
-    }
-
-    // Record this attempt for rate limiting
-    const { recordAttempt } = await import('@/lib/auth/rate-limit')
-    await recordAttempt(`reset-password:${ipAddress}`)
-
-    // Parse and validate request body
+    // Parse and validate request body first
     const body = await request.json()
     const validation = resetPasswordSchema.safeParse(body)
 
@@ -76,6 +56,24 @@ export async function POST(request: NextRequest) {
 
     // Validate reset token
     const { valid, userId, tokenId, error } = await validateResetToken(token)
+
+    // Rate limiting: Applied AFTER token validation to prevent timing attacks
+    // Only well-formed requests with valid tokens consume rate limit quota
+    const { recordAttempt } = await import('@/lib/auth/rate-limit')
+    await recordAttempt(`reset-password:${ipAddress}`)
+
+    const rateLimitResult = await checkRateLimit(`reset-password:${ipAddress}`)
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: `Too many password reset attempts. Please try again in ${Math.ceil(
+            (rateLimitResult.retryAfter || 900) / 60
+          )} minutes.`,
+        },
+        { status: 429 }
+      )
+    }
 
     if (!valid || !userId) {
       // Log failed attempt
@@ -161,6 +159,22 @@ export async function POST(request: NextRequest) {
     } catch (emailError) {
       // Log error but don't fail the request - password was already changed successfully
       console.error('Failed to send password change notification:', emailError)
+
+      // Log to security_logs for audit trail
+      await logSecurityEvent({
+        userId: updatedUser.id,
+        eventType: 'password_reset_success',
+        email: updatedUser.email,
+        ipAddress,
+        userAgent,
+        geolocation,
+        tokenId: tokenId || null,
+        outcome: 'success',
+        metadata: {
+          notificationEmailFailed: true,
+          error: emailError instanceof Error ? emailError.message : String(emailError),
+        },
+      })
     }
 
     // Note: With JWT-based sessions, existing sessions remain valid until expiry (7 days).

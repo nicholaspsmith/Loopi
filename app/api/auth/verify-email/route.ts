@@ -17,6 +17,7 @@ import { logSecurityEvent } from '@/lib/db/operations/security-logs'
 import { getGeolocation } from '@/lib/auth/geolocation'
 import { hashToken } from '@/lib/auth/tokens'
 import { checkRateLimit } from '@/lib/auth/rate-limit'
+import { getClientIpAddress } from '@/lib/auth/helpers'
 
 // Request validation schema
 const verifyEmailSchema = z.object({
@@ -25,31 +26,10 @@ const verifyEmailSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting: 3 attempts per 15 minutes per IP (reuses email-based rate limiting)
-    const ipAddress =
-      request.headers.get('x-real-ip') ||
-      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-      'unknown'
+    // Extract client IP address for rate limiting and logging
+    const ipAddress = getClientIpAddress(request)
 
-    // Use composite identifier for rate limiting (email field repurposed for IP-based limiting)
-    const rateLimitResult = await checkRateLimit(`verify-email:${ipAddress}`)
-
-    if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        {
-          error: `Too many verification attempts. Please try again in ${Math.ceil(
-            (rateLimitResult.retryAfter || 900) / 60
-          )} minutes.`,
-        },
-        { status: 429 }
-      )
-    }
-
-    // Record this attempt for rate limiting
-    const { recordAttempt } = await import('@/lib/auth/rate-limit')
-    await recordAttempt(`verify-email:${ipAddress}`)
-
-    // Parse and validate request body
+    // Parse and validate request body first
     const body = await request.json()
     const validation = verifyEmailSchema.safeParse(body)
 
@@ -68,6 +48,24 @@ export async function POST(request: NextRequest) {
 
     // Validate verification token
     const { valid, userId, tokenId, error } = await validateVerificationToken(token)
+
+    // Rate limiting: Applied AFTER token validation to prevent timing attacks
+    // Only well-formed requests with valid tokens consume rate limit quota
+    const { recordAttempt } = await import('@/lib/auth/rate-limit')
+    await recordAttempt(`verify-email:${ipAddress}`)
+
+    const rateLimitResult = await checkRateLimit(`verify-email:${ipAddress}`)
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: `Too many verification attempts. Please try again in ${Math.ceil(
+            (rateLimitResult.retryAfter || 900) / 60
+          )} minutes.`,
+        },
+        { status: 429 }
+      )
+    }
 
     if (!valid || !userId) {
       // Log failed attempt

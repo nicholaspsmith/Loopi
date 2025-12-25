@@ -19,6 +19,7 @@ import { emailVerificationEmail } from '@/lib/email/templates'
 import { queueEmail } from '@/lib/email/retry-queue'
 import { logSecurityEvent } from '@/lib/db/operations/security-logs'
 import { getGeolocation } from '@/lib/auth/geolocation'
+import { getClientIpAddress } from '@/lib/auth/helpers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     if (!allowed) {
       // Get IP and user agent for logging
-      const ipAddress = request.headers.get('x-forwarded-for') || 'unknown'
+      const ipAddress = getClientIpAddress(request)
       const userAgent = request.headers.get('user-agent')
       const geolocation = await getGeolocation(ipAddress)
 

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { createUser, getUserByEmail, toPublicUser } from '@/lib/db/operations/users'
-import { hashPassword, EmailSchema, PasswordSchema } from '@/lib/auth/helpers'
+import { hashPassword, EmailSchema, PasswordSchema, getClientIpAddress } from '@/lib/auth/helpers'
 import { ConflictError } from '@/lib/errors'
 import { success, error as errorResponse } from '@/lib/api/response'
 import { validate } from '@/lib/validation/helpers'
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Get IP and user agent for logging
-    const ipAddress = request.headers.get('x-forwarded-for') || 'unknown'
+    const ipAddress = getClientIpAddress(request)
     const userAgent = request.headers.get('user-agent')
     const geolocation = await getGeolocation(ipAddress)
 

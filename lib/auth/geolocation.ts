@@ -24,6 +24,10 @@ const cache = new Map<string, CacheEntry>()
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000 // 24 hours
 
+// Cleanup counter: Run cleanup every 100 lookups to prevent unbounded growth
+let lookupCounter = 0
+const CLEANUP_INTERVAL = 100
+
 /**
  * Get geolocation data for IP address
  *
@@ -40,6 +44,13 @@ const CACHE_TTL_MS = 24 * 60 * 60 * 1000 // 24 hours
  * }
  */
 export async function getGeolocation(ipAddress: string): Promise<GeolocationData | null> {
+  // Periodic cleanup: Every 100 lookups, remove expired entries
+  lookupCounter++
+  if (lookupCounter >= CLEANUP_INTERVAL) {
+    cleanupExpiredEntries()
+    lookupCounter = 0
+  }
+
   // Skip for local/private IPs
   if (isPrivateIP(ipAddress)) {
     return null
@@ -118,6 +129,32 @@ function isPrivateIP(ip: string): boolean {
   ]
 
   return privatePatterns.some((pattern) => pattern.test(ip))
+}
+
+/**
+ * Remove expired entries from geolocation cache
+ *
+ * Called automatically during cache operations to prevent unbounded growth
+ */
+function cleanupExpiredEntries(): void {
+  const now = Date.now()
+  const expiredKeys: string[] = []
+
+  // Find expired entries
+  for (const [key, entry] of cache.entries()) {
+    if (now - entry.timestamp >= CACHE_TTL_MS) {
+      expiredKeys.push(key)
+    }
+  }
+
+  // Remove expired entries
+  for (const key of expiredKeys) {
+    cache.delete(key)
+  }
+
+  if (expiredKeys.length > 0) {
+    console.log(`🗑️  Geolocation cache: Removed ${expiredKeys.length} expired entries`)
+  }
 }
 
 /**

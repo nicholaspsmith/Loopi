@@ -19,6 +19,7 @@ import { passwordResetEmail } from '@/lib/email/templates'
 import { queueEmail } from '@/lib/email/retry-queue'
 import { logSecurityEvent } from '@/lib/db/operations/security-logs'
 import { getGeolocation } from '@/lib/auth/geolocation'
+import { getClientIpAddress } from '@/lib/auth/helpers'
 
 // Request validation schema
 const forgotPasswordSchema = z.object({
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     if (!allowed) {
       // Log rate limit event
-      const ipAddress = request.headers.get('x-forwarded-for') || 'unknown'
+      const ipAddress = getClientIpAddress(request)
       const userAgent = request.headers.get('user-agent')
       const geolocation = await getGeolocation(ipAddress)
 
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
     await recordAttempt(email)
 
     // Get IP and user agent for logging
-    const ipAddress = request.headers.get('x-forwarded-for') || 'unknown'
+    const ipAddress = getClientIpAddress(request)
     const userAgent = request.headers.get('user-agent')
     const geolocation = await getGeolocation(ipAddress)
 
