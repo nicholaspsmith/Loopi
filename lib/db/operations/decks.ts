@@ -279,9 +279,9 @@ export async function updateDeck(
 export async function deleteDeck(deckId: string): Promise<void> {
   const db = getDb()
 
-  const result = await db.delete(decks).where(eq(decks.id, deckId))
+  const result = await db.delete(decks).where(eq(decks.id, deckId)).returning()
 
-  if (result.rowCount === 0) {
+  if (result.length === 0) {
     throw new Error(`Deck not found: ${deckId}`)
   }
 
