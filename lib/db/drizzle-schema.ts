@@ -251,3 +251,41 @@ export type NewEmailQueueEntry = typeof emailQueue.$inferInsert
 
 export type RateLimit = typeof rateLimits.$inferSelect
 export type NewRateLimit = typeof rateLimits.$inferInsert
+
+// ============================================================================
+// Decks Table
+// ============================================================================
+
+export const decks = pgTable('decks', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 200 }).notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  lastStudiedAt: timestamp('last_studied_at'),
+  archived: boolean('archived').notNull().default(false),
+  newCardsPerDayOverride: integer('new_cards_per_day_override'),
+  cardsPerSessionOverride: integer('cards_per_session_override'),
+})
+
+// ============================================================================
+// Deck Cards (Many-to-Many Relationship)
+// ============================================================================
+
+export const deckCards = pgTable('deck_cards', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  deckId: uuid('deck_id')
+    .notNull()
+    .references(() => decks.id, { onDelete: 'cascade' }),
+  flashcardId: uuid('flashcard_id')
+    .notNull()
+    .references(() => flashcards.id, { onDelete: 'cascade' }),
+  addedAt: timestamp('added_at').notNull().defaultNow(),
+})
+
+export type Deck = typeof decks.$inferSelect
+export type NewDeck = typeof decks.$inferInsert
+
+export type DeckCard = typeof deckCards.$inferSelect
+export type NewDeckCard = typeof deckCards.$inferInsert

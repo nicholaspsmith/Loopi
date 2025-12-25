@@ -14,12 +14,14 @@ interface QuizProgressProps {
   current: number
   total: number
   showPercentage?: boolean
+  deckName?: string
 }
 
 export default function QuizProgress({
   current,
   total,
   showPercentage = false,
+  deckName,
 }: QuizProgressProps) {
   // Calculate percentage (handle edge cases)
   const percentage = total > 0 ? Math.round((current / total) * 100) : 0
@@ -32,7 +34,7 @@ export default function QuizProgress({
       {/* Progress Text */}
       <div className="flex items-center justify-between mb-2">
         <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Completed {current} of {total} Cards
+          {deckName ? `${deckName}: ` : ''}Completed {current} of {total} Cards
         </p>
         {showPercentage && (
           <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{percentage}%</p>

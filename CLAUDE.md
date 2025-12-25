@@ -100,9 +100,9 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 - GitHub Actions
 
 ## Active Technologies
-
 - @anthropic-ai/sdk 0.71.2 ([docs](https://docs.anthropic.com/en/api/client-sdks))
 - @lancedb/lancedb 0.22.3 ([docs](https://lancedb.github.io/lancedb))
+- @types/nodemailer 7.0.4 ([docs](https://www.npmjs.com/package/@types/nodemailer/v/7.0.4))
 - bcryptjs 3.0.3 ([docs](https://www.npmjs.com/package/bcryptjs/v/3.0.3))
 - canvas-confetti 1.9.4 ([docs](https://www.npmjs.com/package/canvas-confetti/v/1.9.4))
 - dotenv 17.2.3 ([docs](https://www.npmjs.com/package/dotenv/v/17.2.3))
@@ -110,6 +110,7 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 - drizzle-orm 0.45.1 ([docs](https://orm.drizzle.team/docs/overview))
 - next 16.0.10 ([docs](https://nextjs.org/docs))
 - next-auth 5.0.0-beta.30 ([docs](https://next-auth.js.org))
+- nodemailer 7.0.12 ([docs](https://www.npmjs.com/package/nodemailer/v/7.0.12))
 - pgvector 0.2.1 ([docs](https://www.npmjs.com/package/pgvector/v/0.2.1))
 - postgres 3.4.7 ([docs](https://www.npmjs.com/package/postgres/v/3.4.7))
 - react 19.2.3 ([docs](https://react.dev))

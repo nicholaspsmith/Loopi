@@ -1,0 +1,525 @@
+openapi: 3.0.3
+info:
+  title: Deck CRUD API
+  description: API for creating, reading, updating, and deleting flashcard decks
+  version: 1.0.0
+  contact:
+    name: Memoryloop API
+    url: https://github.com/nicholaspsmith/memoryloop
+
+servers:
+  - url: /api
+    description: Next.js API routes
+
+paths:
+  /decks:
+    get:
+      summary: List user's decks
+      description: |
+        Returns all decks owned by the authenticated user with metadata including
+        card counts, last studied timestamp, and FSRS setting overrides.
+      operationId: listDecks
+      tags:
+        - Decks
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: archived
+          in: query
+          description: Filter by archived status (default: false, active decks only)
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: sortBy
+          in: query
+          description: Sort order (default: last_studied_at descending)
+          required: false
+          schema:
+            type: string
+            enum: [last_studied_at, created_at, name, card_count]
+            default: last_studied_at
+      responses:
+        '200':
+          description: List of decks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  decks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DeckWithMetadata'
+                  totalCount:
+                    type: integer
+                    description: Total number of decks (for limit display)
+                  limit:
+                    type: integer
+                    description: Maximum decks allowed
+                    example: 100
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    post:
+      summary: Create new deck
+      description: |
+        Creates a new deck for the authenticated user. Validates 100-deck limit.
+        Returns error if limit exceeded.
+      operationId: createDeck
+      tags:
+        - Decks
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  description: Deck name (1-200 characters)
+                  example: "Spanish Vocabulary"
+                newCardsPerDayOverride:
+                  type: integer
+                  nullable: true
+                  minimum: 0
+                  description: Override global new cards per day limit
+                  example: 20
+                cardsPerSessionOverride:
+                  type: integer
+                  nullable: true
+                  minimum: 0
+                  description: Override global cards per session limit
+                  example: 50
+      responses:
+        '201':
+          description: Deck created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deck'
+        '400':
+          description: Validation error (invalid name, negative overrides)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                emptyName:
+                  summary: Empty deck name
+                  value:
+                    error: "Deck name cannot be empty"
+                tooLong:
+                  summary: Name too long
+                  value:
+                    error: "Deck name must not exceed 200 characters"
+        '403':
+          description: Deck limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Maximum deck limit reached (100 decks). Please delete unused decks before creating new ones."
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /decks/{deckId}:
+    get:
+      summary: Get deck details
+      description: Returns deck metadata and full list of flashcards in the deck
+      operationId: getDeck
+      tags:
+        - Decks
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DeckId'
+      responses:
+        '200':
+          description: Deck details with cards
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeckWithCards'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Deck not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Deck not found"
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    patch:
+      summary: Update deck
+      description: |
+        Updates deck name, FSRS setting overrides, or archived status.
+        Partial updates supported (only send fields to update).
+      operationId: updateDeck
+      tags:
+        - Decks
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DeckId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  description: New deck name
+                newCardsPerDayOverride:
+                  type: integer
+                  nullable: true
+                  minimum: 0
+                  description: New override value (null to clear override)
+                cardsPerSessionOverride:
+                  type: integer
+                  nullable: true
+                  minimum: 0
+                  description: New override value (null to clear override)
+                archived:
+                  type: boolean
+                  description: Archive/unarchive deck
+      responses:
+        '200':
+          description: Deck updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deck'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      summary: Delete deck
+      description: |
+        Deletes deck and all deck-card associations. Flashcards are preserved.
+        This operation is irreversible.
+      operationId: deleteDeck
+      tags:
+        - Decks
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DeckId'
+      responses:
+        '204':
+          description: Deck deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /decks/{deckId}/cards:
+    post:
+      summary: Add cards to deck
+      description: |
+        Adds one or more flashcards to the deck. Validates 1000-card limit per deck.
+        Silently ignores cards already in the deck (idempotent).
+      operationId: addCardsToDeck
+      tags:
+        - Deck Cards
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DeckId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - flashcardIds
+              properties:
+                flashcardIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  minItems: 1
+                  description: Array of flashcard IDs to add
+                  example: ["123e4567-e89b-12d3-a456-426614174000"]
+      responses:
+        '200':
+          description: Cards added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  addedCount:
+                    type: integer
+                    description: Number of cards actually added (excludes duplicates)
+                  cardCount:
+                    type: integer
+                    description: Total cards now in deck
+                  limit:
+                    type: integer
+                    description: Maximum cards per deck
+                    example: 1000
+        '400':
+          description: Validation error (empty array, invalid UUIDs)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Card limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Deck limit reached (1000 cards maximum). Please create a new deck or remove cards before adding more."
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Deck not found or flashcard not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      summary: Remove cards from deck
+      description: |
+        Removes one or more flashcards from the deck. Flashcards are preserved.
+        Silently ignores cards not in the deck (idempotent).
+      operationId: removeCardsFromDeck
+      tags:
+        - Deck Cards
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DeckId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - flashcardIds
+              properties:
+                flashcardIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  minItems: 1
+                  description: Array of flashcard IDs to remove
+      responses:
+        '200':
+          description: Cards removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  removedCount:
+                    type: integer
+                    description: Number of cards actually removed
+                  cardCount:
+                    type: integer
+                    description: Total cards remaining in deck
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: next-auth.session-token
+      description: NextAuth session cookie
+
+  parameters:
+    DeckId:
+      name: deckId
+      in: path
+      required: true
+      description: Deck UUID
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    Deck:
+      type: object
+      required:
+        - id
+        - userId
+        - name
+        - createdAt
+        - archived
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        createdAt:
+          type: string
+          format: date-time
+        lastStudiedAt:
+          type: string
+          format: date-time
+          nullable: true
+        archived:
+          type: boolean
+        newCardsPerDayOverride:
+          type: integer
+          nullable: true
+          minimum: 0
+        cardsPerSessionOverride:
+          type: integer
+          nullable: true
+          minimum: 0
+
+    DeckWithMetadata:
+      allOf:
+        - $ref: '#/components/schemas/Deck'
+        - type: object
+          required:
+            - cardCount
+          properties:
+            cardCount:
+              type: integer
+              description: Number of flashcards in deck
+              minimum: 0
+              maximum: 1000
+
+    DeckWithCards:
+      allOf:
+        - $ref: '#/components/schemas/DeckWithMetadata'
+        - type: object
+          required:
+            - flashcards
+          properties:
+            flashcards:
+              type: array
+              items:
+                $ref: '#/components/schemas/FlashcardSummary'
+
+    FlashcardSummary:
+      type: object
+      required:
+        - id
+        - front
+        - back
+        - addedToDeckAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        front:
+          type: string
+        back:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        addedToDeckAt:
+          type: string
+          format: date-time
+          description: When card was added to this deck
+        fsrsState:
+          type: object
+          description: Current FSRS review state
+          properties:
+            state:
+              type: string
+              enum: [new, learning, review, relearning]
+            dueDate:
+              type: string
+              format: date-time
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+
+  responses:
+    Unauthorized:
+      description: Not authenticated
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Authentication required"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Resource not found"
+
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Internal server error"

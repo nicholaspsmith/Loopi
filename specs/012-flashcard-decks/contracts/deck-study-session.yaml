@@ -1,0 +1,358 @@
+openapi: 3.0.3
+info:
+  title: Deck Study Session API
+  description: |
+    API for starting and managing deck-filtered FSRS study sessions.
+    Supports deck-specific FSRS setting overrides and live session updates.
+  version: 1.0.0
+  contact:
+    name: Memoryloop API
+    url: https://github.com/nicholaspsmith/memoryloop
+
+servers:
+  - url: /api
+    description: Next.js API routes
+
+paths:
+  /study/deck-session:
+    post:
+      summary: Start deck-filtered study session
+      description: |
+        Initiates a new FSRS study session filtered to cards from a specific deck.
+
+        **FSRS Behavior**:
+        - Applies deck-specific overrides if configured (new_cards_per_day, cards_per_session)
+        - Falls back to global FSRS settings if no deck overrides set
+        - Updates global flashcard FSRS state when cards are rated
+        - Filters queue to only include cards belonging to the specified deck
+
+        **Live Updates** (FR-030, FR-031):
+        - Cards added to deck during session appear in queue if FSRS-due
+        - Cards removed from deck during session are skipped if not yet reviewed
+        - Session continues with original card set + dynamic updates
+
+        **Edge Cases**:
+        - Empty deck: Returns error
+        - No due cards: Returns success with empty queue and next due time
+        - All cards already reviewed today: Returns success with warning
+      operationId: startDeckSession
+      tags:
+        - Study Sessions
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - deckId
+              properties:
+                deckId:
+                  type: string
+                  format: uuid
+                  description: Deck to study from
+                settings:
+                  $ref: '#/components/schemas/DeckSessionSettings'
+      responses:
+        '200':
+          description: Session started successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeckSessionResponse'
+              examples:
+                withCards:
+                  summary: Session with due cards
+                  value:
+                    sessionId: "550e8400-e29b-41d4-a716-446655440000"
+                    deckId: "123e4567-e89b-12d3-a456-426614174000"
+                    deckName: "Spanish Verbs"
+                    dueCards:
+                      - id: "abc12345-e89b-12d3-a456-426614174000"
+                        front: "hablar"
+                        back: "to speak"
+                        fsrs:
+                          state: "review"
+                          dueDate: "2025-12-24T10:00:00Z"
+                          difficulty: 5.5
+                          stability: 120.0
+                    totalDueCards: 10
+                    cardsPerSession: 20
+                    newCardsPerDay: 10
+                    appliedSettings:
+                      source: "deck-override"
+                      newCardsPerDay: 15
+                      cardsPerSession: 25
+                noDueCards:
+                  summary: No due cards
+                  value:
+                    sessionId: "550e8400-e29b-41d4-a716-446655440000"
+                    deckId: "123e4567-e89b-12d3-a456-426614174000"
+                    deckName: "Spanish Verbs"
+                    dueCards: []
+                    totalDueCards: 0
+                    nextDueCard:
+                      dueDate: "2025-12-25T09:00:00Z"
+                      count: 3
+                    appliedSettings:
+                      source: "global"
+                      newCardsPerDay: 10
+                      cardsPerSession: 20
+
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                emptyDeck:
+                  summary: Empty deck
+                  value:
+                    error: "Cannot start session: deck contains 0 cards. Please add cards to the deck first."
+                invalidSettings:
+                  summary: Invalid session settings
+                  value:
+                    error: "cardsPerSession must be greater than 0"
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+        '404':
+          description: Deck not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Deck not found"
+
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /study/deck-session/{sessionId}/live-updates:
+    get:
+      summary: Subscribe to live session updates (Server-Sent Events)
+      description: |
+        Establishes SSE connection for real-time deck change notifications.
+
+        **Events Sent**:
+        - `card-added`: New card available in session queue
+        - `card-removed`: Card removed from deck (will be skipped)
+        - `deck-updated`: Deck metadata changed (name, settings)
+
+        **Implementation**: Server-Sent Events (SSE) for one-way push notifications.
+      operationId: subscribeToSessionUpdates
+      tags:
+        - Study Sessions
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          description: Active session ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: SSE stream established
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: Server-Sent Events stream
+              examples:
+                cardAdded:
+                  summary: Card added event
+                  value: |
+                    event: card-added
+                    data: {"flashcardId":"abc12345-e89b-12d3-a456-426614174000","dueDate":"2025-12-24T10:00:00Z"}
+
+                    event: card-removed
+                    data: {"flashcardId":"def67890-e89b-12d3-a456-426614174000"}
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Session not found or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Session not found or expired"
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: next-auth.session-token
+      description: NextAuth session cookie
+
+  schemas:
+    DeckSessionSettings:
+      type: object
+      description: Optional session settings (overrides deck-specific and global settings for this session only)
+      properties:
+        newCardsPerDay:
+          type: integer
+          nullable: true
+          minimum: 0
+          description: Override new cards per day limit for this session
+        cardsPerSession:
+          type: integer
+          nullable: true
+          minimum: 1
+          description: Override cards per session limit
+
+    DeckSessionResponse:
+      type: object
+      required:
+        - sessionId
+        - deckId
+        - deckName
+        - dueCards
+        - totalDueCards
+        - appliedSettings
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+          description: Unique session identifier
+        deckId:
+          type: string
+          format: uuid
+          description: Deck being studied
+        deckName:
+          type: string
+          description: Deck name for UI display
+        dueCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlashcardWithFSRS'
+          description: Cards due for review in FSRS-optimized order
+        totalDueCards:
+          type: integer
+          description: Total number of due cards (may exceed cardsPerSession)
+        cardsPerSession:
+          type: integer
+          description: Effective cards per session limit
+        newCardsPerDay:
+          type: integer
+          description: Effective new cards per day limit
+        nextDueCard:
+          $ref: '#/components/schemas/NextDueCard'
+          nullable: true
+          description: Next due card info (if no cards currently due)
+        appliedSettings:
+          $ref: '#/components/schemas/AppliedSettings'
+
+    FlashcardWithFSRS:
+      type: object
+      required:
+        - id
+        - front
+        - back
+        - fsrs
+      properties:
+        id:
+          type: string
+          format: uuid
+        front:
+          type: string
+        back:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        fsrs:
+          $ref: '#/components/schemas/FSRSState'
+
+    FSRSState:
+      type: object
+      required:
+        - state
+        - dueDate
+      properties:
+        state:
+          type: string
+          enum: [new, learning, review, relearning]
+          description: Current FSRS review state
+        dueDate:
+          type: string
+          format: date-time
+          description: When card is next due
+        difficulty:
+          type: number
+          format: float
+          description: FSRS difficulty rating
+        stability:
+          type: number
+          format: float
+          description: FSRS stability (days)
+
+    NextDueCard:
+      type: object
+      required:
+        - dueDate
+        - count
+      properties:
+        dueDate:
+          type: string
+          format: date-time
+          description: When next card(s) will be due
+        count:
+          type: integer
+          description: Number of cards due at that time
+
+    AppliedSettings:
+      type: object
+      required:
+        - source
+        - newCardsPerDay
+        - cardsPerSession
+      properties:
+        source:
+          type: string
+          enum: [session, deck-override, global]
+          description: Which setting layer was applied
+        newCardsPerDay:
+          type: integer
+          description: Actual new cards per day limit applied
+        cardsPerSession:
+          type: integer
+          description: Actual cards per session limit applied
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+
+  responses:
+    Unauthorized:
+      description: Not authenticated
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Authentication required"
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Internal server error"

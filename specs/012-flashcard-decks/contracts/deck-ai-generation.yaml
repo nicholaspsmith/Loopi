@@ -1,0 +1,280 @@
+openapi: 3.0.3
+info:
+  title: AI Deck Generation API
+  description: |
+    API for AI-powered deck creation using hybrid LanceDB vector search + Claude LLM re-ranking.
+    Generates flashcard suggestions based on user-provided topics.
+  version: 1.0.0
+  contact:
+    name: Memoryloop API
+    url: https://github.com/nicholaspsmith/memoryloop
+
+servers:
+  - url: /api
+    description: Next.js API routes
+
+paths:
+  /decks-ai:
+    post:
+      summary: Generate AI deck suggestions
+      description: |
+        Generates flashcard suggestions for a new deck based on a user-provided topic.
+
+        **Pipeline**:
+        1. Generate vector embedding for the topic (using Nomic embed-text)
+        2. Query LanceDB for top 30-50 semantically similar flashcards
+        3. Pass candidates to Claude API for semantic re-ranking and filtering
+        4. Return filtered suggestions for user review
+
+        **Performance**: Completes within 10 seconds for 100+ candidate cards (SC-006).
+
+        **Error Handling**:
+        - If LanceDB unavailable: Returns error, suggests manual deck creation
+        - If Claude API unavailable: Falls back to vector search results only
+        - If insufficient cards (<5): Returns warning with available suggestions
+      operationId: generateAIDeck
+      tags:
+        - AI Deck Generation
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - topic
+              properties:
+                topic:
+                  type: string
+                  minLength: 3
+                  maxLength: 500
+                  description: Topic or idea for deck generation (3-500 characters)
+                  example: "cellular respiration and ATP production"
+                minCards:
+                  type: integer
+                  minimum: 1
+                  maximum: 50
+                  default: 5
+                  description: Minimum cards to return (if available)
+                maxCards:
+                  type: integer
+                  minimum: 1
+                  maximum: 50
+                  default: 15
+                  description: Maximum cards to return
+                vectorSearchLimit:
+                  type: integer
+                  minimum: 10
+                  maximum: 100
+                  default: 40
+                  description: Number of candidates for vector search (before LLM filtering)
+      responses:
+        '200':
+          description: AI deck suggestions generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - suggestions
+                  - metadata
+                properties:
+                  suggestions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FlashcardSuggestion'
+                    description: Suggested flashcards ordered by relevance
+                  metadata:
+                    $ref: '#/components/schemas/GenerationMetadata'
+              examples:
+                success:
+                  summary: Successful generation
+                  value:
+                    suggestions:
+                      - flashcardId: "123e4567-e89b-12d3-a456-426614174000"
+                        front: "What is the role of mitochondria in cellular respiration?"
+                        back: "Mitochondria are the powerhouse of the cell..."
+                        relevanceScore: 0.92
+                        relevanceReason: "Directly addresses cellular respiration and ATP production"
+                    metadata:
+                      candidateCount: 38
+                      llmFiltered: true
+                      processingTimeMs: 4200
+                      warnings: []
+                insufficientCards:
+                  summary: Insufficient matching cards
+                  value:
+                    suggestions:
+                      - flashcardId: "123e4567-e89b-12d3-a456-426614174000"
+                        front: "What is cellular respiration?"
+                        back: "Process of converting glucose to ATP"
+                        relevanceScore: 0.75
+                        relevanceReason: "Related to cellular respiration"
+                    metadata:
+                      candidateCount: 3
+                      llmFiltered: true
+                      processingTimeMs: 1800
+                      warnings:
+                        - "Only 3 matching cards found. Consider creating more flashcards on this topic."
+
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                emptyTopic:
+                  summary: Empty topic
+                  value:
+                    error: "Topic must be 3-500 characters"
+                invalidRange:
+                  summary: Invalid card range
+                  value:
+                    error: "minCards must be less than or equal to maxCards"
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+        '503':
+          description: Service unavailable (LanceDB or Claude API error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                lancedbDown:
+                  summary: LanceDB unavailable
+                  value:
+                    error: "Vector search service unavailable. Please try manual deck creation."
+                    fallback: "manual"
+                claudeDown:
+                  summary: Claude API unavailable
+                  value:
+                    error: "AI filtering unavailable. Returning vector search results only."
+                    fallback: "vector-only"
+                    suggestions: []
+
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: next-auth.session-token
+      description: NextAuth session cookie
+
+  schemas:
+    FlashcardSuggestion:
+      type: object
+      required:
+        - flashcardId
+        - front
+        - back
+        - relevanceScore
+      properties:
+        flashcardId:
+          type: string
+          format: uuid
+          description: Flashcard identifier
+        front:
+          type: string
+          description: Flashcard front content
+        back:
+          type: string
+          description: Flashcard back content
+        tags:
+          type: array
+          items:
+            type: string
+          description: Flashcard tags
+        relevanceScore:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Semantic relevance score (0.0 - 1.0)
+        relevanceReason:
+          type: string
+          nullable: true
+          description: LLM-generated explanation of relevance (if LLM filtering applied)
+        vectorSimilarity:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Original vector similarity score from LanceDB
+
+    GenerationMetadata:
+      type: object
+      required:
+        - candidateCount
+        - llmFiltered
+        - processingTimeMs
+      properties:
+        candidateCount:
+          type: integer
+          description: Number of candidates retrieved from vector search
+          example: 38
+        llmFiltered:
+          type: boolean
+          description: Whether LLM re-ranking was applied (false if Claude API unavailable)
+        processingTimeMs:
+          type: integer
+          description: Total processing time in milliseconds
+          example: 4200
+        warnings:
+          type: array
+          items:
+            type: string
+          description: User-facing warnings (e.g., insufficient cards)
+          default: []
+        vectorSearchTimeMs:
+          type: integer
+          nullable: true
+          description: Time spent on vector search (debugging)
+        llmFilteringTimeMs:
+          type: integer
+          nullable: true
+          description: Time spent on LLM re-ranking (debugging)
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+        fallback:
+          type: string
+          nullable: true
+          description: Suggested fallback action (manual, vector-only)
+        suggestions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlashcardSuggestion'
+          description: Partial results if available despite error
+
+  responses:
+    Unauthorized:
+      description: Not authenticated
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Authentication required"
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Internal server error"
