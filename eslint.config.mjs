@@ -4,6 +4,24 @@ import tseslint from 'typescript-eslint'
 import vitestPlugin from 'eslint-plugin-vitest'
 
 export default [
+  {
+    ignores: [
+      'node_modules/**',
+      '.next/**',
+      'out/**',
+      'dist/**',
+      'build/**',
+      'coverage/**',
+      '.nyc_output/**',
+      'test-results/**',
+      'playwright-report/**',
+      'data/**',
+      'lancedb/**',
+      '*.config.js',
+      '*.config.mjs',
+      '*.tsbuildinfo',
+    ],
+  },
   ...nextConfig,
   eslintConfigPrettier,
   {

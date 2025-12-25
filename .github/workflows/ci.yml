@@ -102,6 +102,8 @@ jobs:
           npm run db:push
           # Apply idempotent migration for FSRS decimal columns (no-op if already 'real')
           PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -f drizzle/0002_fix_review_logs_types.sql
+          # Apply session invalidation migration (adds password_changed_at column)
+          PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -f drizzle/0005_add_password_changed_at.sql
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
 
@@ -211,6 +213,7 @@ jobs:
         env:
           SKIP_ENV_VALIDATION: true
           API_KEY_ENCRYPTION_SECRET: ${{ secrets.API_KEY_ENCRYPTION_SECRET }}
+          DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
 
       - name: Check build output
         run: |

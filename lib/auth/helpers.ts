@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
+import type { NextRequest } from 'next/server'
 
 /**
  * Authentication Helper Functions
@@ -9,11 +10,19 @@ import { z } from 'zod'
 
 /**
  * Password validation schema
+ * Enforces strong password requirements aligned with NIST guidelines
  */
 export const PasswordSchema = z
   .string()
   .min(8, 'Password must be at least 8 characters')
-  .max(100, 'Password must not exceed 100 characters')
+  .max(72, 'Password must not exceed 72 characters') // Prevent bcrypt DoS
+  .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+  .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+  .regex(/[0-9]/, 'Password must contain at least one number')
+  .regex(
+    /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/,
+    'Password must contain at least one special character'
+  )
 
 /**
  * Email validation schema
@@ -80,4 +89,40 @@ export const SESSION_EXPIRATION_MS = 7 * 24 * 60 * 60 * 1000
 export function isSessionExpired(timestamp: number): boolean {
   const now = Date.now()
   return now - timestamp > SESSION_EXPIRATION_MS
+}
+
+/**
+ * Extract client IP address from Next.js request
+ *
+ * Prioritizes headers in order of trustworthiness:
+ * 1. x-real-ip (set by trusted reverse proxies like Nginx)
+ * 2. x-forwarded-for (first IP in chain, may be spoofed)
+ * 3. 'unknown' fallback
+ *
+ * @param request - Next.js request object
+ * @returns IP address or 'unknown'
+ *
+ * @example
+ * const ip = getClientIpAddress(request)
+ * console.log(`Request from: ${ip}`)
+ */
+export function getClientIpAddress(request: NextRequest): string {
+  // Priority 1: x-real-ip header (set by trusted reverse proxy)
+  const realIp = request.headers.get('x-real-ip')
+  if (realIp) {
+    return realIp.trim()
+  }
+
+  // Priority 2: x-forwarded-for header (may contain chain of IPs)
+  const forwardedFor = request.headers.get('x-forwarded-for')
+  if (forwardedFor) {
+    // Take first IP in chain (client IP)
+    const firstIp = forwardedFor.split(',')[0]?.trim()
+    if (firstIp) {
+      return firstIp
+    }
+  }
+
+  // Fallback: unknown
+  return 'unknown'
 }

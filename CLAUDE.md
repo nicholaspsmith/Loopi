@@ -101,8 +101,6 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 
 ## Active Technologies
 
-**IMPORTANT**: The versions listed below are the exact versions used in this project. If your knowledge is based on a different version of any technology, you MUST reference the documentation links provided to ensure version-specific accuracy. Use the WebFetch tool when needed.
-
 - @anthropic-ai/sdk 0.71.2 ([docs](https://docs.anthropic.com/en/api/client-sdks))
 - @lancedb/lancedb 0.22.3 ([docs](https://lancedb.github.io/lancedb))
 - bcryptjs 3.0.3 ([docs](https://www.npmjs.com/package/bcryptjs/v/3.0.3))

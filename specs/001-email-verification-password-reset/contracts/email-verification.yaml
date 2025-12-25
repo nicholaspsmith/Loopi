@@ -1,0 +1,192 @@
+openapi: 3.0.0
+info:
+  title: Email Verification API
+  version: 1.0.0
+  description: API endpoints for email verification functionality
+
+paths:
+  /api/auth/verify-email:
+    post:
+      summary: Verify email with token
+      description: |
+        Verify user email address using token from verification email.
+        Token is single-use and expires after 24 hours.
+        Sets user.emailVerified = true on success.
+      operationId: verifyEmail
+      tags:
+        - Email Verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+              properties:
+                token:
+                  type: string
+                  description: Verification token from email link (64 hex characters)
+                  pattern: '^[a-f0-9]{64}$'
+                  example: a1b2c3d4e5f6...
+      responses:
+        '200':
+          description: Email verification successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Email verified successfully! You can now access all features.
+                  user:
+                    type: object
+                    properties:
+                      emailVerified:
+                        type: boolean
+                        example: true
+                      emailVerifiedAt:
+                        type: string
+                        format: date-time
+                        example: '2025-12-24T14:30:00Z'
+        '400':
+          description: Invalid request (malformed token, missing fields)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid token
+                  message:
+                    type: string
+                    example: This verification link is invalid or has expired. Please request a new one.
+        '409':
+          description: Email already verified or token already used
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Already verified
+                  message:
+                    type: string
+                    example: This email address is already verified.
+
+  /api/auth/resend-verification:
+    post:
+      summary: Resend verification email
+      description: |
+        Request a new verification email for the authenticated user.
+        Requires user to be logged in but not verified.
+        Rate limited to 3 requests per 15 minutes per email.
+      operationId: resendVerification
+      tags:
+        - Email Verification
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Verification email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Verification email sent. Please check your inbox.
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Unauthorized
+                  message:
+                    type: string
+                    example: You must be logged in to request verification email
+        '409':
+          description: Email already verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Already verified
+                  message:
+                    type: string
+                    example: Your email is already verified
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Too many requests
+                  message:
+                    type: string
+                    example: Please wait 5 minutes before requesting another verification email
+                  retryAfter:
+                    type: integer
+                    description: Seconds until next request allowed
+                    example: 300
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error type
+          example: Validation error
+        message:
+          type: string
+          description: Human-readable error message
+          example: Invalid request
+        fields:
+          type: object
+          description: Field-specific validation errors (optional)
+          additionalProperties:
+            type: string
+          example:
+            token: Token must be 64 hexadecimal characters
+
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: authjs.session-token
+      description: NextAuth.js session cookie
+
+security:
+  - cookieAuth: [] # Default: require authentication
+
+tags:
+  - name: Email Verification
+    description: Email verification functionality

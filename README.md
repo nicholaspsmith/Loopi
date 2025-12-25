@@ -11,6 +11,8 @@ MemoryLoop is a web application that enables you to learn through conversation w
 - **Smart Flashcard Generation**: Automatically convert Claude's responses into question-answer flashcards
 - **Spaced Repetition**: Quiz yourself using FSRS-based spaced repetition for optimal learning
 - **Progress Tracking**: Monitor your learning journey with detailed review statistics
+- **Secure Authentication**: Password reset and email verification with rate limiting
+- **Security Audit Trail**: Comprehensive logging of authentication events with IP geolocation
 
 ## Tech Stack
 
@@ -64,6 +66,14 @@ DATABASE_PATH=./data/lancedb
 
 # Ollama (local AI fallback - optional)
 OLLAMA_BASE_URL=http://localhost:11434
+
+# Email Configuration (SMTP)
+SMTP_HOST=smtp.ethereal.email
+SMTP_PORT=587
+SMTP_USER=your-ethereal-username
+SMTP_PASS=your-ethereal-password
+SMTP_FROM=noreply@memoryloop.com
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 Generate a secure `NEXTAUTH_SECRET`:
@@ -71,6 +81,16 @@ Generate a secure `NEXTAUTH_SECRET`:
 ```bash
 openssl rand -base64 32
 ```
+
+**Email Setup for Development:**
+
+For development, use [Ethereal Email](https://ethereal.email) - a fake SMTP service that captures emails without sending them:
+
+1. Go to https://ethereal.email and click "Create Ethereal Account"
+2. Copy the SMTP credentials to your `.env.local`
+3. Password reset and verification emails will be captured at https://ethereal.email/messages
+
+For production, configure a real SMTP provider (SendGrid, AWS SES, etc.).
 
 **Note:** Users can optionally add their own Claude API key via the Settings page in the app (encrypted storage). If no API key is configured, the app falls back to Ollama for local AI inference.
 

@@ -29,6 +29,9 @@ export function getDb() {
       max: 10, // Maximum connections in pool
       idle_timeout: 20, // Close idle connections after 20 seconds
       connect_timeout: 10, // Timeout connection attempts after 10 seconds
+      connection: {
+        timezone: 'UTC', // Use UTC to avoid timezone conversion issues
+      },
     })
 
     // Create Drizzle instance

@@ -1,11 +1,16 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { createUser, getUserByEmail, toPublicUser } from '@/lib/db/operations/users'
-import { hashPassword, EmailSchema, PasswordSchema } from '@/lib/auth/helpers'
+import { hashPassword, EmailSchema, PasswordSchema, getClientIpAddress } from '@/lib/auth/helpers'
 import { ConflictError } from '@/lib/errors'
 import { success, error as errorResponse } from '@/lib/api/response'
 import { validate } from '@/lib/validation/helpers'
 import { signIn } from '@/auth'
+import { createVerificationToken } from '@/lib/db/operations/email-verification-tokens'
+import { emailVerificationEmail } from '@/lib/email/templates'
+import { queueEmail } from '@/lib/email/retry-queue'
+import { logSecurityEvent } from '@/lib/db/operations/security-logs'
+import { getGeolocation } from '@/lib/auth/geolocation'
 
 /**
  * POST /api/auth/signup
@@ -36,11 +41,49 @@ export async function POST(request: NextRequest) {
     // Hash password
     const passwordHash = await hashPassword(data.password)
 
-    // Create user
+    // Create user (emailVerified defaults to false in schema)
     const user = await createUser({
       email: data.email,
       passwordHash,
       name: data.name || null,
+    })
+
+    // Get IP and user agent for logging
+    const ipAddress = getClientIpAddress(request)
+    const userAgent = request.headers.get('user-agent')
+    const geolocation = await getGeolocation(ipAddress)
+
+    // Create verification token
+    const { rawToken, tokenEntry } = await createVerificationToken(user.id)
+
+    // Build verification link
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `https://${request.headers.get('host')}`
+    const verificationLink = `${baseUrl}/verify-email?token=${rawToken}`
+
+    // Queue verification email
+    const { subject, text, html } = emailVerificationEmail({
+      email: user.email,
+      verificationLink,
+    })
+
+    await queueEmail({
+      to: user.email,
+      subject,
+      textBody: text,
+      htmlBody: html,
+    })
+
+    // Log security event
+    await logSecurityEvent({
+      userId: user.id,
+      eventType: 'user_registration',
+      email: user.email,
+      ipAddress,
+      userAgent,
+      geolocation,
+      tokenId: tokenEntry.id,
+      outcome: 'success',
+      metadata: { verificationEmailSent: true },
     })
 
     // Automatically sign in the user after signup

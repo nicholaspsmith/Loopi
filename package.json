@@ -26,6 +26,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
     "@lancedb/lancedb": "^0.22.3",
+    "@types/nodemailer": "^7.0.4",
     "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",
     "dotenv": "^17.2.3",
@@ -33,6 +34,7 @@
     "drizzle-orm": "^0.45.1",
     "next": "^16.0.10",
     "next-auth": "^5.0.0-beta.30",
+    "nodemailer": "^7.0.12",
     "pgvector": "^0.2.1",
     "postgres": "^3.4.7",
     "react": "^19.2.3",

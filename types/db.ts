@@ -10,6 +10,9 @@ export const UserSchema = z.object({
   email: z.string().email().min(3).max(255),
   name: z.string().min(1).max(100).nullable(),
   passwordHash: z.string().min(60).max(60), // bcrypt hash is exactly 60 chars
+  emailVerified: z.boolean().default(false),
+  emailVerifiedAt: z.number().int().positive().nullable(),
+  passwordChangedAt: z.number().int().positive().nullable(),
   createdAt: z.number().int().positive(),
   updatedAt: z.number().int().positive(),
 })

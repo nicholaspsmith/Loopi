@@ -76,6 +76,37 @@ echo ""
 echo "🔍 Running pre-push checks..."
 echo ""
 
+# Apply database migrations if DATABASE_URL is set
+if [ -n "$DATABASE_URL" ]; then
+    echo "📊 Applying database migrations..."
+
+    # Push schema changes
+    if ! npm run db:push > /dev/null 2>&1; then
+        echo "⚠️  Warning: db:push failed, continuing with tests..."
+    fi
+
+    # Apply manual migrations (idempotent)
+    if command -v psql > /dev/null 2>&1; then
+        # Extract database connection info from DATABASE_URL
+        # Format: postgresql://user:pass@host:port/dbname
+        DB_NAME=$(echo "$DATABASE_URL" | sed -n 's/.*\/\([^?]*\).*/\1/p')
+
+        if [ -f "drizzle/0002_fix_review_logs_types.sql" ]; then
+            psql "$DATABASE_URL" -f drizzle/0002_fix_review_logs_types.sql > /dev/null 2>&1 || true
+        fi
+
+        if [ -f "drizzle/0005_add_password_changed_at.sql" ]; then
+            psql "$DATABASE_URL" -f drizzle/0005_add_password_changed_at.sql > /dev/null 2>&1 || true
+        fi
+    fi
+
+    echo "✅ Database migrations applied."
+else
+    echo "⚠️  DATABASE_URL not set, skipping migrations (tests may fail)"
+fi
+
+echo ""
+
 # Run unit tests with retry
 if ! run_tests_with_retry "Unit tests" "npm test -- --run"; then
     echo ""

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import LogoutButton from '@/components/auth/LogoutButton'
 import Navigation from '@/components/nav/Navigation'
 import { PageTransition } from '@/components/ui/PageTransition'
+import { EmailVerificationBanner } from '@/components/auth/EmailVerificationBanner'
 
 /**
  * Protected Layout
@@ -46,6 +47,11 @@ export default async function ProtectedLayout({ children }: { children: React.Re
           </div>
         </div>
       </header>
+
+      {/* Email Verification Banner */}
+      {session.user?.email && !session.user.emailVerified && (
+        <EmailVerificationBanner userEmail={session.user.email} />
+      )}
 
       {/* Main content */}
       <main className="mx-auto">

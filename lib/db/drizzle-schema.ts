@@ -25,6 +25,9 @@ export const users = pgTable('users', {
   email: varchar('email', { length: 255 }).notNull().unique(),
   name: varchar('name', { length: 100 }),
   passwordHash: varchar('password_hash', { length: 60 }).notNull(),
+  emailVerified: boolean('email_verified').notNull().default(false),
+  emailVerifiedAt: timestamp('email_verified_at'),
+  passwordChangedAt: timestamp('password_changed_at'), // For session invalidation on password reset
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
@@ -133,6 +136,86 @@ export const reviewLogs = pgTable('review_logs', {
 })
 
 // ============================================================================
+// Password Reset Tokens Table
+// ============================================================================
+
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: varchar('token_hash', { length: 64 }).notNull().unique(),
+  expiresAt: timestamp('expires_at').notNull(),
+  used: boolean('used').notNull().default(false),
+  usedAt: timestamp('used_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+// ============================================================================
+// Email Verification Tokens Table
+// ============================================================================
+
+export const emailVerificationTokens = pgTable('email_verification_tokens', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: varchar('token_hash', { length: 64 }).notNull().unique(),
+  expiresAt: timestamp('expires_at').notNull(),
+  used: boolean('used').notNull().default(false),
+  usedAt: timestamp('used_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+// ============================================================================
+// Security Logs Table
+// ============================================================================
+
+export const securityLogs = pgTable('security_logs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  eventType: varchar('event_type', { length: 50 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull(),
+  ipAddress: varchar('ip_address', { length: 45 }).notNull(),
+  userAgent: text('user_agent'),
+  geolocation: jsonb('geolocation'),
+  tokenId: varchar('token_id', { length: 64 }),
+  outcome: varchar('outcome', { length: 20 }).notNull(),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+// ============================================================================
+// Email Queue Table
+// ============================================================================
+
+export const emailQueue = pgTable('email_queue', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  to: varchar('to', { length: 255 }).notNull(),
+  subject: varchar('subject', { length: 500 }).notNull(),
+  textBody: text('text_body').notNull(),
+  htmlBody: text('html_body'),
+  attempts: integer('attempts').notNull().default(0),
+  nextRetryAt: timestamp('next_retry_at'),
+  status: varchar('status', { length: 20 }).notNull().default('pending'),
+  error: text('error'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  sentAt: timestamp('sent_at'),
+})
+
+// ============================================================================
+// Rate Limits Table
+// ============================================================================
+
+export const rateLimits = pgTable('rate_limits', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  attempts: jsonb('attempts').notNull().default('[]'),
+  windowStart: timestamp('window_start').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+// ============================================================================
 // Type exports for TypeScript
 // ============================================================================
 
@@ -153,3 +236,18 @@ export type NewFlashcard = typeof flashcards.$inferInsert
 
 export type ReviewLog = typeof reviewLogs.$inferSelect
 export type NewReviewLog = typeof reviewLogs.$inferInsert
+
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect
+export type NewPasswordResetToken = typeof passwordResetTokens.$inferInsert
+
+export type EmailVerificationToken = typeof emailVerificationTokens.$inferSelect
+export type NewEmailVerificationToken = typeof emailVerificationTokens.$inferInsert
+
+export type SecurityLog = typeof securityLogs.$inferSelect
+export type NewSecurityLog = typeof securityLogs.$inferInsert
+
+export type EmailQueueEntry = typeof emailQueue.$inferSelect
+export type NewEmailQueueEntry = typeof emailQueue.$inferInsert
+
+export type RateLimit = typeof rateLimits.$inferSelect
+export type NewRateLimit = typeof rateLimits.$inferInsert
