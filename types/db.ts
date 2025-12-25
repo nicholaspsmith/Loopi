@@ -84,8 +84,8 @@ export type FSRSCard = z.infer<typeof FSRSCardSchema>
 export const FlashcardSchema = z.object({
   id: z.string().uuid(),
   userId: z.string().uuid(),
-  conversationId: z.string().uuid(),
-  messageId: z.string().uuid(),
+  conversationId: z.string().uuid().nullable(),
+  messageId: z.string().uuid().nullable(),
   question: z.string().min(1).max(1000),
   answer: z.string().min(1).max(5000),
   questionEmbedding: z.array(z.number()).length(768).nullable(),

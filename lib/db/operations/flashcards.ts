@@ -14,8 +14,8 @@ import { syncFlashcardToLanceDB, deleteFlashcardFromLanceDB } from './flashcards
 
 export interface CreateFlashcardInput {
   userId: string
-  conversationId: string
-  messageId: string
+  conversationId: string | null
+  messageId: string | null
   question: string
   answer: string
 }
@@ -23,8 +23,8 @@ export interface CreateFlashcardInput {
 export interface Flashcard {
   id: string
   userId: string
-  conversationId: string
-  messageId: string
+  conversationId: string | null
+  messageId: string | null
   question: string
   answer: string
   fsrsState: Card

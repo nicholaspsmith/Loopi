@@ -51,7 +51,9 @@ async function main() {
     const messagesToKeep = [targetMessage.id, LANCEDB_MESSAGE_ID]
 
     // Filter flashcards that are NOT from either message
-    const flashcardsToDelete = allFlashcards.filter((fc) => !messagesToKeep.includes(fc.messageId))
+    const flashcardsToDelete = allFlashcards.filter(
+      (fc) => !fc.messageId || !messagesToKeep.includes(fc.messageId)
+    )
 
     console.log(`\nFlashcards to delete: ${flashcardsToDelete.length}`)
     console.log(`Flashcards to keep: ${allFlashcards.length - flashcardsToDelete.length}`)
