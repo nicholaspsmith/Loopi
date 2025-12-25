@@ -117,9 +117,27 @@ export async function POST(request: NextRequest) {
 
     await db.transaction(async (tx) => {
       const { users, emailVerificationTokens } = await import('@/lib/db/drizzle-schema')
-      const { eq } = await import('drizzle-orm')
+      const { eq, and } = await import('drizzle-orm')
 
-      // 1. Update user email verification status FIRST
+      // 1. Mark token as used FIRST with race condition protection
+      //    This prevents concurrent requests from reusing the same token
+      const [markedToken] = await tx
+        .update(emailVerificationTokens)
+        .set({ used: true, usedAt: new Date() })
+        .where(
+          and(
+            eq(emailVerificationTokens.tokenHash, tokenHash),
+            eq(emailVerificationTokens.used, false)
+          )
+        )
+        .returning()
+
+      if (!markedToken) {
+        throw new Error('Token has already been used or is invalid')
+      }
+
+      // 2. Update user email verification status AFTER token is marked used
+      //    If user update fails, transaction rolls back and token remains unused for retry
       await tx
         .update(users)
         .set({
@@ -128,13 +146,6 @@ export async function POST(request: NextRequest) {
           updatedAt: new Date(),
         })
         .where(eq(users.id, userId))
-
-      // 2. Mark token as used AFTER user update succeeds
-      //    If user update failed, transaction rolls back and token remains valid for retry
-      await tx
-        .update(emailVerificationTokens)
-        .set({ used: true, usedAt: new Date() })
-        .where(eq(emailVerificationTokens.tokenHash, tokenHash))
     })
 
     // Log successful email verification

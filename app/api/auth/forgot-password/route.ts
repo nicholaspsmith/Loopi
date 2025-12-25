@@ -27,6 +27,9 @@ const forgotPasswordSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
+  let email: string | undefined
+  let shouldRecordAttempt = false
+
   try {
     // Parse and validate request body
     const body = await request.json()
@@ -36,7 +39,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
     }
 
-    const { email } = validation.data
+    email = validation.data.email
 
     // Get IP and user agent once at the beginning for consistent timing
     const ipAddress = getClientIpAddress(request)
@@ -67,8 +70,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Record rate limit attempt
-    await recordAttempt(email)
+    // Mark that we should record the attempt after processing
+    shouldRecordAttempt = true
 
     // Look up user
     const user = await getUserByEmail(email)
@@ -137,5 +140,14 @@ export async function POST(request: NextRequest) {
       { error: 'An error occurred. Please try again later.' },
       { status: 500 }
     )
+  } finally {
+    // Record rate limit attempt even if request processing fails
+    if (shouldRecordAttempt && email) {
+      try {
+        await recordAttempt(email)
+      } catch (recordError) {
+        console.error('Failed to record rate limit attempt:', recordError)
+      }
+    }
   }
 }

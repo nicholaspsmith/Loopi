@@ -120,9 +120,24 @@ export async function POST(request: NextRequest) {
 
     const updatedUser = await db.transaction(async (tx) => {
       const { users, passwordResetTokens } = await import('@/lib/db/drizzle-schema')
-      const { eq } = await import('drizzle-orm')
+      const { eq, and } = await import('drizzle-orm')
 
-      // 1. Update user password FIRST
+      // 1. Mark token as used FIRST with race condition protection
+      //    This prevents concurrent requests from reusing the same token
+      const [markedToken] = await tx
+        .update(passwordResetTokens)
+        .set({ used: true, usedAt: new Date() })
+        .where(
+          and(eq(passwordResetTokens.tokenHash, tokenHash), eq(passwordResetTokens.used, false))
+        )
+        .returning()
+
+      if (!markedToken) {
+        throw new Error('Token has already been used or is invalid')
+      }
+
+      // 2. Update user password AFTER token is marked used
+      //    If password update fails, transaction rolls back and token remains unused for retry
       const [user] = await tx
         .update(users)
         .set({ passwordHash, updatedAt: new Date() })
@@ -132,13 +147,6 @@ export async function POST(request: NextRequest) {
       if (!user) {
         throw new Error(`User not found: ${userId}`)
       }
-
-      // 2. Mark token as used AFTER password update succeeds
-      //    If password update failed, transaction rolls back and token remains valid for retry
-      await tx
-        .update(passwordResetTokens)
-        .set({ used: true, usedAt: new Date() })
-        .where(eq(passwordResetTokens.tokenHash, tokenHash))
 
       // Return user in application format
       return {
@@ -154,35 +162,24 @@ export async function POST(request: NextRequest) {
     })
 
     // Send password change notification email (non-blocking)
+    let emailNotificationFailed = false
+    let emailError: unknown = null
+
     try {
       const { sendPasswordChangedEmail } = await import('@/lib/email/templates')
       await sendPasswordChangedEmail(updatedUser.email, updatedUser.name || undefined)
-    } catch (emailError) {
+    } catch (error) {
       // Log error but don't fail the request - password was already changed successfully
-      console.error('Failed to send password change notification:', emailError)
-
-      // Log to security_logs for audit trail
-      await logSecurityEvent({
-        userId: updatedUser.id,
-        eventType: 'password_reset_success',
-        email: updatedUser.email,
-        ipAddress,
-        userAgent,
-        geolocation,
-        tokenId: tokenId || null,
-        outcome: 'success',
-        metadata: {
-          notificationEmailFailed: true,
-          error: emailError instanceof Error ? emailError.message : String(emailError),
-        },
-      })
+      console.error('Failed to send password change notification:', error)
+      emailNotificationFailed = true
+      emailError = error
     }
 
     // Note: With JWT-based sessions, existing sessions remain valid until expiry (7 days).
     // Users should manually log out and log back in with their new password.
     // For production: Consider implementing session versioning to invalidate all sessions.
 
-    // Log successful password reset
+    // Log successful password reset (once, with notification status if applicable)
     await logSecurityEvent({
       userId: updatedUser.id,
       eventType: 'password_reset_success',
@@ -192,6 +189,12 @@ export async function POST(request: NextRequest) {
       geolocation,
       tokenId: tokenId || null,
       outcome: 'success',
+      metadata: emailNotificationFailed
+        ? {
+            notificationEmailFailed: true,
+            error: emailError instanceof Error ? emailError.message : String(emailError),
+          }
+        : undefined,
     })
 
     return NextResponse.json({

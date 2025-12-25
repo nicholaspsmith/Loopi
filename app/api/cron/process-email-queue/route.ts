@@ -20,8 +20,8 @@ export async function GET(request: NextRequest) {
     const cronSecret = process.env.CRON_SECRET
 
     if (!cronSecret) {
-      console.error('CRON_SECRET environment variable not set')
-      return NextResponse.json({ error: 'Service misconfigured' }, { status: 500 })
+      console.error('CRON_SECRET environment variable not set - rejecting request')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const authHeader = request.headers.get('authorization')
