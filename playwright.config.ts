@@ -3,9 +3,9 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: './tests/e2e',
 
-  // Enable parallel tests - most tests create unique resources (timestamped decks)
-  // API key tests are marked with serial mode to avoid conflicts
-  fullyParallel: true,
+  // Run tests sequentially since they share user state and database
+  // Tests run against a single test user and shared PostgreSQL instance
+  fullyParallel: false,
 
   // Fail the build on CI if you accidentally left test.only in the source code
   forbidOnly: !!process.env.CI,
@@ -13,9 +13,8 @@ export default defineConfig({
   // Retry on CI only
   retries: process.env.CI ? 2 : 0,
 
-  // Use 4 workers on CI for faster execution (was 1)
-  // API key tests within files use serial mode to prevent conflicts
-  workers: process.env.CI ? 4 : undefined,
+  // Use 1 worker to avoid race conditions with shared auth state and database
+  workers: process.env.CI ? 1 : undefined,
 
   // Reporter to use
   reporter: 'html',
