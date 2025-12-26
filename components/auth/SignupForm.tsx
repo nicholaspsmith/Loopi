@@ -43,8 +43,25 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
       return
     }
 
+    // Validate password strength
+    const passwordErrors: string[] = []
     if (password.length < 8) {
-      setError('Password must be at least 8 characters')
+      passwordErrors.push('at least 8 characters')
+    }
+    if (!/[A-Z]/.test(password)) {
+      passwordErrors.push('one uppercase letter')
+    }
+    if (!/[a-z]/.test(password)) {
+      passwordErrors.push('one lowercase letter')
+    }
+    if (!/[0-9]/.test(password)) {
+      passwordErrors.push('one number')
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      passwordErrors.push('one special character')
+    }
+    if (passwordErrors.length > 0) {
+      setError(`Password must contain ${passwordErrors.join(', ')}`)
       return
     }
 
@@ -73,6 +90,16 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
       if (!response.ok) {
         if (response.status === 409) {
           setError('Email already exists')
+        } else if (data.details) {
+          // Extract specific validation errors from Zod
+          const details = data.details as Record<string, { _errors?: string[] }>
+          const messages: string[] = []
+          for (const [, fieldErrors] of Object.entries(details)) {
+            if (fieldErrors._errors && fieldErrors._errors.length > 0) {
+              messages.push(...fieldErrors._errors)
+            }
+          }
+          setError(messages.length > 0 ? messages.join('. ') : data.error || 'Something went wrong')
         } else {
           setError(data.error || 'Something went wrong')
         }
@@ -170,7 +197,7 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
             disabled={isLoading}
           />
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Must be at least 8 characters
+            Must be at least 8 characters with uppercase, lowercase, number, and special character
           </p>
         </div>
 
