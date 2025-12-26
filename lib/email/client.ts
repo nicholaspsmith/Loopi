@@ -1,15 +1,34 @@
 /**
  * Email Client
  *
- * Handles email sending via Nodemailer with SMTP
+ * Handles email sending via Resend HTTP API (preferred) or Nodemailer SMTP (fallback)
  * Falls back to queue on failure for retry logic
  */
 
+import { Resend } from 'resend'
 import nodemailer from 'nodemailer'
 import type { Transporter } from 'nodemailer'
 import { queueEmail } from './retry-queue'
 
+let resendClient: Resend | null = null
 let transporter: Transporter | null = null
+
+/**
+ * Check if Resend API is configured
+ */
+function isResendConfigured(): boolean {
+  return !!process.env.RESEND_API_KEY
+}
+
+/**
+ * Initialize Resend client
+ */
+function getResendClient(): Resend {
+  if (!resendClient) {
+    resendClient = new Resend(process.env.RESEND_API_KEY)
+  }
+  return resendClient
+}
 
 /**
  * Initialize email client with SMTP configuration from environment
@@ -53,12 +72,11 @@ export function initializeEmailClient(): Transporter {
 }
 
 /**
- * Send email via SMTP
+ * Send email via Resend HTTP API or SMTP
  *
+ * Prefers Resend API (works on all networks, no port restrictions)
+ * Falls back to SMTP if Resend not configured
  * If immediate send fails, queues email for retry
- *
- * IMPORTANT: Do not call this function from queue processor!
- * Queue processor should call emailClient.sendMail() directly to avoid circular dependency
  *
  * @param params - Email parameters
  * @param params.to - Recipient email address
@@ -67,14 +85,6 @@ export function initializeEmailClient(): Transporter {
  * @param params.html - Optional HTML body
  * @param params.fromQueue - Internal flag to prevent circular dependency (do not use externally)
  * @returns Sent message info with messageId
- *
- * @example
- * const result = await sendEmail({
- *   to: 'user@example.com',
- *   subject: 'Test Email',
- *   text: 'This is a test',
- *   html: '<p>This is a test</p>'
- * })
  */
 export async function sendEmail(params: {
   to: string
@@ -98,13 +108,32 @@ export async function sendEmail(params: {
     throw new Error('Email body is required')
   }
 
-  // Get or create transporter
-  const emailClient = initializeEmailClient()
-
   const from = process.env.SMTP_FROM || 'noreply@memoryloop.com'
 
   try {
-    // Attempt to send immediately
+    // Prefer Resend HTTP API (no port restrictions)
+    if (isResendConfigured()) {
+      const resend = getResendClient()
+
+      const { data, error } = await resend.emails.send({
+        from,
+        to,
+        subject,
+        text,
+        html: html || undefined,
+      })
+
+      if (error) {
+        throw new Error(error.message)
+      }
+
+      console.log('📧 Email sent successfully via Resend:', data?.id)
+      return { messageId: data?.id || `resend-${Date.now()}` }
+    }
+
+    // Fall back to SMTP
+    const emailClient = initializeEmailClient()
+
     const info = await emailClient.sendMail({
       from,
       to,
@@ -113,7 +142,7 @@ export async function sendEmail(params: {
       html: html || undefined,
     })
 
-    console.log('📧 Email sent successfully:', info.messageId)
+    console.log('📧 Email sent successfully via SMTP:', info.messageId)
 
     return { messageId: info.messageId }
   } catch (error) {
