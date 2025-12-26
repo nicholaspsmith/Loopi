@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import RatingButtons from './RatingButtons'
 
 /**
@@ -47,6 +47,18 @@ export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps)
   const [prevFlashcardId, setPrevFlashcardId] = useState(flashcard.id)
   const [isRatingDisabled, setIsRatingDisabled] = useState(false)
   const [isFlipAnimating, setIsFlipAnimating] = useState(false)
+  const flipTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Cleanup timeout on unmount and when flashcard changes
+  useEffect(() => {
+    // Clear timeout when flashcard changes or component unmounts
+    return () => {
+      if (flipTimeoutRef.current) {
+        clearTimeout(flipTimeoutRef.current)
+        flipTimeoutRef.current = null
+      }
+    }
+  }, [flashcard.id])
 
   // Reset answer visibility and delete confirmation when flashcard changes
   // Uses React-recommended pattern: https://react.dev/learn/you-might-not-need-an-effect
@@ -66,7 +78,7 @@ export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps)
     setIsAnswerRevealed(true)
 
     // Re-enable interaction after animation completes (600ms)
-    setTimeout(() => {
+    flipTimeoutRef.current = setTimeout(() => {
       setIsFlipAnimating(false)
     }, 600)
   }
