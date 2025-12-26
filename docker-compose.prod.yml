@@ -21,6 +21,11 @@ services:
       - OLLAMA_BASE_URL=http://ollama:11434
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
       - API_KEY_ENCRYPTION_SECRET=${API_KEY_ENCRYPTION_SECRET}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
     depends_on:
       postgres:
         condition: service_healthy
