@@ -16,7 +16,7 @@ import { checkRateLimit, recordAttempt } from '@/lib/auth/rate-limit'
 import { getUserByEmail } from '@/lib/db/operations/users'
 import { createResetToken } from '@/lib/db/operations/password-reset-tokens'
 import { passwordResetEmail } from '@/lib/email/templates'
-import { queueEmail } from '@/lib/email/retry-queue'
+import { sendEmail } from '@/lib/email/client'
 import { logSecurityEvent } from '@/lib/db/operations/security-logs'
 import { getGeolocation } from '@/lib/auth/geolocation'
 import { getClientIpAddress } from '@/lib/auth/helpers'
@@ -109,11 +109,11 @@ export async function POST(request: NextRequest) {
       resetLink,
     })
 
-    await queueEmail({
+    await sendEmail({
       to: user.email,
       subject,
-      textBody: text,
-      htmlBody: html,
+      text,
+      html,
     })
 
     // Log security event

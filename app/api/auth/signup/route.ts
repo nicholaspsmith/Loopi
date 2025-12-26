@@ -8,7 +8,7 @@ import { validate } from '@/lib/validation/helpers'
 import { signIn } from '@/auth'
 import { createVerificationToken } from '@/lib/db/operations/email-verification-tokens'
 import { emailVerificationEmail } from '@/lib/email/templates'
-import { queueEmail } from '@/lib/email/retry-queue'
+import { sendEmail } from '@/lib/email/client'
 import { logSecurityEvent } from '@/lib/db/operations/security-logs'
 import { getGeolocation } from '@/lib/auth/geolocation'
 
@@ -66,11 +66,11 @@ export async function POST(request: NextRequest) {
       verificationLink,
     })
 
-    await queueEmail({
+    await sendEmail({
       to: user.email,
       subject,
-      textBody: text,
-      htmlBody: html,
+      text,
+      html,
     })
 
     // Log security event
