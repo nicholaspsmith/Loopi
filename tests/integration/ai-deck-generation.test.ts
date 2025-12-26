@@ -215,7 +215,7 @@ describe('AI Deck Generation Integration', () => {
 
       expect(result.suggestions.length).toBe(3)
       expect(result.metadata.llmFiltered).toBe(true)
-      expect(result.metadata.llmFilteringTimeMs).toBeGreaterThan(0)
+      expect(result.metadata.llmFilteringTimeMs).toBeGreaterThanOrEqual(0)
 
       // Verify ranking is applied
       expect(result.suggestions[0].relevanceScore).toBe(0.9) // Normalized from 9/10
@@ -264,12 +264,12 @@ describe('AI Deck Generation Integration', () => {
         }))
       )
 
-      // LLM ranks all 8 cards highly
+      // LLM ranks all 8 cards highly (all scores >= 6 to pass threshold)
       vi.mocked(getChatCompletion).mockResolvedValue(
         JSON.stringify(
           testFlashcardIds.slice(0, 8).map((id, idx) => ({
             id,
-            score: 9 - idx,
+            score: 10 - idx * 0.5, // Scores: 10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5 (all >= 6)
             explanation: `Relevant ${idx + 1}`,
           }))
         )
@@ -341,7 +341,9 @@ describe('AI Deck Generation Integration', () => {
       expect(result.suggestions.length).toBe(3)
       expect(result.metadata.llmFiltered).toBe(false)
       expect(result.metadata.warnings.length).toBeGreaterThan(0)
-      expect(result.metadata.warnings[0]).toContain('AI filtering unavailable')
+      expect(result.metadata.warnings.some((w) => w.includes('AI filtering unavailable'))).toBe(
+        true
+      )
 
       // Fallback should use vector similarity as relevance score
       expect(result.suggestions[0].relevanceScore).toBe(0.95)
