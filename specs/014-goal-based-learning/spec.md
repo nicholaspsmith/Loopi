@@ -11,7 +11,7 @@ Memoryloop v2 represents a fundamental pivot from a freeform chat interface to a
 
 **Target Users**: Professionals learning new skills (tech, marketing, creative fields)
 
-**Key Differentiator**: Unlike ChatGPT (no study system) or Anki (no AI, poor UX), Memoryloop generates structured learning paths AND helps users retain knowledge through engaging study experiences.
+**Key Differentiator**: Unlike ChatGPT (no study system) or Anki (no AI, poor UX), Memoryloop generates structured learning paths AND helps users retain knowledge through varied study modes and progress visualization.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -45,7 +45,7 @@ A user wants to create study materials for a specific topic in their skill tree.
 1. **Given** a skill tree with node "Pods" selected, **When** the user clicks "Generate Cards", **Then** the system generates flashcards specific to Kubernetes Pods.
 2. **Given** generated cards, **When** the user views them, **Then** they can edit, delete, or approve each card before adding to their deck.
 3. **Given** a set of approved cards, **When** the user confirms, **Then** cards are added to the deck and linked to the skill node for mastery tracking.
-4. **Given** poor quality cards, **When** the user types refinement feedback "Make these more practical with real commands", **Then** the system regenerates improved cards.
+4. **Given** cards the user finds unsatisfactory (incorrect, unclear, or misaligned with topic), **When** the user types refinement feedback "Make these more practical with real commands", **Then** the system regenerates improved cards.
 
 ---
 
@@ -95,7 +95,7 @@ A user wants recognition for their learning milestones. They earn titles and ach
 
 1. **Given** a user who masters their first 10 cards, **When** they check achievements, **Then** they see "First Steps" achievement unlocked.
 2. **Given** 50% mastery of a learning goal, **When** viewing their profile, **Then** they see a title upgrade (e.g., "Apprentice" to "Practitioner").
-3. **Given** a user who studies 7 days in a row, **When** they check achievements, **Then** they see "Perfect Week" (retroactive, not streak-based).
+3. **Given** a user who has studied 7 days in any rolling 7-day window, **When** they check achievements, **Then** they see "Week Warrior" achievement (retroactive, not streak-based).
 4. **Given** any achievement unlock, **When** it triggers, **Then** a celebratory animation plays (confetti, etc.).
 
 ---
@@ -146,7 +146,8 @@ The system tracks what topics users are learning to prioritize creating curated,
 **Card Generation**
 
 - **FR-010**: System MUST generate cards scoped to specific skill tree nodes
-- **FR-011**: System MUST support multiple card formats (flashcard, multiple choice, scenario-based)
+- **FR-011**: System MUST support multiple card formats (flashcard, multiple choice)
+  - _Note: Scenario-based format deferred to post-MVP_
 - **FR-012**: System MUST allow users to review, edit, and delete generated cards before committing
 - **FR-013**: System MUST support refinement chat scoped to current generation context
 - **FR-014**: System MUST link cards to skill tree nodes for mastery calculation
