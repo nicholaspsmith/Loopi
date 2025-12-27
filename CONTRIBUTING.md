@@ -301,7 +301,7 @@ Defined in `.claude/agents/` - spawned by Claude Code for focused tasks:
 
 | Agent          | When to Use                                  |
 | -------------- | -------------------------------------------- |
-| `review-agent` | Code review before commits (types, security) |
+| `review-agent` | Code review before pushes (gates all pushes) |
 | `test-agent`   | Writing/fixing tests (Vitest, Playwright)    |
 | `ui-agent`     | React components, styling                    |
 | `db-agent`     | Schema, migrations, Drizzle queries          |
