@@ -1,6 +1,10 @@
 # Claude Code credentials
 .claude/settings.local.json
 .claude/mcp_settings.json
+.mcp.json
+
+# External MCP servers (separate repos)
+lance-context/
 
 # Dependencies
 node_modules/
@@ -43,6 +47,7 @@ tests/e2e/.auth/
 # LanceDB data
 data/
 lancedb/
+.lance-context/
 
 # macos directory settings
 .DS_Store

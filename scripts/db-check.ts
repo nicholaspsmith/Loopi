@@ -51,26 +51,9 @@ async function checkConnection() {
     console.log('Database:', result[0].version)
     console.log('')
 
-    // Check if pgvector is installed
-    console.log('🔍 Checking for pgvector extension...')
-    const extensions = await sql`
-      SELECT * FROM pg_extension WHERE extname = 'vector'
-    `
-
-    if (extensions.length > 0) {
-      console.log('✅ pgvector extension is installed')
-    } else {
-      console.log('⚠️  pgvector extension is NOT installed')
-      console.log('')
-      console.log('To enable it:')
-      console.log('1. Go to your Supabase dashboard')
-      console.log('2. Database → Extensions')
-      console.log('3. Search for "vector"')
-      console.log('4. Toggle it ON')
-    }
-
     console.log('')
-    console.log('✨ Your database is ready!')
+    console.log('✨ Your PostgreSQL database is ready!')
+    console.log('Note: Vector embeddings are stored in LanceDB (local file-based).')
     console.log('Next step: npm run db:migrate')
   } catch (error: any) {
     console.error('❌ Connection failed:', error.message)

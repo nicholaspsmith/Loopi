@@ -20,8 +20,8 @@ MemoryLoop is a web application that enables you to learn through conversation w
 - **Language**: TypeScript 5.7
 - **Authentication**: NextAuth.js 5
 - **Database**: Hybrid architecture
-  - PostgreSQL + pgvector (users, conversations, messages, API keys)
-  - LanceDB (flashcards, review logs)
+  - PostgreSQL (users, conversations, messages, API keys)
+  - LanceDB (flashcards, review logs, vector embeddings)
 - **AI**: Anthropic Claude API with Ollama fallback
 - **Styling**: Tailwind CSS 4
 - **Testing**: Vitest, Playwright, React Testing Library

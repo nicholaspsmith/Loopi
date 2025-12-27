@@ -249,6 +249,74 @@ memoryloop/
 └── specs/                # Feature specifications
 ```
 
+## Development Tools
+
+This project includes AI-assisted development tools organized into three categories.
+
+### MCP Servers (Agent Tools)
+
+Model Context Protocol servers run as background processes and provide tools to AI agents (Claude Code).
+
+#### lance-context
+
+Semantic code search using vector embeddings:
+
+| Tool               | Purpose                                                |
+| ------------------ | ------------------------------------------------------ |
+| `index_codebase`   | Build/rebuild the vector index of code files           |
+| `search_code`      | Natural language search (e.g., "authentication logic") |
+| `get_index_status` | Check if index exists and file counts                  |
+| `clear_index`      | Delete the index to start fresh                        |
+
+#### serena
+
+Symbolic code navigation for precise, structure-aware operations:
+
+| Tool                         | Purpose                                     |
+| ---------------------------- | ------------------------------------------- |
+| `find_symbol`                | Find functions/classes/methods by name path |
+| `get_symbols_overview`       | List all symbols in a file                  |
+| `find_referencing_symbols`   | Find where a symbol is used                 |
+| `replace_symbol_body`        | Edit a specific function/method             |
+| `insert_before/after_symbol` | Add code at specific positions              |
+
+### Slash Commands (Human-Invoked)
+
+Invoke by typing `/command` in Claude Code:
+
+| Command              | Purpose                          |
+| -------------------- | -------------------------------- |
+| `/speckit.specify`   | Create feature specifications    |
+| `/speckit.clarify`   | Resolve spec ambiguities         |
+| `/speckit.plan`      | Generate implementation plans    |
+| `/speckit.tasks`     | Generate task breakdowns         |
+| `/speckit.analyze`   | Cross-artifact consistency check |
+| `/speckit.implement` | Execute implementation tasks     |
+
+Numbered aliases exist (`/2.specify`, `/3.plan`, `/4.1.analyze`) for faster autocomplete.
+
+### Specialized Subagents
+
+Defined in `.claude/agents/` - spawned by Claude Code for focused tasks:
+
+| Agent          | When to Use                                  |
+| -------------- | -------------------------------------------- |
+| `review-agent` | Code review before pushes (gates all pushes) |
+| `test-agent`   | Writing/fixing tests (Vitest, Playwright)    |
+| `ui-agent`     | React components, styling                    |
+| `db-agent`     | Schema, migrations, Drizzle queries          |
+| `git-agent`    | Commits, PRs, rebases                        |
+| `deploy-agent` | Docker, CI/CD, production                    |
+| `spec-agent`   | Feature planning                             |
+
+### Tool Usage Summary
+
+| Tool Type                         | Primary User                                                            |
+| --------------------------------- | ----------------------------------------------------------------------- |
+| MCP tools (lance-context, serena) | **Agents** - Claude Code uses these to navigate/search code efficiently |
+| Slash commands (`/speckit.*`)     | **Humans** - You invoke these to drive workflows                        |
+| Subagents                         | **Agents** - Claude Code spawns these for specialized tasks             |
+
 ## Documentation
 
 ### Code Documentation

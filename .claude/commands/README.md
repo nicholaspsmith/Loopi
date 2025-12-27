@@ -14,9 +14,9 @@ The numbered prefixes create a logical workflow order:
 3.plan.md            -> speckit.plan.md
 3.1.validate.md      -> speckit.plan.validate.md
 4.tasks.md           -> speckit.tasks.md
+4.1.analyze.md       -> speckit.analyze.md
 4.2.taskstoissues.md -> speckit.taskstoissues.md
 5.implement.md       -> speckit.implement.md
-6.analyze.md         -> speckit.analyze.md
 ```
 
 This allows you to type `/2` and get autocomplete for `specify`, `/3` for `plan`, etc.

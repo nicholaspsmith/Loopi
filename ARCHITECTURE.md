@@ -6,7 +6,7 @@ MemoryLoop uses a **hybrid database architecture** with PostgreSQL and LanceDB w
 
 ---
 
-## PostgreSQL + pgvector
+## PostgreSQL
 
 **Purpose:** Core application data with strong consistency requirements
 

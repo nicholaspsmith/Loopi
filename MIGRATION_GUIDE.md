@@ -10,8 +10,8 @@
 
 - `drizzle-orm` - TypeScript ORM for PostgreSQL
 - `postgres` - PostgreSQL client
-- `pgvector` - Vector similarity search extension
 - `drizzle-kit` - Database migration tool
+- `@lancedb/lancedb` - Vector database for embeddings
 
 ✅ **Schema Created**:
 
@@ -24,7 +24,6 @@
 
 ✅ **Documentation**:
 
-- `SUPABASE_SETUP.md` - Complete setup guide
 - `.env.example` - Updated with DATABASE_URL
 
 ## Current Architecture
@@ -45,14 +44,11 @@
 
 **Warning:** This is NOT recommended for MemoryLoop. The hybrid architecture provides better cost/performance. Only proceed if you have specific requirements for PostgreSQL-only deployment.
 
-### 1. Set up Supabase (5 minutes)
+### 1. Set up PostgreSQL
 
-Follow `SUPABASE_SETUP.md` to:
-
-1. Create Supabase project
-2. Enable pgvector extension
-3. Get DATABASE_URL
-4. Add to `.env.local`
+1. Create a PostgreSQL database (Supabase, Neon, or local)
+2. Get DATABASE_URL connection string
+3. Add to `.env.local`
 
 ### 2. Run Migrations
 

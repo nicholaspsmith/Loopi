@@ -1,0 +1,2 @@
+# Session logs directory
+# Daily session logs are stored here and rotated after 7 days

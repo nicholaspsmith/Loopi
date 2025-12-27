@@ -13,6 +13,53 @@ specs directory at `specs/[branch-name]/`. If it exists, read these files for fe
 
 This feature-specific context supplements the project-wide information below.
 
+## Context Management
+
+This project uses a context-aware development system to maintain efficiency across sessions.
+
+### Specialized Subagents
+
+Use `/agents` to see available specialized agents:
+
+- **review-agent**: Code review before pushes (types, tests, security)
+- **test-agent**: Write, run, fix tests (Vitest, Playwright)
+- **ui-agent**: Build React components and UI
+- **git-agent**: Commits, PRs, rebases
+- **db-agent**: Schema, migrations, queries
+- **deploy-agent**: Docker, CI/CD, production
+- **spec-agent**: Feature planning and specs
+
+### Agent Coordination: Commit & Push Workflow
+
+When a user asks to "commit and push" changes, follow this orchestrated workflow:
+
+1. **Spawn git-agent** to create commits (it will NOT push automatically)
+2. **Spawn review-agent** to review the commits
+3. **Check review verdict:**
+   - If `REVIEW_PASSED`: Spawn git-agent again to push
+   - If `REVIEW_FAILED`: Report blockers to user, do NOT push
+
+This ensures all code is reviewed before reaching the remote repository.
+
+### Scoped Ledgers
+
+**Feature Ledger** (`specs/[feature]/ledger.md`):
+
+- Tracks progress on a specific feature
+- Persists decisions and technical context
+- Update after significant milestones
+
+**Session Log** (`.claude/sessions/YYYY-MM-DD.md`):
+
+- Daily session activities
+- Rotates after 7 days
+- Use for handoff notes between sessions
+
+### MCP Tools
+
+- **Serena**: Symbol-level code navigation (`find_symbol`, `find_referencing_symbols`)
+- **lance-context**: Semantic code search (`index_codebase`, `search_code`)
+
 ## Task Tracking
 
 Tasks are tracked in markdown files at `specs/[feature-name]/tasks.md` using simple checkboxes:
@@ -67,9 +114,8 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 
 ### Database
 
-- PostgreSQL (via postgres 3.4.7, drizzle-orm 0.45.1)
-- LanceDB 0.22.3 (vector database)
-- pgvector 0.2.1 (vector embeddings)
+- PostgreSQL (via postgres 3.4.7, drizzle-orm 0.45.1) - users, conversations, messages, API keys
+- LanceDB 0.22.3 - vector embeddings for semantic search (flashcards, review logs)
 
 ### AI/ML
 
@@ -112,7 +158,6 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 - next 16.0.10 ([docs](https://nextjs.org/docs))
 - next-auth 5.0.0-beta.30 ([docs](https://next-auth.js.org))
 - nodemailer 7.0.12 ([docs](https://www.npmjs.com/package/nodemailer/v/7.0.12))
-- pgvector 0.2.1 ([docs](https://www.npmjs.com/package/pgvector/v/0.2.1))
 - postgres 3.4.7 ([docs](https://www.npmjs.com/package/postgres/v/3.4.7))
 - react 19.2.3 ([docs](https://react.dev))
 - react-dom 19.2.3 ([docs](https://react.dev/reference/react-dom))
