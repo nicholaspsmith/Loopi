@@ -44,10 +44,26 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - `gh pr create` - Create pull request
 - `gh pr view` - View PR details
 
+## Pre-Push Workflow
+
+After creating all commits but BEFORE pushing to remote:
+
+1. Run `npm run format` to apply Prettier formatting
+2. If any files changed, create a formatting commit:
+
+   ```
+   Apply Prettier formatting
+
+   Co-Authored-By: Claude <noreply@anthropic.com>
+   ```
+
+3. Then push all commits to remote
+
 ## Rules
 
 - NEVER use `git commit --amend` unless explicitly asked
 - NEVER force push to main/master
 - ALWAYS read `.claude/rules.md` before committing
+- ALWAYS run `npm run format` before pushing (see Pre-Push Workflow)
 - Use HEREDOC for multi-line commit messages
 - One responsibility per commit - split if needed
