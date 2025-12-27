@@ -47,6 +47,113 @@ Remember: Generate MULTIPLE flashcards (not just one). Extract every important c
 CONTENT TO ANALYZE:`
 
 /**
+ * Attempt to repair malformed JSON from LLM output
+ * Handles common issues like unescaped quotes, incomplete objects, etc.
+ */
+function repairJson(jsonString: string): string {
+  let repaired = jsonString
+
+  // Remove any text before the first [ or {
+  const arrayStart = repaired.indexOf('[')
+  const objectStart = repaired.indexOf('{')
+  const start =
+    arrayStart >= 0 && objectStart >= 0
+      ? Math.min(arrayStart, objectStart)
+      : Math.max(arrayStart, objectStart)
+  if (start > 0) {
+    repaired = repaired.substring(start)
+  }
+
+  // Try to fix unbalanced brackets
+  const openBrackets = (repaired.match(/\[/g) || []).length
+  const closeBrackets = (repaired.match(/\]/g) || []).length
+  if (openBrackets > closeBrackets) {
+    repaired += ']'.repeat(openBrackets - closeBrackets)
+  }
+
+  const openBraces = (repaired.match(/\{/g) || []).length
+  const closeBraces = (repaired.match(/\}/g) || []).length
+  if (openBraces > closeBraces) {
+    repaired += '}'.repeat(openBraces - closeBraces)
+  }
+
+  // Fix trailing commas before ] or }
+  repaired = repaired.replace(/,\s*([\]}])/g, '$1')
+
+  return repaired
+}
+
+/**
+ * Extract flashcard pairs using multiple strategies
+ * More aggressive regex extraction for severely malformed JSON
+ */
+function extractFlashcardsWithRegex(rawText: string): FlashcardPair[] {
+  const flashcards: FlashcardPair[] = []
+
+  // Strategy 1: Try to find complete question/answer pairs with standard regex
+  const standardPattern = /"question"\s*:\s*"([^"]+)"\s*,\s*"answer"\s*:\s*"([^"]+)"/g
+  let match
+  while ((match = standardPattern.exec(rawText)) !== null) {
+    flashcards.push({
+      question: match[1].replace(/\\"/g, '"').replace(/\\n/g, '\n'),
+      answer: match[2].replace(/\\"/g, '"').replace(/\\n/g, '\n'),
+    })
+  }
+
+  if (flashcards.length > 0) {
+    console.log(
+      `[FlashcardGenerator] Extracted ${flashcards.length} flashcards with standard regex`
+    )
+    return flashcards
+  }
+
+  // Strategy 2: Try matching pairs separately (handles some malformed cases)
+  const questionPattern = /"question"\s*:\s*"([^"]{10,})"/g
+  const answerPattern = /"answer"\s*:\s*"([^"]{10,})"/g
+
+  const questions: string[] = []
+  const answers: string[] = []
+
+  while ((match = questionPattern.exec(rawText)) !== null) {
+    questions.push(match[1].replace(/\\"/g, '"').replace(/\\n/g, '\n'))
+  }
+
+  while ((match = answerPattern.exec(rawText)) !== null) {
+    answers.push(match[1].replace(/\\"/g, '"').replace(/\\n/g, '\n'))
+  }
+
+  // Only pair them if counts match
+  if (questions.length > 0 && questions.length === answers.length) {
+    for (let i = 0; i < questions.length; i++) {
+      flashcards.push({ question: questions[i], answer: answers[i] })
+    }
+    console.log(`[FlashcardGenerator] Extracted ${flashcards.length} flashcards with paired regex`)
+    return flashcards
+  }
+
+  // Strategy 3: Look for object boundaries and extract individually
+  const objectPattern = /\{[^{}]*"question"[^{}]*"answer"[^{}]*\}/g
+  const objects = rawText.match(objectPattern) || []
+
+  for (const obj of objects) {
+    const qMatch = obj.match(/"question"\s*:\s*"([^"]+)"/)
+    const aMatch = obj.match(/"answer"\s*:\s*"([^"]+)"/)
+    if (qMatch && aMatch && qMatch[1].length > 5 && aMatch[1].length > 5) {
+      flashcards.push({
+        question: qMatch[1].replace(/\\"/g, '"').replace(/\\n/g, '\n'),
+        answer: aMatch[1].replace(/\\"/g, '"').replace(/\\n/g, '\n'),
+      })
+    }
+  }
+
+  if (flashcards.length > 0) {
+    console.log(`[FlashcardGenerator] Extracted ${flashcards.length} flashcards with object regex`)
+  }
+
+  return flashcards
+}
+
+/**
  * Parse flashcard response from LLM (handles both Claude and Ollama formats)
  */
 function parseFlashcardsFromResponse(rawResponse: string, provider: string): FlashcardPair[] {
@@ -64,39 +171,38 @@ function parseFlashcardsFromResponse(rawResponse: string, provider: string): Fla
 
     // Step 2: Extract JSON array from anywhere in the text
     // This handles cases where LLM adds explanatory text before/after JSON
-    const arrayMatch = jsonString.match(/\[[\s\S]*?\](?=\s*$|```|\n\n)/)
+    const arrayMatch = jsonString.match(/\[[\s\S]*\]/)
     if (arrayMatch) {
       jsonString = arrayMatch[0]
       console.log(`[FlashcardGenerator] Extracted JSON array from ${provider} response`)
     }
 
-    // Step 3: Try to parse the JSON
+    // Step 3: Try to parse the JSON (with repair attempt)
     let parsed: any
     try {
       parsed = JSON.parse(jsonString)
       console.log(`[FlashcardGenerator] Successfully parsed ${provider} JSON`)
     } catch (parseError) {
-      console.error(`[FlashcardGenerator] Failed to parse ${provider} JSON:`, parseError)
-      console.error(`[FlashcardGenerator] Attempted to parse:`, jsonString.substring(0, 500))
+      console.warn(`[FlashcardGenerator] Initial parse failed, attempting repair...`)
 
-      // Last resort: Try to extract Q&A pairs with regex
-      const questionMatches = Array.from(
-        jsonString.matchAll(/"question"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g)
-      )
-      const answerMatches = Array.from(
-        jsonString.matchAll(/"answer"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g)
-      )
+      // Try repairing the JSON
+      const repairedJson = repairJson(jsonString)
+      try {
+        parsed = JSON.parse(repairedJson)
+        console.log(`[FlashcardGenerator] Successfully parsed repaired ${provider} JSON`)
+      } catch (repairError) {
+        console.error(`[FlashcardGenerator] Repair failed, trying regex extraction`)
+        console.error(`[FlashcardGenerator] Attempted to parse:`, jsonString.substring(0, 500))
 
-      if (questionMatches.length > 0 && questionMatches.length === answerMatches.length) {
-        const recovered = questionMatches.map((qMatch, i) => ({
-          question: qMatch[1].replace(/\\"/g, '"').replace(/\\n/g, '\n'),
-          answer: answerMatches[i][1].replace(/\\"/g, '"').replace(/\\n/g, '\n'),
-        }))
-        console.log(`[FlashcardGenerator] Recovered ${recovered.length} flashcards via regex`)
-        return recovered
+        // Fall back to regex extraction
+        const regexResults = extractFlashcardsWithRegex(rawResponse)
+        if (regexResults.length > 0) {
+          return regexResults
+        }
+
+        console.error(`[FlashcardGenerator] All parsing strategies failed for ${provider}`)
+        return []
       }
-
-      return []
     }
 
     // Step 4: Normalize to array format
