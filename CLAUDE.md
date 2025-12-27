@@ -21,13 +21,25 @@ This project uses a context-aware development system to maintain efficiency acro
 
 Use `/agents` to see available specialized agents:
 
-- **review-agent**: Code review before commits (types, tests, security)
+- **review-agent**: Code review before pushes (types, tests, security)
 - **test-agent**: Write, run, fix tests (Vitest, Playwright)
 - **ui-agent**: Build React components and UI
 - **git-agent**: Commits, PRs, rebases
 - **db-agent**: Schema, migrations, queries
 - **deploy-agent**: Docker, CI/CD, production
 - **spec-agent**: Feature planning and specs
+
+### Agent Coordination: Commit & Push Workflow
+
+When a user asks to "commit and push" changes, follow this orchestrated workflow:
+
+1. **Spawn git-agent** to create commits (it will NOT push automatically)
+2. **Spawn review-agent** to review the commits
+3. **Check review verdict:**
+   - If `REVIEW_PASSED`: Spawn git-agent again to push
+   - If `REVIEW_FAILED`: Report blockers to user, do NOT push
+
+This ensures all code is reviewed before reaching the remote repository.
 
 ### Scoped Ledgers
 
