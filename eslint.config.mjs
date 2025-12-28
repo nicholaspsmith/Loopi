@@ -43,10 +43,7 @@ export default [
   // Study mode components use refs for option shuffling and timing
   // These are valid memoization patterns that avoid unnecessary re-renders
   {
-    files: [
-      'components/study/MultipleChoiceMode.tsx',
-      'components/study/TimedChallengeMode.tsx',
-    ],
+    files: ['components/study/MultipleChoiceMode.tsx', 'components/study/TimedChallengeMode.tsx'],
     rules: {
       'react-hooks/purity': 'off',
       'react-hooks/refs': 'off',
