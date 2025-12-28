@@ -100,7 +100,7 @@ describe('ProviderBadge Component', () => {
       const badge = screen.getByText(/claude/i)
 
       expect(badge).toHaveAttribute('title')
-      expect(badge).toHaveAttribute('title', expect.stringMatching(/using your Claude API key/i))
+      expect(badge).toHaveAttribute('title', expect.stringMatching(/Generated using Claude API/i))
     })
 
     it('should show tooltip on hover for Ollama', async () => {
@@ -162,7 +162,7 @@ describe('ProviderBadge Component', () => {
 
       // Badge has accessible label and tooltip for screen readers
       expect(badge).toHaveAttribute('aria-label', 'AI Provider: Claude')
-      expect(badge).toHaveAttribute('title', 'Generated using your Claude API key')
+      expect(badge).toHaveAttribute('title', 'Generated using Claude API')
     })
 
     it('should have appropriate color contrast', () => {

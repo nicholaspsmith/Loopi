@@ -4,18 +4,12 @@ import { auth } from '@/auth'
 import { getMessagesByConversationId, createMessage } from '@/lib/db/operations/messages'
 import { getFlashcardsByMessageId } from '@/lib/db/operations/flashcards'
 import { getConversationById, conversationBelongsToUser } from '@/lib/db/operations/conversations'
-import {
-  getUserApiKey,
-  getUserApiKeyRecord,
-  updateApiKeyValidation,
-} from '@/lib/db/operations/api-keys'
 import { success, error as errorResponse } from '@/lib/api/response'
 import { validate } from '@/lib/validation/helpers'
 import { AuthenticationError, AuthorizationError, NotFoundError } from '@/lib/errors'
 import { streamChatCompletion, toClaudeMessages, type ClassifiedError } from '@/lib/claude/client'
 import { getSystemPrompt } from '@/lib/claude/prompts'
 import { buildRAGContext, shouldUseRAG } from '@/lib/claude/rag'
-import type { AIProvider } from '@/lib/types/api-key'
 
 /**
  * GET /api/chat/conversations/[conversationId]/messages
@@ -102,13 +96,9 @@ export async function POST(
     const body = await request.json()
     const data = validate(SendMessageSchema, body)
 
-    // Fetch user's API key if available (T031)
-    const userApiKey = await getUserApiKey(userId)
-    const apiKeyRecord = await getUserApiKeyRecord(userId)
-
-    // Determine AI provider and API key ID
-    const aiProvider: AIProvider = userApiKey ? 'claude' : 'ollama'
-    const apiKeyId = apiKeyRecord?.id || null
+    // Use server-side API key if available
+    const apiKey = process.env.ANTHROPIC_API_KEY
+    const aiProvider = apiKey ? 'claude' : 'ollama'
 
     // Create user message
     const userMessage = await createMessage({
@@ -154,7 +144,7 @@ export async function POST(
           await streamChatCompletion({
             messages: claudeMessages,
             systemPrompt,
-            userApiKey, // Pass user's API key to route to Claude or Ollama
+            userApiKey: apiKey, // Use server-side API key
             onChunk: (text) => {
               // Send text chunk via SSE
               controller.enqueue(
@@ -162,14 +152,13 @@ export async function POST(
               )
             },
             onComplete: async (text) => {
-              // Save assistant message to database with provider info (T034)
+              // Save assistant message to database with provider info
               const assistantMessage = await createMessage({
                 conversationId,
                 userId,
                 role: 'assistant',
                 content: text,
                 aiProvider,
-                apiKeyId,
               })
 
               // Send completion event
@@ -202,11 +191,6 @@ export async function POST(
                 )
               )
               controller.close()
-            },
-            // Handle API key invalidation mid-conversation (T060)
-            onApiKeyInvalid: async () => {
-              console.log('[API Key] Invalidating API key due to authentication failure')
-              await updateApiKeyValidation(userId, false)
             },
           })
         } catch (error) {

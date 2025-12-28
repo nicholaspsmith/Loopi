@@ -24,7 +24,6 @@ export async function createMessage(data: {
   role: MessageRole
   content: string
   aiProvider?: 'claude' | 'ollama' | null
-  apiKeyId?: string | null
 }): Promise<Message> {
   const db = getDb()
 
@@ -37,7 +36,6 @@ export async function createMessage(data: {
       content: data.content,
       hasFlashcards: false,
       aiProvider: data.aiProvider || null,
-      apiKeyId: data.apiKeyId || null,
     })
     .returning()
 
@@ -67,7 +65,6 @@ export async function createMessage(data: {
     createdAt: message.createdAt.getTime(),
     hasFlashcards: message.hasFlashcards,
     aiProvider: message.aiProvider as 'claude' | 'ollama' | null,
-    apiKeyId: message.apiKeyId,
   }
 }
 
@@ -93,7 +90,6 @@ export async function getMessageById(id: string): Promise<Message | null> {
     createdAt: message.createdAt.getTime(),
     hasFlashcards: message.hasFlashcards,
     aiProvider: message.aiProvider as 'claude' | 'ollama' | null,
-    apiKeyId: message.apiKeyId,
   }
 }
 
@@ -120,7 +116,6 @@ export async function getMessagesByConversationId(conversationId: string): Promi
     createdAt: msg.createdAt.getTime(),
     hasFlashcards: msg.hasFlashcards,
     aiProvider: msg.aiProvider as 'claude' | 'ollama' | null,
-    apiKeyId: msg.apiKeyId,
   }))
 }
 
@@ -150,7 +145,6 @@ export async function getRecentMessages(
     createdAt: msg.createdAt.getTime(),
     hasFlashcards: msg.hasFlashcards,
     aiProvider: msg.aiProvider as 'claude' | 'ollama' | null,
-    apiKeyId: msg.apiKeyId,
   }))
 }
 
@@ -182,6 +176,5 @@ export async function markMessageWithFlashcards(id: string): Promise<Message> {
     createdAt: updatedMessage.createdAt.getTime(),
     hasFlashcards: updatedMessage.hasFlashcards,
     aiProvider: updatedMessage.aiProvider as 'claude' | 'ollama' | null,
-    apiKeyId: updatedMessage.apiKeyId,
   }
 }

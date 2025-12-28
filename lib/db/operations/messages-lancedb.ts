@@ -125,7 +125,6 @@ export async function searchSimilarMessages(
         createdAt: m.createdAt.getTime(),
         hasFlashcards: m.hasFlashcards,
         aiProvider: m.aiProvider as 'claude' | 'ollama' | null,
-        apiKeyId: m.apiKeyId,
       }))
   } catch (error) {
     console.error('[LanceDB] Semantic search failed:', error)
