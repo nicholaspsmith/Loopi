@@ -1,28 +1,16 @@
-import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
-import ChatInterface from '@/components/chat/ChatInterface'
 
 /**
- * Chat Page
+ * Chat Page (Deprecated)
  *
- * Protected route - main chat interface with Claude Sonnet 4.5.
- * Features educational tutoring with streaming responses.
+ * The chat-based interface has been replaced by goal-based learning.
+ * Redirects to the goals page.
  */
 
 export const metadata = {
-  title: 'Chat - MemoryLoop',
+  title: 'Redirecting... - MemoryLoop',
 }
 
-export default async function ChatPage() {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    redirect('/login')
-  }
-
-  return (
-    <div className="flex flex-col h-[calc(100vh-8rem)]">
-      <ChatInterface userId={session.user.id} />
-    </div>
-  )
+export default function ChatPage() {
+  redirect('/goals')
 }

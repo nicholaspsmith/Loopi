@@ -6,20 +6,21 @@ import { usePathname } from 'next/navigation'
 /**
  * Navigation Component
  *
- * Tab-based navigation between Chat and Quiz sections.
+ * Tab-based navigation for goal-based learning platform.
  * Highlights active tab based on current route.
  */
 
 interface NavLink {
   href: string
   label: string
+  icon?: string
 }
 
 const navLinks: NavLink[] = [
-  { href: '/chat', label: 'Chat' },
-  { href: '/quiz', label: 'Quiz' },
-  { href: '/decks', label: 'Decks' },
-  { href: '/settings', label: 'Settings' },
+  { href: '/goals', label: 'Goals', icon: '🎯' },
+  { href: '/progress', label: 'Progress', icon: '📊' },
+  { href: '/achievements', label: 'Achievements', icon: '🏆' },
+  { href: '/settings', label: 'Settings', icon: '⚙️' },
 ]
 
 export default function Navigation() {
@@ -35,7 +36,7 @@ export default function Navigation() {
             href={link.href}
             aria-current={isActive ? 'page' : undefined}
             className={`
-              px-4 py-2 text-sm font-medium border-b-2 transition-colors 
+              px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5
               ${
                 isActive
                   ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
@@ -43,6 +44,7 @@ export default function Navigation() {
               }
             `}
           >
+            {link.icon && <span className="hidden sm:inline">{link.icon}</span>}
             {link.label}
           </Link>
         )

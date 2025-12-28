@@ -1,0 +1,134 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/auth'
+import { z } from 'zod'
+import { getFlashcardById, updateFlashcardFSRSState } from '@/lib/db/operations/flashcards'
+import { createReviewLog } from '@/lib/db/operations/review-logs'
+import { scheduleCard } from '@/lib/fsrs/scheduler'
+import { numberToRating, isValidRating, objectToCard } from '@/lib/fsrs/utils'
+import * as logger from '@/lib/logger'
+
+/**
+ * POST /api/study/rate
+ *
+ * Record a rating for a card during study.
+ * Updates FSRS state immediately.
+ *
+ * Per contracts/study.md - extends /api/quiz/rate with mode tracking
+ */
+
+const RateRequestSchema = z.object({
+  cardId: z.string().uuid(),
+  rating: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]),
+  responseTimeMs: z.number().int().min(0).optional(),
+  mode: z.enum(['flashcard', 'multiple_choice', 'timed']),
+})
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Parse request body
+    const body = await request.json()
+    const parseResult = RateRequestSchema.safeParse(body)
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: 'Invalid request', details: parseResult.error.issues[0].message },
+        { status: 400 }
+      )
+    }
+
+    const { cardId, rating: ratingNum, responseTimeMs, mode } = parseResult.data
+
+    // Validate rating
+    if (!isValidRating(ratingNum)) {
+      return NextResponse.json({ error: 'Invalid rating. Must be 1-4' }, { status: 400 })
+    }
+
+    const rating = numberToRating(ratingNum)
+    if (!rating) {
+      return NextResponse.json({ error: 'Invalid rating conversion' }, { status: 400 })
+    }
+
+    // Get the flashcard
+    const flashcard = await getFlashcardById(cardId)
+    if (!flashcard) {
+      return NextResponse.json({ error: 'Card not found' }, { status: 404 })
+    }
+
+    // Verify ownership
+    if (flashcard.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    }
+
+    // Convert flashcard FSRS state to Card object
+    const currentCard = objectToCard({
+      state: flashcard.fsrsState.state,
+      due: new Date(flashcard.fsrsState.due).getTime(),
+      stability: flashcard.fsrsState.stability,
+      difficulty: flashcard.fsrsState.difficulty,
+      elapsed_days: flashcard.fsrsState.elapsed_days,
+      scheduled_days: flashcard.fsrsState.scheduled_days,
+      learning_steps: flashcard.fsrsState.learning_steps,
+      reps: flashcard.fsrsState.reps,
+      lapses: flashcard.fsrsState.lapses,
+      last_review: flashcard.fsrsState.last_review
+        ? new Date(flashcard.fsrsState.last_review).getTime()
+        : undefined,
+    })
+
+    // Use FSRS scheduler to calculate next review
+    const { card: updatedCard, log: fsrsLog } = scheduleCard(currentCard, rating)
+
+    // Update flashcard FSRS state in database
+    await updateFlashcardFSRSState(cardId, updatedCard)
+
+    // Create review log entry
+    await createReviewLog({
+      flashcardId: cardId,
+      userId: session.user.id,
+      rating: fsrsLog.rating,
+      state: fsrsLog.state,
+      due: new Date(fsrsLog.scheduled_days * 24 * 60 * 60 * 1000 + Date.now()),
+      stability: updatedCard.stability,
+      difficulty: updatedCard.difficulty,
+      elapsed_days: fsrsLog.elapsed_days,
+      last_elapsed_days: fsrsLog.last_elapsed_days,
+      scheduled_days: fsrsLog.scheduled_days,
+      review: fsrsLog.review,
+    })
+
+    logger.info('Card rated', {
+      cardId,
+      rating: ratingNum,
+      mode,
+      responseTimeMs,
+      newState: updatedCard.state,
+      nextDue: updatedCard.due.toISOString(),
+    })
+
+    return NextResponse.json({
+      cardId,
+      nextDue: updatedCard.due.toISOString(),
+      newState: {
+        state: updatedCard.state,
+        due: updatedCard.due.toISOString(),
+        stability: updatedCard.stability,
+        difficulty: updatedCard.difficulty,
+        elapsedDays: updatedCard.elapsed_days,
+        scheduledDays: updatedCard.scheduled_days,
+        reps: updatedCard.reps,
+        lapses: updatedCard.lapses,
+        lastReview: updatedCard.last_review?.toISOString() || null,
+      },
+    })
+  } catch (error) {
+    logger.error('Failed to rate card', error as Error, {
+      path: '/api/study/rate',
+    })
+
+    return NextResponse.json({ error: 'Failed to rate card' }, { status: 500 })
+  }
+}

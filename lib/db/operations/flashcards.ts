@@ -269,3 +269,161 @@ export async function countFlashcardsByState(userId: string, state: State): Prom
   const flashcards = await getFlashcardsByState(userId, state)
   return flashcards.length
 }
+
+/**
+ * Goal-based flashcard input (for skill tree card generation)
+ */
+export interface CreateGoalFlashcardInput {
+  userId: string
+  skillNodeId: string
+  question: string
+  answer: string
+  cardType: 'flashcard' | 'multiple_choice' | 'scenario'
+  distractors?: string[] // For multiple_choice
+  context?: string // For scenario (stored in metadata)
+}
+
+/**
+ * Extended flashcard type with goal-based fields
+ */
+export interface GoalFlashcard extends Flashcard {
+  skillNodeId: string | null
+  cardType: string
+  cardMetadata: { distractors?: string[]; context?: string } | null
+}
+
+/**
+ * Convert database row to GoalFlashcard type
+ */
+function rowToGoalFlashcard(row: typeof flashcards.$inferSelect): GoalFlashcard {
+  const base = rowToFlashcard(row)
+  return {
+    ...base,
+    skillNodeId: row.skillNodeId,
+    cardType: row.cardType,
+    cardMetadata: row.cardMetadata as { distractors?: string[]; context?: string } | null,
+  }
+}
+
+/**
+ * Create a goal-based flashcard linked to a skill node
+ */
+export async function createGoalFlashcard(data: CreateGoalFlashcardInput): Promise<GoalFlashcard> {
+  const db = getDb()
+  const fsrsCard = createEmptyCard()
+
+  // Build metadata based on card type
+  let cardMetadata: Record<string, unknown> | null = null
+  if (data.cardType === 'multiple_choice' && data.distractors) {
+    cardMetadata = { distractors: data.distractors }
+  } else if (data.cardType === 'scenario' && data.context) {
+    cardMetadata = { context: data.context }
+  }
+
+  const [row] = await db
+    .insert(flashcards)
+    .values({
+      id: uuidv4(),
+      userId: data.userId,
+      conversationId: null,
+      messageId: null,
+      question: data.question,
+      answer: data.answer,
+      fsrsState: cardToJson(fsrsCard),
+      skillNodeId: data.skillNodeId,
+      cardType: data.cardType,
+      cardMetadata,
+    })
+    .returning()
+
+  // Sync embedding to LanceDB asynchronously
+  if (process.env.NODE_ENV !== 'test') {
+    syncFlashcardToLanceDB({
+      id: row.id,
+      userId: row.userId,
+      question: row.question,
+    }).catch((error) => {
+      console.error(`[Flashcards] Failed to sync flashcard ${row.id} to LanceDB:`, error)
+    })
+  }
+
+  console.log(`[Flashcards] Created goal flashcard ${row.id} for node ${data.skillNodeId}`)
+
+  return rowToGoalFlashcard(row)
+}
+
+/**
+ * Create multiple goal-based flashcards in batch
+ */
+export async function createGoalFlashcards(
+  cards: CreateGoalFlashcardInput[]
+): Promise<GoalFlashcard[]> {
+  if (cards.length === 0) return []
+
+  const db = getDb()
+
+  const values = cards.map((data) => {
+    const fsrsCard = createEmptyCard()
+    let cardMetadata: Record<string, unknown> | null = null
+    if (data.cardType === 'multiple_choice' && data.distractors) {
+      cardMetadata = { distractors: data.distractors }
+    } else if (data.cardType === 'scenario' && data.context) {
+      cardMetadata = { context: data.context }
+    }
+
+    return {
+      id: uuidv4(),
+      userId: data.userId,
+      conversationId: null,
+      messageId: null,
+      question: data.question,
+      answer: data.answer,
+      fsrsState: cardToJson(fsrsCard),
+      skillNodeId: data.skillNodeId,
+      cardType: data.cardType,
+      cardMetadata,
+    }
+  })
+
+  const rows = await db.insert(flashcards).values(values).returning()
+
+  // Sync embeddings to LanceDB asynchronously
+  if (process.env.NODE_ENV !== 'test') {
+    for (const row of rows) {
+      syncFlashcardToLanceDB({
+        id: row.id,
+        userId: row.userId,
+        question: row.question,
+      }).catch((error) => {
+        console.error(`[Flashcards] Failed to sync flashcard ${row.id} to LanceDB:`, error)
+      })
+    }
+  }
+
+  console.log(`[Flashcards] Created ${rows.length} goal flashcards`)
+
+  return rows.map(rowToGoalFlashcard)
+}
+
+/**
+ * Get flashcards by skill node ID
+ */
+export async function getFlashcardsBySkillNodeId(nodeId: string): Promise<GoalFlashcard[]> {
+  const db = getDb()
+
+  const rows = await db
+    .select()
+    .from(flashcards)
+    .where(eq(flashcards.skillNodeId, nodeId))
+    .orderBy(flashcards.createdAt)
+
+  return rows.map(rowToGoalFlashcard)
+}
+
+/**
+ * Count flashcards for a skill node
+ */
+export async function countFlashcardsByNodeId(nodeId: string): Promise<number> {
+  const cards = await getFlashcardsBySkillNodeId(nodeId)
+  return cards.length
+}

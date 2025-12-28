@@ -1,0 +1,295 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import GoalProgress from '@/components/goals/GoalProgress'
+import SkillTreeEditor from '@/components/skills/SkillTreeEditor'
+import { type SkillNodeData } from '@/components/skills/SkillNode'
+
+/**
+ * Goal Detail Page (T035)
+ *
+ * Displays a specific goal with:
+ * - Goal info and progress
+ * - Skill tree visualization and editing
+ * - Actions (study, edit, archive)
+ */
+
+interface GoalData {
+  id: string
+  title: string
+  description: string | null
+  status: string
+  masteryPercentage: number
+  totalTimeSeconds: number
+  createdAt: string
+  updatedAt: string
+  completedAt: string | null
+  archivedAt: string | null
+  skillTree: {
+    id: string
+    generatedBy: string
+    nodeCount: number
+    maxDepth: number
+    nodes: SkillNodeData[]
+  } | null
+  stats: {
+    totalCards: number
+    cardsDue: number
+    retentionRate: number
+  }
+}
+
+export default function GoalDetailPage({ params }: { params: Promise<{ goalId: string }> }) {
+  const router = useRouter()
+  const [goal, setGoal] = useState<GoalData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [goalId, setGoalId] = useState<string | null>(null)
+
+  // Unwrap params
+  useEffect(() => {
+    params.then((p) => setGoalId(p.goalId))
+  }, [params])
+
+  // Fetch goal data
+  useEffect(() => {
+    if (!goalId) return
+
+    const fetchGoal = async () => {
+      try {
+        const response = await fetch(`/api/goals/${goalId}`)
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error('Goal not found')
+          }
+          throw new Error('Failed to load goal')
+        }
+        const data = await response.json()
+        setGoal(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchGoal()
+  }, [goalId])
+
+  // Handle create skill tree (for goals without one)
+  const [creatingTree, setCreatingTree] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
+
+  const handleCreateSkillTree = async () => {
+    if (!goalId) return
+
+    setCreatingTree(true)
+    setCreateError(null)
+
+    try {
+      const response = await fetch(`/api/goals/${goalId}/skill-tree`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.message || data.error || 'Failed to generate skill tree')
+      }
+
+      const data = await response.json()
+      setGoal((prev) =>
+        prev
+          ? {
+              ...prev,
+              skillTree: {
+                id: data.id,
+                generatedBy: 'ai',
+                nodes: data.nodes,
+                nodeCount: data.nodeCount,
+                maxDepth: data.maxDepth,
+              },
+            }
+          : null
+      )
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : 'Failed to generate skill tree')
+    } finally {
+      setCreatingTree(false)
+    }
+  }
+
+  // Handle regenerate (for goals with existing skill tree)
+  const handleRegenerate = async (feedback?: string) => {
+    if (!goalId) return
+
+    const response = await fetch(`/api/goals/${goalId}/skill-tree/regenerate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feedback }),
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to regenerate skill tree')
+    }
+
+    const data = await response.json()
+    setGoal((prev) =>
+      prev
+        ? {
+            ...prev,
+            skillTree: prev.skillTree
+              ? {
+                  ...prev.skillTree,
+                  nodes: data.nodes,
+                  nodeCount: data.nodeCount,
+                  maxDepth: data.maxDepth,
+                }
+              : null,
+          }
+        : null
+    )
+  }
+
+  // Handle nodes change
+  const handleNodesChange = (nodes: SkillNodeData[]) => {
+    setGoal((prev) =>
+      prev && prev.skillTree
+        ? {
+            ...prev,
+            skillTree: {
+              ...prev.skillTree,
+              nodes,
+            },
+          }
+        : prev
+    )
+  }
+
+  // Handle archive
+  const handleArchive = async () => {
+    if (!goalId || !confirm('Are you sure you want to archive this goal?')) return
+
+    try {
+      const response = await fetch(`/api/goals/${goalId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'archived' }),
+      })
+
+      if (!response.ok) throw new Error('Failed to archive goal')
+
+      router.push('/goals')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    }
+  }
+
+  // Format time
+  const formatTime = (seconds: number) => {
+    if (seconds < 60) return `${seconds}s`
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`
+    return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (error || !goal) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-6">
+        <h1 className="text-2xl font-bold text-red-600 mb-4">{error || 'Goal not found'}</h1>
+        <Link href="/goals" className="text-blue-600 hover:underline">
+          Back to Goals
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col h-full p-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="mb-6 flex items-start justify-between">
+        <div className="flex items-start gap-6">
+          <GoalProgress masteryPercentage={goal.masteryPercentage} size="lg" />
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              {goal.title}
+            </h1>
+            {goal.description && (
+              <p className="text-gray-600 dark:text-gray-400 mb-4">{goal.description}</p>
+            )}
+            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+              <span>{formatTime(goal.totalTimeSeconds)} studied</span>
+              <span>•</span>
+              <span>{goal.stats.totalCards} cards</span>
+              <span>•</span>
+              <span>{goal.stats.cardsDue} due for review</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {goal.skillTree && goal.skillTree.nodeCount > 0 && (
+            <Link
+              href={`/goals/${goal.id}/study`}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Study Now
+            </Link>
+          )}
+          <button
+            onClick={handleArchive}
+            className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            Archive
+          </button>
+        </div>
+      </div>
+
+      {/* Skill Tree Section */}
+      <div className="flex-1">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Skill Tree</h2>
+
+        {goal.skillTree ? (
+          <SkillTreeEditor
+            goalId={goal.id}
+            nodes={goal.skillTree.nodes}
+            onNodesChange={handleNodesChange}
+            onRegenerate={handleRegenerate}
+          />
+        ) : (
+          <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              No skill tree generated for this goal yet.
+            </p>
+            {createError && (
+              <p className="text-red-600 dark:text-red-400 mb-4 text-sm">{createError}</p>
+            )}
+            <button
+              onClick={handleCreateSkillTree}
+              disabled={creatingTree}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {creatingTree ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                  Generating...
+                </span>
+              ) : (
+                'Generate Skill Tree'
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
