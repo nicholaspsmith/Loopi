@@ -80,7 +80,11 @@
       "Bash(.claude/hooks/bash-guardian.sh:*)",
       "Bash(jq:*)",
       "Bash(/Users/nick/Code/memoryloop/.claude/hooks/file-agent-guardian.sh)",
-      "Bash(/Users/nick/Code/memoryloop/.claude/hooks/bash-guardian.sh)"
+      "Bash(/Users/nick/Code/memoryloop/.claude/hooks/bash-guardian.sh)",
+      "Bash(gh pr list:*)",
+      "Bash(chmod:*)",
+      "Bash(.claude/hooks/navigation-guardian.sh:*)",
+      "Bash(/Users/nick/Code/memoryloop/.claude/hooks/navigation-guardian.sh)"
     ]
   },
   "enabledMcpjsonServers": [
@@ -104,6 +108,16 @@
           {
             "type": "command",
             "command": ".claude/hooks/bash-guardian.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Grep|Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/navigation-guardian.sh",
             "timeout": 5
           }
         ]

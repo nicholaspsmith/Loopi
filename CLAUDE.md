@@ -43,6 +43,14 @@ Rules are enforced by hooks in `.claude/hooks/`. If a hook blocks you, spawn the
 | `git rebase`, `git merge` | Spawn **git-agent**                              |
 | `git reset --hard`        | Spawn **git-agent** (dangerous operation)        |
 
+**navigation-guardian.sh** (Grep/Read):
+
+| Pattern                                   | Suggested Tool                                       |
+| ----------------------------------------- | ---------------------------------------------------- |
+| Grep for `class X`, `function Y`, `def Z` | **Serena** `find_symbol`                             |
+| Read source file (`.ts`, `.py`, etc.)     | **Serena** `get_symbols_overview`                    |
+| Open-ended exploration                    | **Explore** agent or **lance-context** `search_code` |
+
 ## Feature-Specific Context
 
 When working on a feature branch (e.g., `003-flashcard-rating-labels`), check for a matching
