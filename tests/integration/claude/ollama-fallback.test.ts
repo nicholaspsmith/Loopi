@@ -3,7 +3,6 @@ import { describe, it, expect, beforeAll } from 'vitest'
 import { createUser } from '@/lib/db/operations/users'
 import { createConversation } from '@/lib/db/operations/conversations'
 import { createMessage } from '@/lib/db/operations/messages'
-import { getUserApiKey } from '@/lib/db/operations/api-keys'
 import { getChatCompletion } from '@/lib/claude/client'
 import { generateFlashcardsFromContent } from '@/lib/claude/flashcard-generator'
 import { initializeSchema, isSchemaInitialized } from '@/lib/db/schema'
@@ -12,11 +11,8 @@ import { initializeSchema, isSchemaInitialized } from '@/lib/db/schema'
  * Integration Tests for Ollama Fallback Behavior
  *
  * Tests that the system correctly falls back to Ollama when:
- * 1. User has no saved API key
- * 2. User's API key is null/undefined
- *
- * User Story 4: Fallback to Ollama
- * Ensures users without API keys can still use the application
+ * 1. No server-side ANTHROPIC_API_KEY is set
+ * 2. userApiKey parameter is null/undefined
  *
  * Tests are skipped when Ollama is not available.
  */
@@ -61,7 +57,7 @@ describe.sequential('Ollama Fallback Behavior', () => {
       await initializeSchema()
     }
 
-    // Create test user WITHOUT an API key
+    // Create test user
     const testUser = await createUser({
       email: `ollama-test-${Date.now()}@example.com`,
       passwordHash: '$2b$10$n0.ChK4kNntDZE1yNFNs3ufwt2FyPZ7Pf9h8Do24W8M/wkdKznMa.',
@@ -78,15 +74,11 @@ describe.sequential('Ollama Fallback Behavior', () => {
   })
 
   describe('Chat completion fallback', () => {
-    it('should use Ollama when user has no API key', async function () {
+    it('should use Ollama when no API key provided', async function () {
       if (!ollamaAvailable) {
         console.log('Skipping: Ollama not available')
         return
       }
-
-      // Verify user has no API key
-      const apiKey = await getUserApiKey(testUserId)
-      expect(apiKey).toBeNull()
 
       // Create a user message
       const userMessage = await createMessage({
@@ -125,12 +117,10 @@ describe.sequential('Ollama Fallback Behavior', () => {
         role: 'assistant',
         content: 'Response from Ollama',
         aiProvider: 'ollama', // Should be set when using Ollama
-        apiKeyId: null, // No API key used
       })
 
       expect(userMessage).toBeDefined()
       expect(assistantMessage.aiProvider).toBe('ollama')
-      expect(assistantMessage.apiKeyId).toBeNull()
     })
   })
 
@@ -140,10 +130,6 @@ describe.sequential('Ollama Fallback Behavior', () => {
         console.log('Skipping: Ollama not available')
         return
       }
-
-      // Verify user has no API key
-      const apiKey = await getUserApiKey(testUserId)
-      expect(apiKey).toBeNull()
 
       const educationalContent = `
         Photosynthesis is the process by which plants convert light energy into chemical energy.
@@ -208,17 +194,13 @@ describe.sequential('Ollama Fallback Behavior', () => {
       expect(response.length).toBeGreaterThan(0)
     }, 15000)
 
-    it('should work for users without saved API keys', async function () {
+    it('should work when no API key is provided', async function () {
       if (!ollamaAvailable) {
         console.log('Skipping: Ollama not available')
         return
       }
 
-      // This is the primary use case - a user who hasn't configured an API key yet
-      const userApiKey = await getUserApiKey(testUserId)
-      expect(userApiKey).toBeNull()
-
-      // Both chat and flashcards should work via Ollama
+      // Both chat and flashcards should work via Ollama when no API key is provided
       const chatResponse = await getChatCompletion({
         messages: [{ role: 'user', content: 'Hello without API key' }],
         systemPrompt: 'You are a helpful assistant.',

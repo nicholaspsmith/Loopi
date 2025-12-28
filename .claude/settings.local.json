@@ -1,0 +1,130 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh issue close:*)",
+      "Bash(npm run build:*)",
+      "WebFetch(domain:lancedb.github.io)",
+      "Bash(git add:*)",
+      "Bash(gh issue list:*)",
+      "Bash(git commit:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue create:*)",
+      "Bash(npm test:*)",
+      "Bash(ls:*)",
+      "Bash(gh issue edit:*)",
+      "Bash(echo:*)",
+      "Bash(npm run test:integration:*)",
+      "Bash(npm run test:unit:*)",
+      "Bash(npm run)",
+      "Bash(test:*)",
+      "Bash(for task in 'Provision VPS (Hetzner CX22 or DigitalOcean Droplet)' 'Configure firewall (UFW)' 'Install Docker and Docker Compose on VPS' 'Create deploy user with SSH key authentication' 'Configure SSH hardening' 'Create directory structure on VPS' 'Create Nginx configuration for reverse proxy' 'Install Certbot on VPS for SSL certificates' 'Configure DNS A record for memoryloop.nicholaspsmith.com' 'Obtain SSL certificate using Certbot' 'Configure Nginx SSL settings' 'Set up automatic SSL certificate renewal')",
+      "Bash(cat:*)",
+      "Bash(.specify/scripts/bash/check-prerequisites.sh:*)",
+      "Bash(.specify/scripts/bash/setup-plan.sh:*)",
+      "WebSearch",
+      "Bash(npx eslint:*)",
+      "Bash(npx next lint:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run format:*)",
+      "Bash(npm run format:check:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run watch:*)",
+      "Bash(gh run view:*)",
+      "Bash(git fetch:*)",
+      "Bash(.specify/scripts/bash/create-new-feature.sh:*)",
+      "Bash(gh pr view:*)",
+      "Bash(.specify/scripts/bash/update-agent-context.sh:*)",
+      "Bash(git stash:*)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(if [ -d \"/Users/nick/Code/memoryloop/specs/001-lancedb-schema-fixes/checklists\" ])",
+      "Bash(then find /Users/nick/Code/memoryloop/specs/001-lancedb-schema-fixes/checklists -name \"*.md\" -type f)",
+      "Bash(else echo \"No checklists directory found\")",
+      "Bash(fi)",
+      "Bash(git rev-parse:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(/speckit.specify \"Spec-Kit Workflow Improvements: Agent Context Refactoring and Enhanced Developer Experience\")",
+      "Skill(speckit.specify)",
+      "Bash(./.specify/scripts/bash/update-agent-context.sh:*)",
+      "Bash(./.specify/scripts/bash/check-prerequisites.sh:*)",
+      "Bash(.specify/scripts/bash/get-current-branch.sh:*)",
+      "Bash(bash:*)",
+      "Bash(git -C /Users/nick/Code/memoryloop log --oneline --all --grep=\"main\" --source --decorate -30)",
+      "Bash(git -C /Users/nick/Code/memoryloop show main:.specify/scripts/bash/update-agent-context.sh)",
+      "Bash(git -C /Users/nick/Code/memoryloop log --oneline --all --grep=\"agent\" -15)",
+      "Bash(source .specify/scripts/bash/update-agent-context.sh)",
+      "Bash(extract_plan_field:*)",
+      "Bash(set -a)",
+      "Bash(source:*)",
+      "Bash(set +a)",
+      "Bash(npm run db:migrate:*)",
+      "Bash(npm run test:contract:*)",
+      "Bash(npx vitest:*)",
+      "Bash(wc:*)",
+      "Bash(grep:*)",
+      "Bash(npx playwright test:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.vibesparking.com)",
+      "Bash(claude mcp list:*)",
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(npm view:*)",
+      "Bash(npx drizzle-kit:*)",
+      "mcp__lance-context__get_index_status",
+      "Bash(gh pr checks:*)",
+      "WebFetch(domain:www.anthropic.com)",
+      "Bash(git reset:*)",
+      "Bash(.claude/hooks/file-agent-guardian.sh:*)",
+      "Bash(.claude/hooks/bash-guardian.sh:*)",
+      "Bash(jq:*)",
+      "Bash(/Users/nick/Code/memoryloop/.claude/hooks/file-agent-guardian.sh)",
+      "Bash(/Users/nick/Code/memoryloop/.claude/hooks/bash-guardian.sh)",
+      "Bash(gh pr list:*)",
+      "Bash(chmod:*)",
+      "Bash(.claude/hooks/navigation-guardian.sh:*)",
+      "Bash(/Users/nick/Code/memoryloop/.claude/hooks/navigation-guardian.sh)",
+      "Bash(shellcheck:*)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "lance-context"
+  ],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/file-agent-guardian.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/bash-guardian.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Grep|Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/navigation-guardian.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+  "outputStyle": "default",
+  "spinnerTipsEnabled": true
+}

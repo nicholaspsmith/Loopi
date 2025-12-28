@@ -4,7 +4,6 @@ import { z } from 'zod'
 import { getMessageById } from '@/lib/db/operations/messages'
 import { generateFlashcardsFromContent } from '@/lib/claude/flashcard-generator'
 import { createFlashcard, getFlashcardsByMessageId } from '@/lib/db/operations/flashcards'
-import { getUserApiKey } from '@/lib/db/operations/api-keys'
 
 /**
  * POST /api/flashcards/generate
@@ -74,13 +73,11 @@ export async function POST(request: NextRequest) {
 
     console.log(`[FlashcardGenerate] Generating flashcards from message ${messageId}`)
 
-    // Fetch user's API key if available (T033)
-    const userApiKey = await getUserApiKey(userId)
-
     // Generate flashcards using Claude/Ollama (FR-009)
+    // Uses server-side ANTHROPIC_API_KEY if available, otherwise falls back to Ollama
     const flashcardPairs = await generateFlashcardsFromContent(message.content, {
       maxFlashcards,
-      userApiKey,
+      userApiKey: process.env.ANTHROPIC_API_KEY,
     })
 
     // Check for insufficient content (FR-019)

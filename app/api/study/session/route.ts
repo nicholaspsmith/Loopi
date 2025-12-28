@@ -1,0 +1,233 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/auth'
+import { z } from 'zod'
+import { v4 as uuidv4 } from 'uuid'
+import { getGoalByIdForUser } from '@/lib/db/operations/goals'
+import { getSkillTreeByGoalId } from '@/lib/db/operations/skill-trees'
+import { getNodesByTreeId, getSkillNodeById } from '@/lib/db/operations/skill-nodes'
+import { getDb } from '@/lib/db/pg-client'
+import { flashcards, skillNodes } from '@/lib/db/drizzle-schema'
+import { eq, and, like, isNotNull } from 'drizzle-orm'
+import * as logger from '@/lib/logger'
+
+/**
+ * POST /api/study/session
+ *
+ * Start a study session for a goal.
+ * Returns cards due for review based on FSRS.
+ *
+ * Per contracts/study.md
+ */
+
+const SessionRequestSchema = z.object({
+  goalId: z.string().uuid(),
+  mode: z.enum(['flashcard', 'multiple_choice', 'timed', 'mixed']),
+  nodeId: z.string().uuid().optional(),
+  cardLimit: z.number().int().min(1).max(50).optional().default(20),
+})
+
+interface StudyCard {
+  id: string
+  question: string
+  answer: string
+  cardType: 'flashcard' | 'multiple_choice'
+  distractors?: string[]
+  nodeId: string
+  nodeTitle: string
+  fsrsState: {
+    state: string
+    due: string
+    stability: number
+    difficulty: number
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Parse request body
+    const body = await request.json()
+    const parseResult = SessionRequestSchema.safeParse(body)
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: 'Invalid request', details: parseResult.error.issues[0].message },
+        { status: 400 }
+      )
+    }
+
+    const { goalId, mode, nodeId, cardLimit } = parseResult.data
+
+    // Validate goal belongs to user
+    const goal = await getGoalByIdForUser(goalId, session.user.id)
+    if (!goal) {
+      return NextResponse.json({ error: 'Goal not found' }, { status: 404 })
+    }
+
+    // Get skill tree
+    const skillTree = await getSkillTreeByGoalId(goalId)
+    if (!skillTree) {
+      return NextResponse.json({ error: 'Goal has no skill tree' }, { status: 404 })
+    }
+
+    const db = getDb()
+    const now = new Date()
+
+    // Get all nodes in tree to filter cards
+    const treeNodes = await getNodesByTreeId(skillTree.id)
+    const treeNodeIds = treeNodes.map((n) => n.id)
+
+    // If filtering by specific node, get its path for subtree filtering
+    let filterPath: string | null = null
+    if (nodeId) {
+      const node = await getSkillNodeById(nodeId)
+      if (!node || node.treeId !== skillTree.id) {
+        return NextResponse.json({ error: 'Node not found in this goal' }, { status: 404 })
+      }
+      filterPath = node.path
+    }
+
+    // Get cards for this goal's skill tree
+    // Filter to nodes in tree and optionally by subtree path
+    const allCards = await db
+      .select({
+        id: flashcards.id,
+        question: flashcards.question,
+        answer: flashcards.answer,
+        cardType: flashcards.cardType,
+        cardMetadata: flashcards.cardMetadata,
+        fsrsState: flashcards.fsrsState,
+        skillNodeId: flashcards.skillNodeId,
+        nodePath: skillNodes.path,
+        nodeTitle: skillNodes.title,
+      })
+      .from(flashcards)
+      .innerJoin(skillNodes, eq(flashcards.skillNodeId, skillNodes.id))
+      .where(
+        and(
+          eq(flashcards.userId, session.user.id),
+          isNotNull(flashcards.skillNodeId),
+          filterPath ? like(skillNodes.path, `${filterPath}%`) : undefined
+        )
+      )
+
+    // Filter to cards in this tree's nodes
+    const treeCards = allCards.filter((card) => treeNodeIds.includes(card.skillNodeId!))
+
+    // Filter by due date and sort
+    const dueCards = treeCards
+      .filter((card) => {
+        const fsrs = card.fsrsState as Record<string, unknown>
+        const dueDate = new Date(fsrs.due as number)
+        return dueDate <= now
+      })
+      .sort((a, b) => {
+        const aDue = new Date((a.fsrsState as Record<string, unknown>).due as number).getTime()
+        const bDue = new Date((b.fsrsState as Record<string, unknown>).due as number).getTime()
+        return aDue - bDue
+      })
+      .slice(0, cardLimit)
+
+    if (dueCards.length === 0) {
+      // No due cards, return some recent cards for practice
+      const practiceCards = treeCards
+        .sort((a, b) => {
+          const aDue = new Date((a.fsrsState as Record<string, unknown>).due as number).getTime()
+          const bDue = new Date((b.fsrsState as Record<string, unknown>).due as number).getTime()
+          return aDue - bDue
+        })
+        .slice(0, cardLimit)
+
+      if (practiceCards.length === 0) {
+        return NextResponse.json(
+          { error: 'No cards available for study. Generate some cards first.' },
+          { status: 400 }
+        )
+      }
+
+      // Use practice cards
+      dueCards.push(...practiceCards)
+    }
+
+    // Format cards for study
+    const studyCards: StudyCard[] = dueCards.map((card) => {
+      const fsrs = card.fsrsState as Record<string, unknown>
+      const metadata = card.cardMetadata as { distractors?: string[] } | null
+
+      const studyCard: StudyCard = {
+        id: card.id,
+        question: card.question,
+        answer: card.answer,
+        cardType: card.cardType as 'flashcard' | 'multiple_choice',
+        nodeId: card.skillNodeId!,
+        nodeTitle: card.nodeTitle,
+        fsrsState: {
+          state: ['New', 'Learning', 'Review', 'Relearning'][fsrs.state as number] || 'New',
+          due: new Date(fsrs.due as number).toISOString(),
+          stability: (fsrs.stability as number) || 0,
+          difficulty: (fsrs.difficulty as number) || 0,
+        },
+      }
+
+      // Add distractors for MC mode if available
+      if (
+        (mode === 'multiple_choice' || mode === 'mixed' || mode === 'timed') &&
+        metadata?.distractors
+      ) {
+        studyCard.distractors = shuffleArray([...metadata.distractors])
+      }
+
+      return studyCard
+    })
+
+    // Shuffle cards for variety
+    const shuffledCards = shuffleArray(studyCards)
+
+    const sessionId = uuidv4()
+
+    logger.info('Study session started', {
+      sessionId,
+      goalId,
+      mode,
+      nodeId: nodeId || null,
+      cardCount: shuffledCards.length,
+    })
+
+    const response: Record<string, unknown> = {
+      sessionId,
+      mode,
+      cards: shuffledCards,
+    }
+
+    // Add timed mode settings
+    if (mode === 'timed') {
+      response.timedSettings = {
+        durationSeconds: 300, // 5 minutes
+        pointsPerCard: 10,
+      }
+    }
+
+    return NextResponse.json(response)
+  } catch (error) {
+    logger.error('Failed to start study session', error as Error, {
+      path: '/api/study/session',
+    })
+
+    return NextResponse.json({ error: 'Failed to start study session' }, { status: 500 })
+  }
+}
+
+/**
+ * Fisher-Yates shuffle
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}

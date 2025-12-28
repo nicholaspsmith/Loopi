@@ -5,8 +5,9 @@
   "scripts": {
     "prepare": "[ -d '.git' ] && git config core.hooksPath .githooks || true",
     "dev": "next dev",
+    "dev:webpack": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "drizzle-kit migrate && next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest",

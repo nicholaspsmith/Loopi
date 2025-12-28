@@ -1,6 +1,6 @@
 'use client'
 
-import type { AIProvider } from '@/lib/types/api-key'
+type AIProvider = 'claude' | 'ollama'
 
 interface ProviderBadgeProps {
   provider: AIProvider | null
@@ -35,13 +35,13 @@ export default function ProviderBadge({
       label: 'Claude',
       classes: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
       ariaLabel: 'AI Provider: Claude',
-      tooltip: 'Generated using your Claude API key',
+      tooltip: 'Generated using Claude API',
     },
     ollama: {
       label: 'Ollama',
       classes: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
       ariaLabel: 'AI Provider: Ollama',
-      tooltip: 'Generated using local Ollama (free)',
+      tooltip: 'Generated using local Ollama',
     },
   }
 

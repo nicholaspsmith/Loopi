@@ -2,6 +2,55 @@
 
 This project uses speckit for feature specification and task tracking.
 
+## MANDATORY: Tool Priority Checklist
+
+**STOP. Before ANY action, check this list. This is non-negotiable.**
+
+| Action           | WRONG                | RIGHT                                            |
+| ---------------- | -------------------- | ------------------------------------------------ |
+| Git commit/push  | `Bash: git commit`   | Spawn **git-agent** (HOOK ENFORCED)              |
+| Before push      | Push directly        | Spawn **review-agent** first (HOOK ENFORCED)     |
+| Writing tests    | Write tests yourself | Spawn **test-agent** (HOOK ENFORCED)             |
+| UI components    | Write React code     | Spawn **ui-agent** (HOOK ENFORCED)               |
+| Database changes | Write migrations     | Spawn **db-agent** (HOOK ENFORCED)               |
+| Code navigation  | `Read` entire files  | Use **Serena** (`find_symbol`)                   |
+| Finding code     | Grep/Glob directly   | Spawn **Explore** agent or use **lance-context** |
+
+**Git workflow is ALWAYS: git-agent (commit) → review-agent → git-agent (push)**
+
+Never bypass this. If you find yourself typing `git commit` or `git push` in Bash, STOP and use the agents.
+
+### Hook Enforcement
+
+Rules are enforced by hooks in `.claude/hooks/`. If a hook blocks you, spawn the appropriate agent.
+
+**file-agent-guardian.sh** (Write/Edit):
+
+| Pattern                               | Required Agent   |
+| ------------------------------------- | ---------------- |
+| `tests/**`, `*.test.ts`               | **test-agent**   |
+| `components/**`, `app/**/*.tsx`       | **ui-agent**     |
+| `drizzle/**`, `lib/db/**`, `*.sql`    | **db-agent**     |
+| `Dockerfile*`, `.github/workflows/**` | **deploy-agent** |
+| `specs/**/*.md` (except tasks.md)     | **spec-agent**   |
+
+**bash-guardian.sh** (Bash):
+
+| Command Pattern           | Required Action                                  |
+| ------------------------- | ------------------------------------------------ |
+| `git commit`              | Spawn **git-agent**                              |
+| `git push`                | Spawn **review-agent** first, then **git-agent** |
+| `git rebase`, `git merge` | Spawn **git-agent**                              |
+| `git reset --hard`        | Spawn **git-agent** (dangerous operation)        |
+
+**navigation-guardian.sh** (Grep/Read):
+
+| Pattern                                   | Suggested Tool                                       |
+| ----------------------------------------- | ---------------------------------------------------- |
+| Grep for `class X`, `function Y`, `def Z` | **Serena** `find_symbol`                             |
+| Read source file (`.ts`, `.py`, etc.)     | **Serena** `get_symbols_overview`                    |
+| Open-ended exploration                    | **Explore** agent or **lance-context** `search_code` |
+
 ## Feature-Specific Context
 
 When working on a feature branch (e.g., `003-flashcard-rating-labels`), check for a matching
@@ -17,17 +66,28 @@ This feature-specific context supplements the project-wide information below.
 
 This project uses a context-aware development system to maintain efficiency across sessions.
 
-### Specialized Subagents
+### Specialized Subagents (MUST USE for delegated work)
 
-Use `/agents` to see available specialized agents:
+**IMPORTANT**: Spawn specialized agents via the Task tool for their domains. Do NOT do their work yourself.
 
-- **review-agent**: Code review before pushes (types, tests, security)
-- **test-agent**: Write, run, fix tests (Vitest, Playwright)
-- **ui-agent**: Build React components and UI
-- **git-agent**: Commits, PRs, rebases
-- **db-agent**: Schema, migrations, queries
-- **deploy-agent**: Docker, CI/CD, production
-- **spec-agent**: Feature planning and specs
+| Agent            | Trigger Keywords                                     | Use For                            |
+| ---------------- | ---------------------------------------------------- | ---------------------------------- |
+| **test-agent**   | tests, coverage, E2E, unit, vitest, playwright, spec | Writing/fixing any tests           |
+| **ui-agent**     | component, form, page, button, layout, styling, UI   | React component work               |
+| **db-agent**     | schema, migration, table, column, drizzle, postgres  | Database changes                   |
+| **git-agent**    | commit, push, PR, rebase, merge, branch              | Git operations                     |
+| **review-agent** | review, check code, before push                      | Code review (REQUIRED before push) |
+| **deploy-agent** | deploy, docker, CI, production, nginx                | Infrastructure                     |
+| **spec-agent**   | specify, plan, feature, requirement                  | Feature planning                   |
+
+**How to spawn an agent:**
+
+```
+Task tool with subagent_type="test-agent" (or other agent name)
+prompt="Write E2E tests for goal creation in tests/e2e/goal-creation.spec.ts"
+```
+
+**Agent definitions**: See `.claude/agents/*.md` for full capabilities of each agent.
 
 ### Agent Coordination: Commit & Push Workflow
 
@@ -57,8 +117,40 @@ This ensures all code is reviewed before reaching the remote repository.
 
 ### MCP Tools
 
-- **Serena**: Symbol-level code navigation (`find_symbol`, `find_referencing_symbols`)
-- **lance-context**: Semantic code search (`index_codebase`, `search_code`)
+#### Serena (ALWAYS USE for code navigation)
+
+Serena provides token-efficient symbolic code navigation. **Prefer Serena over reading entire files.**
+
+**When to use Serena:**
+
+- Before reading a file: Use `get_symbols_overview` to see structure first
+- Finding specific functions/classes: Use `find_symbol` with `include_body=True`
+- Tracing dependencies: Use `find_referencing_symbols` to find all usages
+- Editing code: Use `replace_symbol_body` for precise symbol replacement
+- Adding code: Use `insert_before_symbol` or `insert_after_symbol`
+
+**Serena workflow example:**
+
+```
+1. get_symbols_overview(file) → see all functions/classes
+2. find_symbol(name_path="ClassName/methodName", include_body=True) → read just that method
+3. find_referencing_symbols(symbol) → find all callers before refactoring
+4. replace_symbol_body() → update the symbol precisely
+```
+
+**Do NOT:**
+
+- Read entire files when you only need one function
+- Use grep/Read to find symbols when `find_symbol` is faster
+- Skip `find_referencing_symbols` before renaming/refactoring
+
+#### lance-context (Semantic code search)
+
+- `mcp__lance-context__index_codebase` - Index codebase for semantic search
+- `mcp__lance-context__search_code` - Natural language code search
+- `mcp__lance-context__get_index_status` - Check index status
+
+Use for open-ended questions like "where is error handling done?" or "find authentication logic".
 
 ## Task Tracking
 
@@ -153,7 +245,6 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 - bcryptjs 3.0.3 ([docs](https://www.npmjs.com/package/bcryptjs/v/3.0.3))
 - canvas-confetti 1.9.4 ([docs](https://www.npmjs.com/package/canvas-confetti/v/1.9.4))
 - dotenv 17.2.3 ([docs](https://www.npmjs.com/package/dotenv/v/17.2.3))
-- drizzle-kit 0.31.8 ([docs](https://www.npmjs.com/package/drizzle-kit/v/0.31.8))
 - drizzle-orm 0.45.1 ([docs](https://orm.drizzle.team/docs/overview))
 - next 16.0.10 ([docs](https://nextjs.org/docs))
 - next-auth 5.0.0-beta.30 ([docs](https://next-auth.js.org))
@@ -163,9 +254,10 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 - react-dom 19.2.3 ([docs](https://react.dev/reference/react-dom))
 - react-markdown 10.1.0 ([docs](https://www.npmjs.com/package/react-markdown/v/10.1.0))
 - remark-gfm 4.0.1 ([docs](https://www.npmjs.com/package/remark-gfm/v/4.0.1))
+- resend 6.6.0 ([docs](https://www.npmjs.com/package/resend/v/6.6.0))
 - ts-fsrs 5.2.3 ([docs](https://www.npmjs.com/package/ts-fsrs/v/5.2.3))
 - uuid 13.0.0 ([docs](https://www.npmjs.com/package/uuid/v/13.0.0))
-- zod 4.2.0 ([docs](https://www.npmjs.com/package/zod/v/4.2.0))
+- zod 4.2.1 ([docs](https://www.npmjs.com/package/zod/v/4.2.1))
 
 ## Recent Changes
 

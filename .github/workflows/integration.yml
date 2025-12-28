@@ -49,6 +49,7 @@ jobs:
           DATABASE_URL=postgresql://postgres:postgres@localhost:5432/memoryloop_test
           NEXTAUTH_SECRET=test-secret-key-for-ci-pipeline
           NEXTAUTH_URL=http://localhost:3000
+          AUTH_TRUST_HOST=true
           OLLAMA_BASE_URL=http://localhost:11434
           ENCRYPTION_KEY=test-encryption-key-32-chars-long
           API_KEY_ENCRYPTION_SECRET=test-api-key-encryption-secret-32
@@ -63,11 +64,8 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
 
-      - name: Build Next.js application
-        run: npm run build
-        env:
-          SKIP_ENV_VALIDATION: true
-          API_KEY_ENCRYPTION_SECRET: ${{ secrets.API_KEY_ENCRYPTION_SECRET }}
+      # Note: We use dev server for E2E tests (configured in playwright.config.ts)
+      # No production build needed - dev server compiles on-demand
 
       - name: Run E2E tests
         run: npx playwright test --project=chromium

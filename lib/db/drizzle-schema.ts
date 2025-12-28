@@ -9,6 +9,7 @@ import {
   jsonb,
   real,
 } from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
 
 /**
  * Drizzle ORM Schema for MemoryLoop with PostgreSQL
@@ -28,24 +29,6 @@ export const users = pgTable('users', {
   emailVerified: boolean('email_verified').notNull().default(false),
   emailVerifiedAt: timestamp('email_verified_at'),
   passwordChangedAt: timestamp('password_changed_at'), // For session invalidation on password reset
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-})
-
-// ============================================================================
-// API Keys Table (Claude API Integration)
-// ============================================================================
-
-export const apiKeys = pgTable('api_keys', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
-    .notNull()
-    .unique()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  encryptedKey: text('encrypted_key').notNull(),
-  keyPreview: varchar('key_preview', { length: 20 }).notNull(),
-  isValid: boolean('is_valid').notNull().default(true),
-  lastValidatedAt: timestamp('last_validated_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
@@ -81,9 +64,8 @@ export const messages = pgTable('messages', {
   content: text('content').notNull(),
   // Note: Embeddings stored in LanceDB for efficient vector search
   hasFlashcards: boolean('has_flashcards').notNull().default(false),
-  // AI provider tracking (Claude API Integration)
+  // AI provider tracking
   aiProvider: varchar('ai_provider', { length: 20 }), // 'claude' | 'ollama' | null
-  apiKeyId: uuid('api_key_id').references(() => apiKeys.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 
@@ -107,6 +89,12 @@ export const flashcards = pgTable('flashcards', {
   // FSRS state stored as JSONB
   fsrsState: jsonb('fsrs_state').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
+  // Goal-based learning extensions (014-goal-based-learning)
+  skillNodeId: uuid('skill_node_id'), // FK added after skillNodes table defined
+  cardType: varchar('card_type', { length: 20 }).notNull().default('flashcard'),
+  // 'flashcard' | 'multiple_choice' | 'scenario'
+  cardMetadata: jsonb('card_metadata'),
+  // For MC: { distractors: ["wrong1", "wrong2", "wrong3"] }
 })
 
 // ============================================================================
@@ -220,9 +208,6 @@ export const rateLimits = pgTable('rate_limits', {
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
 
-export type ApiKey = typeof apiKeys.$inferSelect
-export type NewApiKey = typeof apiKeys.$inferInsert
-
 export type Conversation = typeof conversations.$inferSelect
 export type NewConversation = typeof conversations.$inferInsert
 
@@ -287,3 +272,201 @@ export type NewDeck = typeof decks.$inferInsert
 
 export type DeckCard = typeof deckCards.$inferSelect
 export type NewDeckCard = typeof deckCards.$inferInsert
+
+// ============================================================================
+// Learning Goals Table (014-goal-based-learning)
+// ============================================================================
+
+export const learningGoals = pgTable('learning_goals', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  title: varchar('title', { length: 200 }).notNull(),
+  description: text('description'),
+  status: varchar('status', { length: 20 }).notNull().default('active'),
+  // 'active' | 'paused' | 'completed' | 'archived'
+  masteryPercentage: integer('mastery_percentage').notNull().default(0),
+  totalTimeSeconds: integer('total_time_seconds').notNull().default(0),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  completedAt: timestamp('completed_at'),
+  archivedAt: timestamp('archived_at'),
+})
+
+export type LearningGoal = typeof learningGoals.$inferSelect
+export type NewLearningGoal = typeof learningGoals.$inferInsert
+
+// ============================================================================
+// Skill Trees Table (014-goal-based-learning)
+// ============================================================================
+
+export const skillTrees = pgTable('skill_trees', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  goalId: uuid('goal_id')
+    .notNull()
+    .unique()
+    .references(() => learningGoals.id, { onDelete: 'cascade' }),
+  generatedBy: varchar('generated_by', { length: 20 }).notNull().default('ai'),
+  // 'ai' | 'curated'
+  curatedSourceId: varchar('curated_source_id', { length: 100 }),
+  // For future curated trees: 'aws-saa-c03', 'comptia-a-plus', etc.
+  nodeCount: integer('node_count').notNull().default(0),
+  maxDepth: integer('max_depth').notNull().default(0),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  regeneratedAt: timestamp('regenerated_at'),
+})
+
+export type SkillTree = typeof skillTrees.$inferSelect
+export type NewSkillTree = typeof skillTrees.$inferInsert
+
+// ============================================================================
+// Skill Nodes Table (014-goal-based-learning)
+// ============================================================================
+
+export const skillNodes = pgTable('skill_nodes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  treeId: uuid('tree_id')
+    .notNull()
+    .references(() => skillTrees.id, { onDelete: 'cascade' }),
+  parentId: uuid('parent_id'),
+  // null for root nodes (depth 0) - self-reference handled via relation
+  title: varchar('title', { length: 200 }).notNull(),
+  description: text('description'),
+  depth: integer('depth').notNull(),
+  // 0 = Goal (root), 1 = Category, 2 = Topic, 3 = Subtopic
+  path: varchar('path', { length: 100 }).notNull(),
+  // Materialized path: "1", "1.2", "1.2.3" for efficient subtree queries
+  sortOrder: integer('sort_order').notNull().default(0),
+  // Ordering among siblings
+  isEnabled: boolean('is_enabled').notNull().default(true),
+  // User can disable nodes to exclude from study
+  masteryPercentage: integer('mastery_percentage').notNull().default(0),
+  // 0-100, calculated from linked cards or child nodes
+  cardCount: integer('card_count').notNull().default(0),
+  // Denormalized count of linked flashcards
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export type SkillNode = typeof skillNodes.$inferSelect
+export type NewSkillNode = typeof skillNodes.$inferInsert
+
+// ============================================================================
+// User Achievements Table (014-goal-based-learning)
+// ============================================================================
+
+export const userAchievements = pgTable('user_achievements', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  achievementKey: varchar('achievement_key', { length: 50 }).notNull(),
+  // 'first_10_cards', 'goal_50_percent', 'perfect_session', etc.
+  unlockedAt: timestamp('unlocked_at').notNull().defaultNow(),
+  metadata: jsonb('metadata'),
+  // Context about the unlock: { goalId, cardCount, sessionId, etc. }
+})
+
+export type UserAchievement = typeof userAchievements.$inferSelect
+export type NewUserAchievement = typeof userAchievements.$inferInsert
+
+// ============================================================================
+// User Titles Table (014-goal-based-learning)
+// ============================================================================
+
+export const userTitles = pgTable('user_titles', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  currentTitle: varchar('current_title', { length: 50 }).notNull().default('Novice'),
+  totalCardsMastered: integer('total_cards_mastered').notNull().default(0),
+  totalGoalsCompleted: integer('total_goals_completed').notNull().default(0),
+  titleHistory: jsonb('title_history').notNull().default([]),
+  // [{ title: "Apprentice", earnedAt: "2025-01-15T..." }, ...]
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export type UserTitle = typeof userTitles.$inferSelect
+export type NewUserTitle = typeof userTitles.$inferInsert
+
+// ============================================================================
+// Topic Analytics Table (014-goal-based-learning)
+// ============================================================================
+
+export const topicAnalytics = pgTable('topic_analytics', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  normalizedTopic: varchar('normalized_topic', { length: 200 }).notNull().unique(),
+  // Lowercase, trimmed, prefixes removed
+  originalExamples: jsonb('original_examples').notNull().default([]),
+  // ["Learn Kubernetes", "kubernetes admin", "K8s"] - first 10 variations
+  userCount: integer('user_count').notNull().default(1),
+  goalCount: integer('goal_count').notNull().default(1),
+  firstSeenAt: timestamp('first_seen_at').notNull().defaultNow(),
+  lastSeenAt: timestamp('last_seen_at').notNull().defaultNow(),
+  hasCuratedTree: boolean('has_curated_tree').notNull().default(false),
+})
+
+export type TopicAnalytic = typeof topicAnalytics.$inferSelect
+export type NewTopicAnalytic = typeof topicAnalytics.$inferInsert
+
+// ============================================================================
+// Drizzle Relations (014-goal-based-learning)
+// ============================================================================
+
+export const learningGoalsRelations = relations(learningGoals, ({ one }) => ({
+  user: one(users, {
+    fields: [learningGoals.userId],
+    references: [users.id],
+  }),
+  skillTree: one(skillTrees, {
+    fields: [learningGoals.id],
+    references: [skillTrees.goalId],
+  }),
+}))
+
+export const skillTreesRelations = relations(skillTrees, ({ one, many }) => ({
+  goal: one(learningGoals, {
+    fields: [skillTrees.goalId],
+    references: [learningGoals.id],
+  }),
+  nodes: many(skillNodes),
+}))
+
+export const skillNodesRelations = relations(skillNodes, ({ one, many }) => ({
+  tree: one(skillTrees, {
+    fields: [skillNodes.treeId],
+    references: [skillTrees.id],
+  }),
+  parent: one(skillNodes, {
+    fields: [skillNodes.parentId],
+    references: [skillNodes.id],
+    relationName: 'parentChild',
+  }),
+  children: many(skillNodes, { relationName: 'parentChild' }),
+  flashcards: many(flashcards),
+}))
+
+export const flashcardsRelations = relations(flashcards, ({ one }) => ({
+  skillNode: one(skillNodes, {
+    fields: [flashcards.skillNodeId],
+    references: [skillNodes.id],
+  }),
+}))
+
+export const userAchievementsRelations = relations(userAchievements, ({ one }) => ({
+  user: one(users, {
+    fields: [userAchievements.userId],
+    references: [users.id],
+  }),
+}))
+
+export const userTitlesRelations = relations(userTitles, ({ one }) => ({
+  user: one(users, {
+    fields: [userTitles.userId],
+    references: [users.id],
+  }),
+}))
