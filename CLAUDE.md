@@ -2,6 +2,18 @@
 
 This project uses speckit for feature specification and task tracking.
 
+## Tool Priority Checklist (Read First!)
+
+Before doing any work, check these priorities:
+
+1. **Code Navigation** → Use **Serena** (`find_symbol`, `get_symbols_overview`), NOT `Read` for entire files
+2. **Writing Tests** → Spawn **test-agent**, do NOT write tests yourself
+3. **UI Components** → Spawn **ui-agent** for React component work
+4. **Database Work** → Spawn **db-agent** for schema/migrations
+5. **Git Operations** → Spawn **git-agent** for commits/PRs
+6. **Before Push** → ALWAYS spawn **review-agent** first
+7. **Semantic Search** → Use **lance-context** for "where is X?" questions
+
 ## Feature-Specific Context
 
 When working on a feature branch (e.g., `003-flashcard-rating-labels`), check for a matching
@@ -17,17 +29,28 @@ This feature-specific context supplements the project-wide information below.
 
 This project uses a context-aware development system to maintain efficiency across sessions.
 
-### Specialized Subagents
+### Specialized Subagents (MUST USE for delegated work)
 
-Use `/agents` to see available specialized agents:
+**IMPORTANT**: Spawn specialized agents via the Task tool for their domains. Do NOT do their work yourself.
 
-- **review-agent**: Code review before pushes (types, tests, security)
-- **test-agent**: Write, run, fix tests (Vitest, Playwright)
-- **ui-agent**: Build React components and UI
-- **git-agent**: Commits, PRs, rebases
-- **db-agent**: Schema, migrations, queries
-- **deploy-agent**: Docker, CI/CD, production
-- **spec-agent**: Feature planning and specs
+| Agent            | Trigger Keywords                                     | Use For                            |
+| ---------------- | ---------------------------------------------------- | ---------------------------------- |
+| **test-agent**   | tests, coverage, E2E, unit, vitest, playwright, spec | Writing/fixing any tests           |
+| **ui-agent**     | component, form, page, button, layout, styling, UI   | React component work               |
+| **db-agent**     | schema, migration, table, column, drizzle, postgres  | Database changes                   |
+| **git-agent**    | commit, push, PR, rebase, merge, branch              | Git operations                     |
+| **review-agent** | review, check code, before push                      | Code review (REQUIRED before push) |
+| **deploy-agent** | deploy, docker, CI, production, nginx                | Infrastructure                     |
+| **spec-agent**   | specify, plan, feature, requirement                  | Feature planning                   |
+
+**How to spawn an agent:**
+
+```
+Task tool with subagent_type="test-agent" (or other agent name)
+prompt="Write E2E tests for goal creation in tests/e2e/goal-creation.spec.ts"
+```
+
+**Agent definitions**: See `.claude/agents/*.md` for full capabilities of each agent.
 
 ### Agent Coordination: Commit & Push Workflow
 
@@ -57,8 +80,40 @@ This ensures all code is reviewed before reaching the remote repository.
 
 ### MCP Tools
 
-- **Serena**: Symbol-level code navigation (`find_symbol`, `find_referencing_symbols`)
-- **lance-context**: Semantic code search (`index_codebase`, `search_code`)
+#### Serena (ALWAYS USE for code navigation)
+
+Serena provides token-efficient symbolic code navigation. **Prefer Serena over reading entire files.**
+
+**When to use Serena:**
+
+- Before reading a file: Use `get_symbols_overview` to see structure first
+- Finding specific functions/classes: Use `find_symbol` with `include_body=True`
+- Tracing dependencies: Use `find_referencing_symbols` to find all usages
+- Editing code: Use `replace_symbol_body` for precise symbol replacement
+- Adding code: Use `insert_before_symbol` or `insert_after_symbol`
+
+**Serena workflow example:**
+
+```
+1. get_symbols_overview(file) → see all functions/classes
+2. find_symbol(name_path="ClassName/methodName", include_body=True) → read just that method
+3. find_referencing_symbols(symbol) → find all callers before refactoring
+4. replace_symbol_body() → update the symbol precisely
+```
+
+**Do NOT:**
+
+- Read entire files when you only need one function
+- Use grep/Read to find symbols when `find_symbol` is faster
+- Skip `find_referencing_symbols` before renaming/refactoring
+
+#### lance-context (Semantic code search)
+
+- `mcp__lance-context__index_codebase` - Index codebase for semantic search
+- `mcp__lance-context__search_code` - Natural language code search
+- `mcp__lance-context__get_index_status` - Check index status
+
+Use for open-ended questions like "where is error handling done?" or "find authentication logic".
 
 ## Task Tracking
 

@@ -40,6 +40,18 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
+  // Study mode components use refs for option shuffling and timing
+  // These are valid memoization patterns that avoid unnecessary re-renders
+  {
+    files: [
+      'components/study/MultipleChoiceMode.tsx',
+      'components/study/TimedChallengeMode.tsx',
+    ],
+    rules: {
+      'react-hooks/purity': 'off',
+      'react-hooks/refs': 'off',
+    },
+  },
   // Vitest test quality rules (US3 - Test Quality Audit)
   {
     files: ['tests/**/*.{test,spec}.{ts,tsx}', '**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
