@@ -255,7 +255,14 @@ export async function generateSkillTree(
         },
       }
     } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error))
+      // Handle ClassifiedError from Claude client (has .message property but isn't Error instance)
+      if (error instanceof Error) {
+        lastError = error
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        lastError = new Error(String((error as { message: string }).message))
+      } else {
+        lastError = new Error(String(error))
+      }
       retryCount = attempt + 1
 
       logger.warn('Skill tree generation attempt failed', {
