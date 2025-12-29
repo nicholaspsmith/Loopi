@@ -1,5 +1,5 @@
 import { getDbConnection } from '@/lib/db/client'
-import { generateEmbedding } from '@/lib/embeddings/ollama'
+import { generateEmbedding } from '@/lib/embeddings'
 import { getDb } from '@/lib/db/pg-client'
 import { messages } from '@/lib/db/drizzle-schema'
 import { inArray } from 'drizzle-orm'

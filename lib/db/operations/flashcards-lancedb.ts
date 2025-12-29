@@ -1,5 +1,5 @@
 import { getDbConnection } from '@/lib/db/client'
-import { generateEmbedding } from '@/lib/embeddings/ollama'
+import { generateEmbedding } from '@/lib/embeddings'
 
 /**
  * LanceDB Flashcard Operations
