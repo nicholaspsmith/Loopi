@@ -53,10 +53,10 @@ elif [[ "$command" =~ ^git[[:space:]]+commit ]] || \
     reason="Git commits should be created by git-agent for proper commit message formatting."
   fi
 
-# git rebase/merge/cherry-pick should use git-agent
+# git rebase/merge/cherry-pick - allow through (git-agent will be spawned by workflow)
+# Note: Like push, enforcement is process-based via CLAUDE.md
 elif [[ "$command" =~ ^git[[:space:]]+(rebase|merge|cherry-pick) ]]; then
-  agent="git-agent"
-  reason="Complex git operations should be handled by git-agent."
+  : # pass through - allow rebase operations
 
 # git reset --hard is dangerous
 elif [[ "$command" =~ git[[:space:]]+reset[[:space:]]+--hard ]]; then
