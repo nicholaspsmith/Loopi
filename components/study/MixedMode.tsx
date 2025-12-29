@@ -1,13 +1,19 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import FlashcardMode from './FlashcardMode'
 import MultipleChoiceMode from './MultipleChoiceMode'
 
 /**
- * MixedMode Component (T057)
+ * MixedMode Component
  *
- * Randomly alternates between flashcard and MC modes.
- * Provides variety for engaging study sessions.
+ * Renders either MultipleChoiceMode or FlashcardMode based on card type
+ * and distractor availability.
+ *
+ * Per spec 017-multi-choice-distractors:
+ * - Uses MC mode when card has 3+ distractors
+ * - Falls back to flashcard mode if distractors unavailable
+ * - Shows toast notification on fallback (T039)
  */
 
 interface StudyCard {
@@ -21,21 +27,47 @@ interface StudyCard {
 interface MixedModeProps {
   cards: StudyCard[]
   currentIndex: number
-  onRate: (rating: 1 | 2 | 3 | 4) => void
+  onRate: (rating: 1 | 2 | 3 | 4, responseTimeMs?: number) => void
+  distractorsFailed?: boolean // T035, T037: Flag indicating distractor generation failed
+  onFallbackNotify?: () => void // T039: Callback to show toast notification
 }
 
-export default function MixedMode({ cards, currentIndex, onRate }: MixedModeProps) {
+export default function MixedMode({
+  cards,
+  currentIndex,
+  onRate,
+  distractorsFailed = false,
+  onFallbackNotify,
+}: MixedModeProps) {
   const currentCard = cards[currentIndex]
+  const notifiedRef = useRef<string | null>(null)
+
+  // T039: Show toast notification when falling back due to distractor failure
+  useEffect(() => {
+    if (
+      distractorsFailed &&
+      currentCard &&
+      currentCard.cardType === 'multiple_choice' &&
+      notifiedRef.current !== currentCard.id &&
+      onFallbackNotify
+    ) {
+      notifiedRef.current = currentCard.id
+      onFallbackNotify()
+    }
+  }, [distractorsFailed, currentCard, onFallbackNotify])
 
   if (!currentCard) {
     return null
   }
 
-  // Use multiple choice if card has distractors, otherwise flashcard
+  // T037-T038: Check distractorsFailed flag and fallback if needed
+  // Use multiple choice only if:
+  // 1. Card type is multiple_choice
+  // 2. Distractors are available (at least 3)
+  // 3. Distractor generation hasn't failed
+  const hasValidDistractors = currentCard.distractors && currentCard.distractors.length >= 3
   const useMultipleChoice =
-    currentCard.cardType === 'multiple_choice' &&
-    currentCard.distractors &&
-    currentCard.distractors.length >= 2
+    currentCard.cardType === 'multiple_choice' && hasValidDistractors && !distractorsFailed
 
   if (useMultipleChoice) {
     return (
@@ -43,13 +75,14 @@ export default function MixedMode({ cards, currentIndex, onRate }: MixedModeProp
         question={currentCard.question}
         answer={currentCard.answer}
         distractors={currentCard.distractors || []}
-        onRate={(rating, _correct) => onRate(rating)}
+        onRate={(rating, responseTimeMs) => onRate(rating, responseTimeMs)}
         cardNumber={currentIndex + 1}
         totalCards={cards.length}
       />
     )
   }
 
+  // Fallback to FlashcardMode
   return (
     <FlashcardMode
       question={currentCard.question}
