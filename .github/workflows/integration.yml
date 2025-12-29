@@ -53,6 +53,8 @@ jobs:
           OLLAMA_BASE_URL=http://localhost:11434
           ENCRYPTION_KEY=test-encryption-key-32-chars-long
           API_KEY_ENCRYPTION_SECRET=test-api-key-encryption-secret-32
+          JINA_API_KEY=${{ secrets.JINA_API_KEY }}
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
           EOF
 
       - name: Install pgcrypto extension
@@ -74,6 +76,8 @@ jobs:
           API_KEY_ENCRYPTION_SECRET: test-api-key-encryption-secret-32
           NEXTAUTH_SECRET: test-secret-key-for-ci-pipeline
           NEXTAUTH_URL: http://localhost:3000
+          JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
