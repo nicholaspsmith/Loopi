@@ -47,7 +47,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid rating. Must be 1-4' }, { status: 400 })
     }
 
-    const rating = numberToRating(ratingNum)
+    // T022-T024: Time-based rating adjustment for multiple choice mode
+    // Per spec 017-multi-choice-distractors:
+    // - Correct & fast (≤10s) → Good (rating 3)
+    // - Correct & slow (>10s) → Hard (rating 2)
+    // - Incorrect → Again (rating 1)
+    let adjustedRatingNum = ratingNum
+    if (mode === 'multiple_choice' && responseTimeMs !== undefined) {
+      if (ratingNum > 1) {
+        // Correct answer - adjust based on response time
+        const FAST_THRESHOLD_MS = 10_000 // 10 seconds
+        adjustedRatingNum = responseTimeMs <= FAST_THRESHOLD_MS ? 3 : 2
+
+        // T024: Log time-based rating per plan.md observability section
+        logger.debug('Time-based rating applied', {
+          cardId,
+          responseTimeMs,
+          originalRating: ratingNum,
+          adjustedRating: adjustedRatingNum,
+          threshold: FAST_THRESHOLD_MS,
+        })
+      }
+      // Incorrect (rating 1) stays as 1
+    }
+
+    const rating = numberToRating(adjustedRatingNum)
     if (!rating) {
       return NextResponse.json({ error: 'Invalid rating conversion' }, { status: 400 })
     }
@@ -102,7 +126,8 @@ export async function POST(request: NextRequest) {
 
     logger.info('Card rated', {
       cardId,
-      rating: ratingNum,
+      rating: adjustedRatingNum,
+      originalRating: ratingNum,
       mode,
       responseTimeMs,
       newState: updatedCard.state,
