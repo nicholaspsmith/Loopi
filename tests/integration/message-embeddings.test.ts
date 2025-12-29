@@ -4,7 +4,7 @@ import { createUser } from '@/lib/db/operations/users'
 import { createConversation } from '@/lib/db/operations/conversations'
 import { createMessage, getMessageById } from '@/lib/db/operations/messages'
 import { hashPassword } from '@/lib/auth/helpers'
-import * as embeddingsClient from '@/lib/embeddings/ollama'
+import * as embeddingsClient from '@/lib/embeddings'
 
 /**
  * Integration Tests for Message Embedding Generation
@@ -62,7 +62,7 @@ describe('Message Embedding Generation Integration', () => {
 
   it('should generate and update embedding asynchronously', async () => {
     // Mock successful embedding generation
-    const mockEmbedding = new Array(768).fill(0.5)
+    const mockEmbedding = new Array(1024).fill(0.5)
     vi.spyOn(embeddingsClient, 'generateEmbedding').mockResolvedValue(mockEmbedding)
 
     const message = await createMessage({
@@ -82,7 +82,7 @@ describe('Message Embedding Generation Integration', () => {
     const updatedMessage = await getMessageById(message.id)
 
     // Check that the message was created successfully
-    // In test environment, embedding may still be null if Ollama isn't running
+    // In test environment, embedding may still be null if Jina API isn't available
     expect(updatedMessage?.id).toBe(message.id)
 
     vi.restoreAllMocks()
@@ -118,7 +118,7 @@ describe('Message Embedding Generation Integration', () => {
 
   it('should generate embeddings for assistant messages', async () => {
     // Mock successful embedding generation
-    const mockEmbedding = new Array(768).fill(0.7)
+    const mockEmbedding = new Array(1024).fill(0.7)
     vi.spyOn(embeddingsClient, 'generateEmbedding').mockResolvedValue(mockEmbedding)
 
     const message = await createMessage({
@@ -140,7 +140,7 @@ describe('Message Embedding Generation Integration', () => {
     vi.spyOn(embeddingsClient, 'generateEmbedding').mockImplementation(
       () =>
         new Promise((resolve) => {
-          setTimeout(() => resolve(new Array(768).fill(0.3)), 2000)
+          setTimeout(() => resolve(new Array(1024).fill(0.3)), 2000)
         })
     )
 
@@ -188,7 +188,7 @@ describe('Message Embedding Generation Integration', () => {
 
   it('should generate embeddings for long content', async () => {
     const longContent = 'a'.repeat(5000)
-    const mockEmbedding = new Array(768).fill(0.9)
+    const mockEmbedding = new Array(1024).fill(0.9)
 
     vi.spyOn(embeddingsClient, 'generateEmbedding').mockResolvedValue(mockEmbedding)
 
