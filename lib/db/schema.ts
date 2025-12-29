@@ -7,8 +7,8 @@ let initializationPromise: Promise<void> | null = null
  * Initialize LanceDB tables for MemoryLoop
  *
  * Creates minimal tables for vector search:
- * - messages: id, userId, embedding (768 dimensions)
- * - flashcards: id, userId, embedding (768 dimensions)
+ * - messages: id, userId, embedding (1024 dimensions)
+ * - flashcards: id, userId, embedding (1024 dimensions)
  *
  * All other data is stored in PostgreSQL. LanceDB only stores
  * the minimum needed for vector search operations.
@@ -52,7 +52,7 @@ async function performInitialization(db?: Connection) {
           {
             id: '00000000-0000-0000-0000-000000000000',
             userId: '00000000-0000-0000-0000-000000000000',
-            embedding: new Array(768).fill(0), // nomic-embed-text produces 768 dimensions
+            embedding: new Array(1024).fill(0), // jina-embeddings-v3 produces 1024 dimensions
           },
         ],
         { mode: 'create' }
@@ -69,7 +69,7 @@ async function performInitialization(db?: Connection) {
           {
             id: '00000000-0000-0000-0000-000000000000',
             userId: '00000000-0000-0000-0000-000000000000',
-            embedding: new Array(768).fill(0), // nomic-embed-text produces 768 dimensions
+            embedding: new Array(1024).fill(0), // jina-embeddings-v3 produces 1024 dimensions
           },
         ],
         { mode: 'create' }
