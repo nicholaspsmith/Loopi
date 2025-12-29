@@ -41,18 +41,18 @@
 
 ### Core Backend Changes
 
-- [ ] T004 Remove Ollama constants (OLLAMA_BASE_URL, OLLAMA_MODEL) from lib/claude/client.ts
-- [ ] T005 Remove streamOllamaChat() function from lib/claude/client.ts
-- [ ] T006 Simplify streamChatCompletion() to remove Ollama fallback in lib/claude/client.ts
-- [ ] T007 Simplify getChatCompletion() to remove Ollama fallback in lib/claude/client.ts
-- [ ] T008 Update error classification to use neutral messages per contracts/error-responses.md in lib/claude/client.ts
-- [ ] T009 [P] Remove Ollama fallback from lib/ai/card-generator.ts
-- [ ] T010 [P] Remove Ollama fallback from lib/ai/skill-tree-generator.ts
-- [ ] T011 [P] Remove Ollama fallback from lib/claude/flashcard-generator.ts
-- [ ] T012 Stub lib/embeddings/ollama.ts to return null (graceful degradation)
-- [ ] T013 [P] Update lib/db/operations/flashcards-lancedb.ts to handle null embeddings
-- [ ] T014 [P] Update lib/db/operations/messages-lancedb.ts to handle null embeddings
-- [ ] T015 Update app/api/health/route.ts to remove Ollama check and use neutral field names
+- [x] T004 Remove Ollama constants (OLLAMA_BASE_URL, OLLAMA_MODEL) from lib/claude/client.ts
+- [x] T005 Remove streamOllamaChat() function from lib/claude/client.ts
+- [x] T006 Simplify streamChatCompletion() to remove Ollama fallback in lib/claude/client.ts
+- [x] T007 Simplify getChatCompletion() to remove Ollama fallback in lib/claude/client.ts
+- [x] T008 Update error classification to use neutral messages per contracts/error-responses.md in lib/claude/client.ts
+- [x] T009 [P] Remove Ollama fallback from lib/ai/card-generator.ts
+- [x] T010 [P] Remove Ollama fallback from lib/ai/skill-tree-generator.ts
+- [x] T011 [P] Remove Ollama fallback from lib/claude/flashcard-generator.ts
+- [x] T012 Stub lib/embeddings/ollama.ts to return null (graceful degradation)
+- [x] T013 [P] Update lib/db/operations/flashcards-lancedb.ts to handle null embeddings
+- [x] T014 [P] Update lib/db/operations/messages-lancedb.ts to handle null embeddings
+- [x] T015 Update app/api/health/route.ts to remove Ollama check and use neutral field names
 
 **Checkpoint**: Backend builds and runs with Claude-only, Ollama code paths removed
 

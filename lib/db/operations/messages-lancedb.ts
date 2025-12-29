@@ -86,7 +86,8 @@ export async function searchSimilarMessages(
     const queryEmbedding = await generateEmbedding(queryText)
 
     if (!queryEmbedding) {
-      throw new Error('Failed to generate query embedding')
+      console.warn('[LanceDB] No embedding generated for query, returning empty results')
+      return []
     }
 
     const lanceDb = await getDbConnection()
