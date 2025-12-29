@@ -176,12 +176,12 @@ export default function SkillTreeEditor({
               Regenerate Skill Tree
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              This will replace your current skill tree with a new AI-generated one. Any flashcards
-              linked to the old tree will be unlinked.
+              This will replace your current skill tree with a new automatically generated one. Any
+              flashcards linked to the old tree will be unlinked.
             </p>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Feedback for AI (optional)
+                Feedback (optional)
               </label>
               <textarea
                 value={feedback}

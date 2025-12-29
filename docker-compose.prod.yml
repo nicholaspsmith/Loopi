@@ -18,16 +18,14 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - NEXTAUTH_URL=${NEXTAUTH_URL}
-      - OLLAMA_BASE_URL=http://ollama:11434
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - API_KEY_ENCRYPTION_SECRET=${API_KEY_ENCRYPTION_SECRET}
       - RESEND_API_KEY=${RESEND_API_KEY}
       - SMTP_FROM=${SMTP_FROM}
     depends_on:
       postgres:
         condition: service_healthy
-      ollama:
-        condition: service_started
     networks:
       - memoryloop-network
     volumes:
@@ -57,23 +55,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - memoryloop-network
-    logging:
-      driver: 'json-file'
-      options:
-        max-size: '10m'
-        max-file: '3'
-
-  # Ollama for local LLM inference
-  ollama:
-    image: ollama/ollama:latest
-    container_name: memoryloop-ollama
-    restart: always
-    expose:
-      - '11434'
-    volumes:
-      - /opt/memoryloop/data/ollama:/root/.ollama
     networks:
       - memoryloop-network
     logging:

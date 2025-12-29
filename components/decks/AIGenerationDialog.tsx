@@ -6,12 +6,12 @@ import { useRouter } from 'next/navigation'
 /**
  * AIGenerationDialog Component
  *
- * Dialog for AI-powered deck generation from topic description.
- * Implements User Story 3 (AI-Powered Deck Creation).
+ * Dialog for Smart deck generation from topic description.
+ * Implements User Story 3 (Smart Deck Creation).
  *
  * Features:
  * - Topic input form with validation (T065)
- * - AI suggestions review UI with relevance scores (T066)
+ * - Suggestions review UI with relevance scores (T066)
  * - Card accept/reject checkboxes (T067)
  * - Loading states with progress indicators (T068)
  * - Error handling with fallback options (T069)
@@ -190,7 +190,7 @@ export default function AIGenerationDialog({ isOpen, onClose }: AIGenerationDial
               id="ai-dialog-title"
               className="text-2xl font-bold text-gray-900 dark:text-gray-100"
             >
-              AI Deck Generation
+              Smart Deck Generation
             </h2>
             <button
               onClick={onClose}
@@ -256,7 +256,7 @@ export default function AIGenerationDialog({ isOpen, onClose }: AIGenerationDial
               </p>
               <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
                 {loadingStage === 'searching' && 'Finding semantically similar cards'}
-                {loadingStage === 'analyzing' && 'AI is ranking cards by relevance'}
+                {loadingStage === 'analyzing' && 'Ranking cards by relevance'}
               </p>
             </div>
           )}

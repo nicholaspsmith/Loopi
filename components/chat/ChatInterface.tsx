@@ -9,7 +9,7 @@ import type { Message, Conversation } from '@/types'
  * ChatInterface Component
  *
  * Main chat interface that manages conversation state and handles
- * streaming responses from Claude.
+ * streaming responses from the assistant.
  */
 
 interface ChatInterfaceProps {

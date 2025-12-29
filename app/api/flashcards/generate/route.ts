@@ -73,8 +73,8 @@ export async function POST(request: NextRequest) {
 
     console.log(`[FlashcardGenerate] Generating flashcards from message ${messageId}`)
 
-    // Generate flashcards using Claude/Ollama (FR-009)
-    // Uses server-side ANTHROPIC_API_KEY if available, otherwise falls back to Ollama
+    // Generate flashcards using Claude (FR-009)
+    // Uses server-side ANTHROPIC_API_KEY for content generation
     const flashcardPairs = await generateFlashcardsFromContent(message.content, {
       maxFlashcards,
       userApiKey: process.env.ANTHROPIC_API_KEY,

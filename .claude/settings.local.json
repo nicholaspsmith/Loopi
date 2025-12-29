@@ -85,11 +85,27 @@
       "Bash(chmod:*)",
       "Bash(.claude/hooks/navigation-guardian.sh:*)",
       "Bash(/Users/nick/Code/memoryloop/.claude/hooks/navigation-guardian.sh)",
-      "Bash(shellcheck:*)"
+      "Bash(shellcheck:*)",
+      "Bash(npx tsc:*)",
+      "Bash(claude mcp restart serena)",
+      "Bash(claude mcp:*)",
+      "mcp__serena__get_symbols_overview",
+      "mcp__serena__find_symbol",
+      "mcp__serena__replace_symbol_body",
+      "Bash(mcp__serena__get_symbols_overview:*)",
+      "mcp__serena__search_for_pattern",
+      "mcp__serena__insert_before_symbol",
+      "Bash(sed:*)",
+      "Bash(sed -i:*)",
+      "Bash(find:*)",
+      "Bash(mkdir:*)",
+      "Bash(# Fix outdated comment in flashcards route and check goals routes sed -i '''' ''s/Uses server-side ANTHROPIC_API_KEY if available, otherwise falls back to Ollama/Uses server-side ANTHROPIC_API_KEY for content generation/'' /Users/nick/Code/memoryloop/app/api/flashcards/generate/route.ts && \\\\ # Check goals routes for API key usage grep -n \"\"ANTHROPIC_API_KEY\\\\|getOllamaUrl\\\\|ollama\\\\|streamChatCompletion\\\\|generateSkillTree\"\" /Users/nick/Code/memoryloop/app/api/goals/*/generate/route.ts)",
+      "Bash(# Check what the goals routes import and use grep -l \"\"ollama\\\\|Ollama\\\\|OLLAMA\"\" /Users/nick/Code/memoryloop/app/api/goals/**/*.ts /Users/nick/Code/memoryloop/lib/**/*.ts || echo \"\"No ollama references in main code\"\" && \\\\ # Run npm run build to verify no Ollama imports \\(T036\\) echo \"\"=== Running build ===\"\" && \\\\ npm run build 2>&1)"
     ]
   },
   "enabledMcpjsonServers": [
-    "lance-context"
+    "lance-context",
+    "serena"
   ],
   "hooks": {
     "PreToolUse": [

@@ -51,10 +51,10 @@ export const MessageSchema = z.object({
   userId: z.string().uuid(),
   role: MessageRoleSchema,
   content: z.string().min(1).max(50000), // Max 50k characters
-  embedding: z.array(z.number()).length(768).nullable(), // Ollama nomic-embed-text
+  embedding: z.array(z.number()).length(768).nullable(), // Jina embeddings
   createdAt: z.number().int().positive(),
   hasFlashcards: z.boolean().default(false),
-  aiProvider: z.enum(['claude', 'ollama']).nullable().optional(),
+  aiProvider: z.enum(['claude']).nullable().optional(), // Legacy field, always 'claude'
 })
 
 export type Message = z.infer<typeof MessageSchema>

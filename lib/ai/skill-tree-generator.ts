@@ -2,12 +2,12 @@
  * AI Skill Tree Generator
  *
  * Generates hierarchical skill trees for learning goals.
- * Uses Claude API when ANTHROPIC_API_KEY is set, falls back to Ollama.
- * Based on prompting strategy from research.md §2.
+ * Uses the Anthropic SDK for AI-powered skill tree generation.
+ * Based on prompting strategy from research.md section 2.
  */
 
 import * as logger from '@/lib/logger'
-import { getChatCompletion, CLAUDE_MODEL, OLLAMA_MODEL } from '@/lib/claude/client'
+import { getChatCompletion, CLAUDE_MODEL } from '@/lib/claude/client'
 
 /**
  * Generated skill tree node from LLM
@@ -47,17 +47,10 @@ const DEFAULT_OPTIONS: Required<SkillTreeGenerationOptions> = {
 }
 
 /**
- * Get the API key for Claude (server-side generation)
- */
-function getApiKey(): string | undefined {
-  return process.env.ANTHROPIC_API_KEY
-}
-
-/**
  * Get the model name being used
  */
 function getModelName(): string {
-  return getApiKey() ? CLAUDE_MODEL : OLLAMA_MODEL
+  return CLAUDE_MODEL
 }
 
 /**
@@ -184,7 +177,7 @@ function findMaxDepth(nodes: GeneratedNode[]): number {
 
 /**
  * Generate a skill tree for a learning topic
- * Uses Claude API when ANTHROPIC_API_KEY is set, falls back to Ollama
+ * Uses the Anthropic SDK for AI-powered skill tree generation
  */
 export async function generateSkillTree(
   topic: string,
@@ -193,7 +186,6 @@ export async function generateSkillTree(
   const opts = { ...DEFAULT_OPTIONS, ...options }
   const startTime = Date.now()
   const model = getModelName()
-  const apiKey = getApiKey()
 
   let lastError: Error | null = null
   let retryCount = 0
@@ -203,7 +195,6 @@ export async function generateSkillTree(
       logger.info('Generating skill tree', {
         topic,
         model,
-        provider: apiKey ? 'claude' : 'ollama',
         attempt: attempt + 1,
         maxRetries: opts.maxRetries,
       })
@@ -213,7 +204,6 @@ export async function generateSkillTree(
       const responseText = await getChatCompletion({
         messages: [{ role: 'user', content: buildPrompt(topic) }],
         systemPrompt,
-        userApiKey: apiKey,
       })
 
       if (!responseText) {
@@ -237,7 +227,6 @@ export async function generateSkillTree(
       logger.info('Skill tree generated successfully', {
         topic,
         model,
-        provider: apiKey ? 'claude' : 'ollama',
         nodeCount,
         maxDepth,
         attempt: attempt + 1,
@@ -268,7 +257,6 @@ export async function generateSkillTree(
       logger.warn('Skill tree generation attempt failed', {
         topic,
         model,
-        provider: apiKey ? 'claude' : 'ollama',
         attempt: attempt + 1,
         error: lastError.message,
       })
@@ -283,7 +271,6 @@ export async function generateSkillTree(
   logger.error('Skill tree generation failed after all retries', lastError!, {
     topic,
     model,
-    provider: apiKey ? 'claude' : 'ollama',
     retryCount,
   })
 

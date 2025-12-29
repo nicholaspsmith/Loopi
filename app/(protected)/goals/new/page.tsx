@@ -9,7 +9,7 @@ import GoalForm from '@/components/goals/GoalForm'
  *
  * Features:
  * - Goal title and description input
- * - Option to generate AI skill tree
+ * - Option to generate skill tree automatically
  * - Loading state during generation
  */
 
@@ -31,7 +31,7 @@ export default async function NewGoalPage() {
           Create a Learning Goal
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          What do you want to master? AI will help break it down into manageable topics.
+          What do you want to master? We&apos;ll help break it down into manageable topics.
         </p>
       </div>
 

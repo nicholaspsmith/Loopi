@@ -136,10 +136,10 @@ export default function GoalForm({ mode, initialData, onSuccess }: GoalFormProps
           </label>
           <div>
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Generate skill tree with AI
+              Generate skill tree automatically
             </span>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              AI will break down your learning goal into topics and subtopics
+              Your learning goal will be broken down into topics and subtopics
             </p>
           </div>
         </div>

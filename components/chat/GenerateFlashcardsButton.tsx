@@ -5,7 +5,7 @@ import { useState } from 'react'
 /**
  * GenerateFlashcardsButton Component
  *
- * Button to generate flashcards from Claude (assistant) messages
+ * Button to generate flashcards from assistant messages
  *
  * Maps to:
  * - FR-008: "Generate Flashcards" action for assistant messages
@@ -65,7 +65,7 @@ export default function GenerateFlashcardsButton({
           // FR-019: Insufficient content
           setMessage('Insufficient educational content for flashcard generation')
         } else if (data.code === 'INVALID_MESSAGE_ROLE') {
-          setMessage('Can only generate flashcards from Claude responses')
+          setMessage('Can only generate flashcards from assistant responses')
         } else {
           setMessage(data.error || 'Failed to generate flashcards')
         }

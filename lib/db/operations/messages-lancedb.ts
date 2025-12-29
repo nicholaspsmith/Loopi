@@ -1,5 +1,5 @@
 import { getDbConnection } from '@/lib/db/client'
-import { generateEmbedding } from '@/lib/embeddings/ollama'
+import { generateEmbedding } from '@/lib/embeddings'
 import { getDb } from '@/lib/db/pg-client'
 import { messages } from '@/lib/db/drizzle-schema'
 import { inArray } from 'drizzle-orm'
@@ -86,7 +86,8 @@ export async function searchSimilarMessages(
     const queryEmbedding = await generateEmbedding(queryText)
 
     if (!queryEmbedding) {
-      throw new Error('Failed to generate query embedding')
+      console.warn('[LanceDB] No embedding generated for query, returning empty results')
+      return []
     }
 
     const lanceDb = await getDbConnection()
@@ -124,7 +125,7 @@ export async function searchSimilarMessages(
         embedding: null, // Embeddings stored in LanceDB, not returned in API
         createdAt: m.createdAt.getTime(),
         hasFlashcards: m.hasFlashcards,
-        aiProvider: m.aiProvider as 'claude' | 'ollama' | null,
+        aiProvider: m.aiProvider as 'claude' | null,
       }))
   } catch (error) {
     console.error('[LanceDB] Semantic search failed:', error)

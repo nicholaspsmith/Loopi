@@ -3,7 +3,7 @@ import { getChatCompletion } from './client'
 /**
  * Flashcard Generation Module
  *
- * Generates question-answer flashcard pairs from educational content using Claude/Ollama.
+ * Generates question-answer flashcard pairs from educational content for content generation.
  *
  * Maps to FR-009: Automatically create multiple Q&A flashcard pairs from response
  */
@@ -154,9 +154,9 @@ function extractFlashcardsWithRegex(rawText: string): FlashcardPair[] {
 }
 
 /**
- * Parse flashcard response from LLM (handles both Claude and Ollama formats)
+ * Parse flashcard response from LLM (parses LLM response)
  */
-function parseFlashcardsFromResponse(rawResponse: string, provider: string): FlashcardPair[] {
+function parseFlashcardsFromResponse(rawResponse: string): FlashcardPair[] {
   try {
     let jsonString = rawResponse.trim()
 
@@ -165,7 +165,7 @@ function parseFlashcardsFromResponse(rawResponse: string, provider: string): Fla
       const codeBlockMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)```/)
       if (codeBlockMatch) {
         jsonString = codeBlockMatch[1].trim()
-        console.log(`[FlashcardGenerator] Extracted JSON from ${provider} code block`)
+        console.log('[FlashcardGenerator] Extracted JSON from code block')
       }
     }
 
@@ -174,14 +174,14 @@ function parseFlashcardsFromResponse(rawResponse: string, provider: string): Fla
     const arrayMatch = jsonString.match(/\[[\s\S]*\]/)
     if (arrayMatch) {
       jsonString = arrayMatch[0]
-      console.log(`[FlashcardGenerator] Extracted JSON array from ${provider} response`)
+      console.log('[FlashcardGenerator] Extracted JSON array from response')
     }
 
     // Step 3: Try to parse the JSON (with repair attempt)
     let parsed: any
     try {
       parsed = JSON.parse(jsonString)
-      console.log(`[FlashcardGenerator] Successfully parsed ${provider} JSON`)
+      console.log('[FlashcardGenerator] Successfully parsed JSON')
     } catch (parseError) {
       console.warn(`[FlashcardGenerator] Initial parse failed, attempting repair...`)
 
@@ -189,7 +189,7 @@ function parseFlashcardsFromResponse(rawResponse: string, provider: string): Fla
       const repairedJson = repairJson(jsonString)
       try {
         parsed = JSON.parse(repairedJson)
-        console.log(`[FlashcardGenerator] Successfully parsed repaired ${provider} JSON`)
+        console.log('[FlashcardGenerator] Successfully parsed repaired JSON')
       } catch (repairError) {
         console.error(`[FlashcardGenerator] Repair failed, trying regex extraction`)
         console.error(`[FlashcardGenerator] Attempted to parse:`, jsonString.substring(0, 500))
@@ -200,7 +200,7 @@ function parseFlashcardsFromResponse(rawResponse: string, provider: string): Fla
           return regexResults
         }
 
-        console.error(`[FlashcardGenerator] All parsing strategies failed for ${provider}`)
+        console.error('[FlashcardGenerator] All parsing strategies failed')
         return []
       }
     }
@@ -217,16 +217,16 @@ function parseFlashcardsFromResponse(rawResponse: string, provider: string): Fla
     } else if (parsed && typeof parsed.question === 'string' && typeof parsed.answer === 'string') {
       // Single flashcard - wrap in array
       flashcards = [parsed]
-      console.log(`[FlashcardGenerator] ${provider} returned single flashcard, wrapping in array`)
+      console.log('[FlashcardGenerator] Returned single flashcard, wrapping in array')
     } else {
-      console.warn(`[FlashcardGenerator] Unexpected ${provider} JSON structure:`, parsed)
+      console.warn('[FlashcardGenerator] Unexpected JSON structure:', parsed)
       return []
     }
 
-    console.log(`[FlashcardGenerator] Parsed ${flashcards.length} flashcards from ${provider}`)
+    console.log('[FlashcardGenerator] Parsed ' + flashcards.length + ' flashcards')
     return flashcards
   } catch (error) {
-    console.error(`[FlashcardGenerator] Error parsing ${provider} response:`, error)
+    console.error('[FlashcardGenerator] Error parsing response:', error)
     return []
   }
 }
@@ -272,13 +272,13 @@ export async function generateFlashcardsFromContent(
       userApiKey,
     })
 
-    const provider = userApiKey ? 'Claude' : 'Ollama'
-    console.log(`[FlashcardGenerator] Using ${provider} for generation`)
+    const usingUserKey = !!userApiKey
+    console.log(`[FlashcardGenerator] Using server API key: ${!usingUserKey}`)
     console.log('[FlashcardGenerator] Raw response length:', rawResponse.length)
     console.log('[FlashcardGenerator] Raw response preview:', rawResponse.substring(0, 500))
 
-    // Parse response - handle both Claude and Ollama formats
-    const flashcards = parseFlashcardsFromResponse(rawResponse, provider)
+    // Parse response - parse LLM response
+    const flashcards = parseFlashcardsFromResponse(rawResponse)
 
     if (flashcards.length === 0) {
       console.log('[FlashcardGenerator] No flashcards parsed from response')

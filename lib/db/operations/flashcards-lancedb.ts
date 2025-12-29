@@ -1,5 +1,5 @@
 import { getDbConnection } from '@/lib/db/client'
-import { generateEmbedding } from '@/lib/embeddings/ollama'
+import { generateEmbedding } from '@/lib/embeddings'
 
 /**
  * LanceDB Flashcard Operations
@@ -72,7 +72,8 @@ export async function searchSimilarFlashcardIds(
     const queryEmbedding = await generateEmbedding(queryText)
 
     if (!queryEmbedding) {
-      throw new Error('Failed to generate query embedding')
+      console.warn('[LanceDB] No embedding generated for query, returning empty results')
+      return []
     }
 
     const db = await getDbConnection()
@@ -106,7 +107,8 @@ export async function searchSimilarFlashcardsWithScores(
     const queryEmbedding = await generateEmbedding(queryText)
 
     if (!queryEmbedding) {
-      throw new Error('Failed to generate query embedding')
+      console.warn('[LanceDB] No embedding generated for query, returning empty results')
+      return []
     }
 
     const db = await getDbConnection()

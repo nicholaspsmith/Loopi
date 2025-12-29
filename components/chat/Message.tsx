@@ -2,7 +2,6 @@
 
 import type { Message as MessageType } from '@/types'
 import GenerateFlashcardsButton from './GenerateFlashcardsButton'
-import ProviderBadge from '@/components/settings/ProviderBadge'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -29,7 +28,7 @@ export default function Message({ message, isStreaming = false }: MessageProps) 
       data-testid="chat-message"
       data-role={message.role}
       role="article"
-      aria-label={`Message from ${isUser ? 'You' : 'Claude'}`}
+      aria-label={`Message from ${isUser ? 'You' : 'Assistant'}`}
     >
       <div
         className={`max-w-[80%] rounded-lg px-4 py-3 ${
@@ -40,7 +39,7 @@ export default function Message({ message, isStreaming = false }: MessageProps) 
       >
         {/* Role label */}
         <div className="text-xs font-semibold mb-1 opacity-70" aria-label="Sender">
-          {isUser ? 'You' : 'Claude'}
+          {isUser ? 'You' : 'Assistant'}
         </div>
 
         {/* Message content */}
@@ -127,7 +126,7 @@ export default function Message({ message, isStreaming = false }: MessageProps) 
           )}
         </div>
 
-        {/* Timestamp and Provider Badge */}
+        {/* Timestamp */}
         <div className="flex items-center gap-2 mt-2">
           <time className="text-xs opacity-60" dateTime={new Date(message.createdAt).toISOString()}>
             {new Date(message.createdAt).toLocaleTimeString([], {
@@ -135,9 +134,6 @@ export default function Message({ message, isStreaming = false }: MessageProps) 
               minute: '2-digit',
             })}
           </time>
-          {isAssistant && message.aiProvider && (
-            <ProviderBadge provider={message.aiProvider} size="sm" showTooltip />
-          )}
         </div>
 
         {/* Generate Flashcards Button (FR-008: only for assistant messages) */}

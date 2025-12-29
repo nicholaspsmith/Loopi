@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     default: 'MemoryLoop',
     template: '%s | MemoryLoop',
   },
-  description: 'Claude-powered flashcard learning platform with spaced repetition',
+  description: 'Flashcard learning platform with spaced repetition',
 }
 
 export const viewport: Viewport = {

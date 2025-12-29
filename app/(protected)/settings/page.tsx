@@ -11,7 +11,9 @@ export default function SettingsPage() {
       <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8">Settings</h1>
 
       <section className="mb-12">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">AI Provider</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+          Service Status
+        </h2>
         <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           <div className="flex items-center gap-2 mb-2">
             <svg
@@ -28,12 +30,11 @@ export default function SettingsPage() {
               />
             </svg>
             <h3 className="text-sm font-medium text-green-900 dark:text-green-100">
-              Claude AI Active
+              Service Active
             </h3>
           </div>
           <p className="text-sm text-green-800 dark:text-green-200">
-            Your AI-powered features are using Claude for skill tree generation, card creation, and
-            study assistance.
+            Skill tree generation, card creation, and study assistance are ready to use.
           </p>
         </div>
       </section>

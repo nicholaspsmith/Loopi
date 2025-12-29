@@ -120,7 +120,7 @@ export default async function NewDeckPage() {
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
             You need to create flashcards before you can organize them into decks. Start a
-            conversation with Claude to generate flashcards.
+            conversation to generate flashcards.
           </p>
           <Link
             href="/chat"

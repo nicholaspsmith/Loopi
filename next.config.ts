@@ -1,5 +1,8 @@
 import type { NextConfig } from 'next'
 
+// Validate required environment variables at build time
+import './lib/env'
+
 const nextConfig: NextConfig = {
   // Enable standalone output for Docker deployment
   output: 'standalone',

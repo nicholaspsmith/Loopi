@@ -23,7 +23,7 @@ export async function createMessage(data: {
   userId: string
   role: MessageRole
   content: string
-  aiProvider?: 'claude' | 'ollama' | null
+  aiProvider?: 'claude' | null
 }): Promise<Message> {
   const db = getDb()
 
@@ -64,7 +64,7 @@ export async function createMessage(data: {
     embedding: null, // Embeddings stored in LanceDB, not returned in API
     createdAt: message.createdAt.getTime(),
     hasFlashcards: message.hasFlashcards,
-    aiProvider: message.aiProvider as 'claude' | 'ollama' | null,
+    aiProvider: message.aiProvider as 'claude' | null,
   }
 }
 
@@ -89,7 +89,7 @@ export async function getMessageById(id: string): Promise<Message | null> {
     embedding: null, // Don't return embedding in API responses
     createdAt: message.createdAt.getTime(),
     hasFlashcards: message.hasFlashcards,
-    aiProvider: message.aiProvider as 'claude' | 'ollama' | null,
+    aiProvider: message.aiProvider as 'claude' | null,
   }
 }
 
@@ -115,7 +115,7 @@ export async function getMessagesByConversationId(conversationId: string): Promi
     embedding: null, // Don't return embedding in API responses
     createdAt: msg.createdAt.getTime(),
     hasFlashcards: msg.hasFlashcards,
-    aiProvider: msg.aiProvider as 'claude' | 'ollama' | null,
+    aiProvider: msg.aiProvider as 'claude' | null,
   }))
 }
 
@@ -144,7 +144,7 @@ export async function getRecentMessages(
     embedding: null,
     createdAt: msg.createdAt.getTime(),
     hasFlashcards: msg.hasFlashcards,
-    aiProvider: msg.aiProvider as 'claude' | 'ollama' | null,
+    aiProvider: msg.aiProvider as 'claude' | null,
   }))
 }
 
@@ -175,6 +175,6 @@ export async function markMessageWithFlashcards(id: string): Promise<Message> {
     embedding: null, // Embeddings stored in LanceDB
     createdAt: updatedMessage.createdAt.getTime(),
     hasFlashcards: updatedMessage.hasFlashcards,
-    aiProvider: updatedMessage.aiProvider as 'claude' | 'ollama' | null,
+    aiProvider: updatedMessage.aiProvider as 'claude' | null,
   }
 }

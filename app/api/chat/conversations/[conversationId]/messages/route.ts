@@ -98,7 +98,7 @@ export async function POST(
 
     // Use server-side API key if available
     const apiKey = process.env.ANTHROPIC_API_KEY
-    const aiProvider = apiKey ? 'claude' : 'ollama'
+    const aiProvider = 'claude' // Always use Claude
 
     // Create user message
     const userMessage = await createMessage({

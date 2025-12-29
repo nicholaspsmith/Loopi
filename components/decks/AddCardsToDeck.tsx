@@ -230,7 +230,7 @@ export default function AddCardsToDeck({
               <p className="text-gray-600 dark:text-gray-400">
                 {searchQuery
                   ? 'Try a different search term'
-                  : 'Create flashcards by chatting with Claude'}
+                  : 'Create flashcards by starting a conversation'}
               </p>
             </div>
           ) : (

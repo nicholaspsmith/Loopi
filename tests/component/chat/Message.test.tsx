@@ -7,6 +7,8 @@ import type { Message as MessageType } from '@/types'
  * Component Tests for Message Component
  *
  * Tests rendering of user and assistant messages with streaming states.
+ *
+ * T025 [US2]: Verifies ProviderBadge component is removed and no AI branding exists
  */
 
 describe('Message Component', () => {
@@ -65,7 +67,7 @@ describe('Message Component', () => {
       render(<Message message={mockAssistantMessage} />)
 
       expect(screen.getByText('Of course! How can I assist you today?')).toBeInTheDocument()
-      expect(screen.getByText('Claude')).toBeInTheDocument()
+      expect(screen.getByText('Assistant')).toBeInTheDocument()
     })
 
     it('should apply assistant styling', () => {
@@ -110,6 +112,74 @@ describe('Message Component', () => {
       render(<Message message={longMessage} />)
 
       expect(screen.getByText('a'.repeat(1000))).toBeInTheDocument()
+    })
+  })
+
+  describe('AI Branding Removal (T025)', () => {
+    it('should NOT import ProviderBadge component', () => {
+      // This test verifies at compile-time that ProviderBadge is not imported
+      // If ProviderBadge were imported, TypeScript would fail to compile
+      // since the component has been deleted
+      const componentSource = Message.toString()
+      expect(componentSource).not.toContain('ProviderBadge')
+    })
+
+    it('should NOT render any provider badge elements', () => {
+      const { container } = render(<Message message={mockAssistantMessage} />)
+
+      // Verify no elements with provider badge related classes or test IDs
+      expect(container.querySelector('[data-testid*="provider"]')).not.toBeInTheDocument()
+      expect(container.querySelector('[class*="provider-badge"]')).not.toBeInTheDocument()
+      expect(container.querySelector('[class*="ProviderBadge"]')).not.toBeInTheDocument()
+    })
+
+    it('should NOT contain AI/Claude/Anthropic/Ollama terms in user messages', () => {
+      const { container } = render(<Message message={mockUserMessage} />)
+
+      const text = container.textContent || ''
+      const aiTerms = ['AI', 'Claude', 'Anthropic', 'Ollama', 'LLM', 'artificial intelligence']
+
+      aiTerms.forEach((term) => {
+        expect(text.toLowerCase()).not.toContain(term.toLowerCase())
+      })
+    })
+
+    it('should NOT contain AI/Claude/Anthropic/Ollama terms in assistant messages', () => {
+      const { container } = render(<Message message={mockAssistantMessage} />)
+
+      const text = container.textContent || ''
+      const aiTerms = ['Claude', 'Anthropic', 'Ollama', 'LLM']
+
+      aiTerms.forEach((term) => {
+        expect(text.toLowerCase()).not.toContain(term.toLowerCase())
+      })
+
+      // Verify "Assistant" is used instead
+      expect(text).toContain('Assistant')
+    })
+
+    it('should use neutral "Assistant" label instead of AI provider names', () => {
+      render(<Message message={mockAssistantMessage} />)
+
+      // Verify neutral terminology
+      expect(screen.getByText('Assistant')).toBeInTheDocument()
+
+      // Verify AI provider names are not present
+      expect(screen.queryByText('Claude')).not.toBeInTheDocument()
+      expect(screen.queryByText('Anthropic')).not.toBeInTheDocument()
+      expect(screen.queryByText('Ollama')).not.toBeInTheDocument()
+      expect(screen.queryByText(/AI/i)).not.toBeInTheDocument()
+    })
+
+    it('should NOT expose AI provider info in streaming messages', () => {
+      const { container } = render(<Message message={mockAssistantMessage} isStreaming={true} />)
+
+      const text = container.textContent || ''
+      const aiTerms = ['Claude', 'Anthropic', 'Ollama', 'AI', 'LLM']
+
+      aiTerms.forEach((term) => {
+        expect(text.toLowerCase()).not.toContain(term.toLowerCase())
+      })
     })
   })
 

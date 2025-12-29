@@ -65,7 +65,7 @@ export const messages = pgTable('messages', {
   // Note: Embeddings stored in LanceDB for efficient vector search
   hasFlashcards: boolean('has_flashcards').notNull().default(false),
   // AI provider tracking
-  aiProvider: varchar('ai_provider', { length: 20 }), // 'claude' | 'ollama' | null
+  aiProvider: varchar('ai_provider', { length: 20 }), // 'claude' | null (legacy field)
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 

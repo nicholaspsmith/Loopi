@@ -126,9 +126,9 @@ describe('MessageList Component', () => {
       render(<MessageList messages={mockMessages} isLoading={true} />)
 
       expect(screen.getByText('Thinking')).toBeInTheDocument()
-      // Check that "Claude" appears multiple times (once in messages, once in loading indicator)
-      const claudeElements = screen.getAllByText('Claude')
-      expect(claudeElements.length).toBeGreaterThan(0)
+      // Check that "Assistant" appears multiple times (once in messages, once in loading indicator)
+      const assistantElements = screen.getAllByText('Assistant')
+      expect(assistantElements.length).toBeGreaterThan(0)
     })
 
     it('should not show loading indicator when isLoading is false', () => {

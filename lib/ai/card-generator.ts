@@ -2,11 +2,11 @@
  * AI Card Generator
  *
  * Generates flashcards and multiple choice questions scoped to skill tree nodes.
- * Uses Claude API when ANTHROPIC_API_KEY is set, falls back to Ollama.
+ * Uses the Anthropic SDK for AI-powered card generation.
  */
 
 import * as logger from '@/lib/logger'
-import { getChatCompletion, CLAUDE_MODEL, OLLAMA_MODEL } from '@/lib/claude/client'
+import { getChatCompletion, CLAUDE_MODEL } from '@/lib/claude/client'
 
 /**
  * Card type for generation
@@ -76,17 +76,10 @@ const DEFAULT_OPTIONS = {
 }
 
 /**
- * Get the API key for Claude (server-side generation)
- */
-function getApiKey(): string | undefined {
-  return process.env.ANTHROPIC_API_KEY
-}
-
-/**
  * Get the model name being used
  */
 function getModelName(): string {
-  return getApiKey() ? CLAUDE_MODEL : OLLAMA_MODEL
+  return CLAUDE_MODEL
 }
 
 /**
@@ -322,13 +315,12 @@ function extractJson(text: string): string {
 
 /**
  * Generate cards for a skill tree node
- * Uses Claude API when ANTHROPIC_API_KEY is set, falls back to Ollama
+ * Uses the Anthropic SDK for AI-powered card generation
  */
 export async function generateCards(options: CardGenerationOptions): Promise<CardGenerationResult> {
   const opts = { ...DEFAULT_OPTIONS, ...options }
   const startTime = Date.now()
   const model = getModelName()
-  const apiKey = getApiKey()
 
   let lastError: Error | null = null
   let retryCount = 0
@@ -340,7 +332,6 @@ export async function generateCards(options: CardGenerationOptions): Promise<Car
         cardType: options.cardType,
         count: options.count,
         model,
-        provider: apiKey ? 'claude' : 'ollama',
         attempt: attempt + 1,
       })
 
@@ -378,7 +369,6 @@ export async function generateCards(options: CardGenerationOptions): Promise<Car
       const responseText = await getChatCompletion({
         messages: [{ role: 'user', content: prompt }],
         systemPrompt,
-        userApiKey: apiKey,
       })
 
       if (!responseText) {
@@ -403,7 +393,7 @@ export async function generateCards(options: CardGenerationOptions): Promise<Car
         nodeTitle: options.nodeTitle,
         cardType: options.cardType,
         cardCount: cards.length,
-        provider: apiKey ? 'claude' : 'ollama',
+        model,
         generationTimeMs: Date.now() - startTime,
       })
 
@@ -430,7 +420,7 @@ export async function generateCards(options: CardGenerationOptions): Promise<Car
       logger.warn('Card generation attempt failed', {
         nodeTitle: options.nodeTitle,
         cardType: options.cardType,
-        provider: apiKey ? 'claude' : 'ollama',
+        model,
         attempt: attempt + 1,
         error: lastError.message,
       })
@@ -444,7 +434,7 @@ export async function generateCards(options: CardGenerationOptions): Promise<Car
   logger.error('Card generation failed after all retries', lastError!, {
     nodeTitle: options.nodeTitle,
     cardType: options.cardType,
-    provider: apiKey ? 'claude' : 'ollama',
+    model,
     retryCount,
   })
 

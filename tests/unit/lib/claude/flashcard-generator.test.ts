@@ -1,49 +1,32 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+// @vitest-environment node
+import { describe, it, expect, beforeAll } from 'vitest'
 import { generateFlashcardsFromContent } from '@/lib/claude/flashcard-generator'
 
 /**
- * Unit Tests for Flashcard Generator
+ * Integration Tests for Flashcard Generator
  *
- * Tests the flashcard generation logic that extracts Q&A pairs from content
+ * Tests the flashcard generation using the real Claude API.
+ * Requires ANTHROPIC_API_KEY to be set in .env.local
  */
 
 describe('Flashcard Generator', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
-  afterEach(() => {
-    // Restore global.fetch after each test to avoid interfering with dev server
-    vi.restoreAllMocks()
+  beforeAll(() => {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.warn('ANTHROPIC_API_KEY not set - flashcard generator tests will be skipped')
+    }
   })
 
   it('should generate flashcards from educational content', async () => {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return // Skip if no API key
+    }
+
     const content = `Quantum entanglement is a physical phenomenon that occurs when pairs of particles remain connected.
 
 Key concepts:
 1. Non-locality: Particles remain connected regardless of distance
 2. Superposition: Multiple states exist simultaneously
 3. Correlation: Measuring one affects the other`
-
-    // Mock Ollama API response
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        message: {
-          content: JSON.stringify([
-            {
-              question: 'What is quantum entanglement?',
-              answer:
-                'Quantum entanglement is a physical phenomenon that occurs when pairs of particles remain connected.',
-            },
-            {
-              question: 'What is non-locality in quantum physics?',
-              answer: 'Non-locality means particles remain connected regardless of distance.',
-            },
-          ]),
-        },
-      }),
-    })
 
     const flashcards = await generateFlashcardsFromContent(content)
 
@@ -59,17 +42,28 @@ Key concepts:
       expect(fc.question.length).toBeGreaterThan(0)
       expect(fc.answer.length).toBeGreaterThan(0)
     })
-  }, 30000)
+  }, 60000)
 
   it('should respect maxFlashcards limit', async () => {
-    const content = 'Educational content. '.repeat(100)
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return // Skip if no API key
+    }
+
+    const content = `Machine Learning is a subset of artificial intelligence.
+
+Key concepts:
+1. Supervised Learning: Uses labeled data
+2. Unsupervised Learning: Finds patterns
+3. Neural Networks: Inspired by brain
+4. Deep Learning: Multiple layers
+5. Gradient Descent: Optimization method`
 
     const flashcards = await generateFlashcardsFromContent(content, {
       maxFlashcards: 3,
     })
 
     expect(flashcards.length).toBeLessThanOrEqual(3)
-  })
+  }, 60000)
 
   it('should return empty array for insufficient content', async () => {
     const content = 'Hello! How are you?'
@@ -87,6 +81,10 @@ Key concepts:
   })
 
   it('should extract multiple flashcards from rich content', async () => {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return // Skip if no API key
+    }
+
     const content = `Machine Learning is a subset of artificial intelligence that enables systems to learn from data.
 
 Types of Machine Learning:
@@ -98,12 +96,15 @@ Common algorithms include decision trees, neural networks, and support vector ma
 
     const flashcards = await generateFlashcardsFromContent(content)
 
-    // llama3.2 may generate 1 or more flashcards depending on the run
     expect(flashcards.length).toBeGreaterThan(0)
-    expect(flashcards.length).toBeLessThanOrEqual(10)
-  }, 30000)
+    expect(flashcards.length).toBeLessThanOrEqual(20) // Claude may generate more than 10 from rich content
+  }, 60000)
 
   it('should generate questions that are interrogative', async () => {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return // Skip if no API key
+    }
+
     const content = `Photosynthesis is the process by which plants convert light energy into chemical energy.
 It occurs in chloroplasts and requires sunlight, carbon dioxide, and water.`
 
@@ -122,9 +123,13 @@ It occurs in chloroplasts and requires sunlight, carbon dioxide, and water.`
 
       expect(isInterrogative).toBe(true)
     })
-  }, 30000)
+  }, 60000)
 
   it('should generate answers that are declarative', async () => {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return // Skip if no API key
+    }
+
     const content = `DNA stands for Deoxyribonucleic Acid. It contains genetic instructions for living organisms.`
 
     const flashcards = await generateFlashcardsFromContent(content)
@@ -134,31 +139,15 @@ It occurs in chloroplasts and requires sunlight, carbon dioxide, and water.`
       expect(fc.answer).not.toMatch(/\?$/)
       expect(fc.answer.length).toBeGreaterThan(10) // Substantive answers
     })
-  })
+  }, 60000)
 
   it('should handle technical content with jargon', async () => {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return // Skip if no API key
+    }
+
     const content = `RESTful APIs use HTTP methods (GET, POST, PUT, DELETE) to perform CRUD operations.
 They are stateless and can return data in JSON or XML format.`
-
-    // Mock Ollama API response
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        message: {
-          content: JSON.stringify([
-            {
-              question: 'What are RESTful APIs?',
-              answer:
-                'RESTful APIs use HTTP methods (GET, POST, PUT, DELETE) to perform CRUD operations.',
-            },
-            {
-              question: 'What data formats can RESTful APIs return?',
-              answer: 'RESTful APIs can return data in JSON or XML format.',
-            },
-          ]),
-        },
-      }),
-    })
 
     const flashcards = await generateFlashcardsFromContent(content)
 
@@ -173,10 +162,14 @@ They are stateless and can return data in JSON or XML format.`
     const hasTechnicalContent =
       allText.includes('rest') || allText.includes('api') || allText.includes('http')
     expect(hasTechnicalContent).toBe(true)
-  }, 30000)
+  }, 60000)
 
   it('should validate question and answer lengths', async () => {
-    const content = 'The speed of light is approximately 299,792 kilometers per second.'
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return // Skip if no API key
+    }
+
+    const content = 'The speed of light is approximately 299,792 kilometers per second in a vacuum.'
 
     const flashcards = await generateFlashcardsFromContent(content)
 
@@ -186,11 +179,15 @@ They are stateless and can return data in JSON or XML format.`
       expect(fc.question.length).toBeGreaterThan(5)
       expect(fc.answer.length).toBeGreaterThan(5)
     })
-  }, 30000)
+  }, 60000)
 
   it('should not generate duplicate flashcards', async () => {
-    const content = `Water boils at 100 degrees Celsius. Water freezes at 0 degrees Celsius.
-Water is essential for life.`
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return // Skip if no API key
+    }
+
+    const content = `Water boils at 100 degrees Celsius at standard atmospheric pressure.
+Water freezes at 0 degrees Celsius. Water is essential for all known forms of life.`
 
     const flashcards = await generateFlashcardsFromContent(content)
 
@@ -198,9 +195,13 @@ Water is essential for life.`
     const questions = flashcards.map((fc) => fc.question)
     const uniqueQuestions = new Set(questions)
     expect(uniqueQuestions.size).toBe(questions.length)
-  })
+  }, 60000)
 
   it('should handle content with lists and bullet points', async () => {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return // Skip if no API key
+    }
+
     const content = `Three states of matter:
 • Solid: Fixed shape and volume
 • Liquid: Fixed volume, variable shape
@@ -209,9 +210,13 @@ Water is essential for life.`
     const flashcards = await generateFlashcardsFromContent(content)
 
     expect(flashcards.length).toBeGreaterThan(0)
-  }, 30000)
+  }, 60000)
 
   it('should handle content with code examples', async () => {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return // Skip if no API key
+    }
+
     const content = `A JavaScript function is defined using the function keyword:
 function add(a, b) {
   return a + b;
@@ -221,5 +226,5 @@ Functions can be assigned to variables and passed as arguments.`
     const flashcards = await generateFlashcardsFromContent(content)
 
     expect(flashcards.length).toBeGreaterThan(0)
-  }, 30000)
+  }, 60000)
 })

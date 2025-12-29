@@ -4,10 +4,8 @@ import Anthropic from '@anthropic-ai/sdk'
 /**
  * AI Client Wrapper
  *
- * Provides unified interface for Claude API (Anthropic SDK) and Ollama.
- * Routes requests based on user API key availability:
- * - With API key: Uses Claude via Anthropic SDK
- * - Without API key: Falls back to local Ollama (100% FREE!)
+ * Provides unified interface for AI chat completions using the Anthropic SDK.
+ * Uses user-provided API key or falls back to server-side API key.
  */
 
 // Error classification types (T056-T058)
@@ -25,9 +23,7 @@ export interface ClassifiedError {
   originalError: Error
 }
 
-// Ollama configuration
-const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
-export const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2'
+// Model configuration
 export const CLAUDE_MODEL = 'claude-sonnet-4-5-20250929'
 export const MAX_TOKENS = 4096
 
@@ -56,9 +52,11 @@ export function classifyClaudeError(error: Error): ClassifiedError {
     errorMessage.includes('unauthorized') ||
     errorMessage.includes('401')
   ) {
+    // Log detailed error for debugging
+    console.error('[API] Authentication error:', error.message)
     return {
       type: 'authentication_error',
-      message: 'API key authentication failed. Please check your API key in settings.',
+      message: 'Service configuration error. Please contact support.',
       shouldInvalidateKey: true,
       originalError: error,
     }
@@ -71,10 +69,11 @@ export function classifyClaudeError(error: Error): ClassifiedError {
     errorMessage.includes('credit balance') ||
     errorMessage.includes('429')
   ) {
+    // Log detailed error for debugging
+    console.error('[API] Quota exceeded:', error.message)
     return {
       type: 'quota_exceeded',
-      message:
-        'Your Claude API quota has been exceeded. Please check your account usage or add credits.',
+      message: 'Service temporarily unavailable. Please try again later.',
       shouldInvalidateKey: false,
       originalError: error,
     }
@@ -86,9 +85,11 @@ export function classifyClaudeError(error: Error): ClassifiedError {
     errorMessage.includes('too many requests') ||
     errorMessage.includes('429')
   ) {
+    // Log detailed error for debugging
+    console.error('[API] Rate limit exceeded:', error.message)
     return {
       type: 'rate_limit_error',
-      message: 'Rate limit exceeded. Please wait a moment and try again.',
+      message: 'Please wait a moment and try again.',
       shouldInvalidateKey: false,
       originalError: error,
     }
@@ -100,18 +101,22 @@ export function classifyClaudeError(error: Error): ClassifiedError {
     errorMessage.includes('fetch') ||
     errorMessage.includes('timeout')
   ) {
+    // Log detailed error for debugging
+    console.error('[API] Network error:', error.message)
     return {
       type: 'network_error',
-      message: 'Network error occurred. Please check your connection and try again.',
+      message: 'Connection error. Please check your network and try again.',
       shouldInvalidateKey: false,
       originalError: error,
     }
   }
 
   // Default to unknown error
+  // Log detailed error for debugging
+  console.error('[API] Unknown error:', error.message)
   return {
     type: 'unknown_error',
-    message: 'An unexpected error occurred. Please try again.',
+    message: 'Something went wrong. Please try again.',
     shouldInvalidateKey: false,
     originalError: error,
   }
@@ -198,93 +203,17 @@ async function streamClaudeAPI(params: {
 }
 
 /**
- * Stream chat completion from Ollama
- */
-async function streamOllamaChat(params: {
-  messages: ClaudeMessage[]
-  systemPrompt: string
-  onChunk: (text: string) => void
-  onComplete: (fullText: string) => void
-  onError: (error: Error) => void
-}): Promise<void> {
-  const { messages, systemPrompt, onChunk, onComplete, onError } = params
-
-  try {
-    // Format messages for Ollama
-    const ollamaMessages = [{ role: 'system', content: systemPrompt }, ...messages]
-
-    const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: OLLAMA_MODEL,
-        messages: ollamaMessages,
-        stream: true,
-      }),
-    })
-
-    if (!response.ok) {
-      throw new Error(`Ollama API error: ${response.statusText}`)
-    }
-
-    const reader = response.body?.getReader()
-    const decoder = new TextDecoder()
-
-    if (!reader) {
-      throw new Error('No response body')
-    }
-
-    let fullText = ''
-    let done = false
-
-    while (!done) {
-      const { value, done: streamDone } = await reader.read()
-      done = streamDone
-
-      if (value) {
-        const chunk = decoder.decode(value, { stream: !streamDone })
-        const lines = chunk.split('\n').filter((line) => line.trim())
-
-        for (const line of lines) {
-          try {
-            const data = JSON.parse(line)
-
-            // Check if stream is complete
-            if (data.done) {
-              done = true
-              break
-            }
-
-            // Add content if available
-            if (data.message?.content) {
-              const text = data.message.content
-              fullText += text
-              onChunk(text)
-            }
-          } catch (e) {
-            // Ignore parse errors for incomplete lines
-          }
-        }
-      }
-    }
-
-    await onComplete(fullText)
-  } catch (error) {
-    onError(error instanceof Error ? error : new Error('Unknown error'))
-  }
-}
-
-/**
  * Stream a chat completion (T027)
  *
- * Routes to Claude API when userApiKey is provided, otherwise uses Ollama.
+ * Uses the Anthropic SDK for chat completions.
+ * Falls back to server-side API key if user key not provided.
  *
  * @param messages - Conversation history
- * @param systemPrompt - System prompt for LLM behavior
- * @param userApiKey - Optional user Claude API key (null = fallback to Ollama)
+ * @param systemPrompt - System prompt for behavior
+ * @param userApiKey - Optional user API key (null = use server-side key)
  * @param onChunk - Callback for each text chunk
  * @param onComplete - Callback when stream completes
- * @param onError - Callback for errors (Error for Ollama, ClassifiedError for Claude)
+ * @param onError - Callback for errors (ClassifiedError)
  * @param onApiKeyInvalid - Optional callback when API key should be invalidated
  */
 export async function streamChatCompletion(params: {
@@ -301,130 +230,95 @@ export async function streamChatCompletion(params: {
 
   const startTime = Date.now()
 
-  // Route based on API key availability
-  if (userApiKey) {
-    // Structured logging for provider routing (T063)
-    console.log(
-      JSON.stringify({
-        event: 'provider_routing',
-        provider: 'claude',
-        messageCount: messages.length,
-        timestamp: new Date().toISOString(),
-      })
-    )
+  // Determine which API key to use
+  const apiKey = userApiKey || process.env.ANTHROPIC_API_KEY
 
-    // Use Claude API with user's key
-    const client = createAnthropicClient(userApiKey)
-
-    // Handle classified errors from Claude API
-    const handleClaudeError = async (classifiedError: ClassifiedError) => {
-      // Log error with classification (T063)
-      console.log(
-        JSON.stringify({
-          event: 'provider_error',
-          provider: 'claude',
-          errorType: classifiedError.type,
-          shouldInvalidateKey: classifiedError.shouldInvalidateKey,
-          executionTimeMs: Date.now() - startTime,
-          timestamp: new Date().toISOString(),
-        })
-      )
-
-      // Invalidate API key if needed (T056, T059)
-      if (classifiedError.shouldInvalidateKey && onApiKeyInvalid) {
-        await onApiKeyInvalid()
-      }
-
-      // Pass classified error to callback
-      onError(classifiedError)
+  if (!apiKey) {
+    console.error('[API] No API key available (user or server-side)')
+    const error: ClassifiedError = {
+      type: 'authentication_error',
+      message: 'Service temporarily unavailable.',
+      shouldInvalidateKey: false,
+      originalError: new Error('No API key configured'),
     }
-
-    const handleClaudeComplete = async (fullText: string) => {
-      // Log successful completion (T063)
-      console.log(
-        JSON.stringify({
-          event: 'provider_completion',
-          provider: 'claude',
-          executionTimeMs: Date.now() - startTime,
-          responseLength: fullText.length,
-          timestamp: new Date().toISOString(),
-        })
-      )
-
-      await onComplete(fullText)
-    }
-
-    await streamClaudeAPI({
-      client,
-      messages,
-      systemPrompt,
-      onChunk,
-      onComplete: handleClaudeComplete,
-      onError: handleClaudeError,
-    })
-  } else {
-    // Structured logging for Ollama fallback (T063)
-    console.log(
-      JSON.stringify({
-        event: 'provider_routing',
-        provider: 'ollama',
-        messageCount: messages.length,
-        timestamp: new Date().toISOString(),
-      })
-    )
-
-    // Fall back to Ollama (standard Error, not classified)
-    const handleOllamaError = (error: Error) => {
-      // Log Ollama error (T063)
-      console.log(
-        JSON.stringify({
-          event: 'provider_error',
-          provider: 'ollama',
-          error: error.message,
-          executionTimeMs: Date.now() - startTime,
-          timestamp: new Date().toISOString(),
-        })
-      )
-
-      onError(error)
-    }
-
-    const handleOllamaComplete = async (fullText: string) => {
-      // Log successful completion (T063)
-      console.log(
-        JSON.stringify({
-          event: 'provider_completion',
-          provider: 'ollama',
-          executionTimeMs: Date.now() - startTime,
-          responseLength: fullText.length,
-          timestamp: new Date().toISOString(),
-        })
-      )
-
-      await onComplete(fullText)
-    }
-
-    await streamOllamaChat({
-      messages,
-      systemPrompt,
-      onChunk,
-      onComplete: handleOllamaComplete,
-      onError: handleOllamaError,
-    })
+    onError(error)
+    return
   }
+
+  // Structured logging for provider routing (T063)
+  console.log(
+    JSON.stringify({
+      event: 'provider_routing',
+      provider: 'anthropic',
+      messageCount: messages.length,
+      usingUserKey: !!userApiKey,
+      timestamp: new Date().toISOString(),
+    })
+  )
+
+  // Create client with available key
+  const client = createAnthropicClient(apiKey)
+
+  // Handle classified errors
+  const handleError = async (classifiedError: ClassifiedError) => {
+    // Log error with classification (T063)
+    console.log(
+      JSON.stringify({
+        event: 'provider_error',
+        provider: 'anthropic',
+        errorType: classifiedError.type,
+        shouldInvalidateKey: classifiedError.shouldInvalidateKey,
+        executionTimeMs: Date.now() - startTime,
+        timestamp: new Date().toISOString(),
+      })
+    )
+
+    // Invalidate API key if needed (T056, T059) - only for user keys
+    if (classifiedError.shouldInvalidateKey && onApiKeyInvalid && userApiKey) {
+      await onApiKeyInvalid()
+    }
+
+    // Pass classified error to callback
+    onError(classifiedError)
+  }
+
+  const handleComplete = async (fullText: string) => {
+    // Log successful completion (T063)
+    console.log(
+      JSON.stringify({
+        event: 'provider_completion',
+        provider: 'anthropic',
+        executionTimeMs: Date.now() - startTime,
+        responseLength: fullText.length,
+        timestamp: new Date().toISOString(),
+      })
+    )
+
+    await onComplete(fullText)
+  }
+
+  await streamClaudeAPI({
+    client,
+    messages,
+    systemPrompt,
+    onChunk,
+    onComplete: handleComplete,
+    onError: handleError,
+  })
 }
 
 /**
  * Get a non-streaming chat completion (T030)
  *
- * Routes to Claude API when userApiKey is provided, otherwise uses Ollama.
+ * Uses the Anthropic SDK for chat completions.
+ * Falls back to server-side API key if user key not provided.
  * Useful for non-streaming operations like flashcard generation.
  *
  * @param messages - Conversation history
- * @param systemPrompt - System prompt for LLM behavior
- * @param userApiKey - Optional user Claude API key (null = fallback to Ollama)
+ * @param systemPrompt - System prompt for behavior
+ * @param userApiKey - Optional user API key (null = use server-side key)
  * @returns The complete response text
- * @throws ClassifiedError for Claude API errors, Error for Ollama errors
+ * @throws ClassifiedError for API errors
  */
 export async function getChatCompletion(params: {
   messages: ClaudeMessage[]
@@ -433,88 +327,50 @@ export async function getChatCompletion(params: {
 }): Promise<string> {
   const { messages, systemPrompt, userApiKey } = params
 
-  // Route based on API key availability
-  if (userApiKey) {
-    // Use Claude API with user's key
-    const client = createAnthropicClient(userApiKey)
+  // Determine which API key to use
+  const apiKey = userApiKey || process.env.ANTHROPIC_API_KEY
 
-    try {
-      const response = await client.messages.create({
-        model: CLAUDE_MODEL,
-        max_tokens: MAX_TOKENS,
-        system: systemPrompt,
-        messages: messages.map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        })),
-      })
-
-      // Extract text from response
-      const textContent = response.content.find((block) => block.type === 'text')
-      if (!textContent || textContent.type !== 'text') {
-        throw new Error('No text content in Claude response')
-      }
-
-      return textContent.text
-    } catch (error) {
-      // Classify and throw classified error (T056-T058)
-      const classifiedError = classifyClaudeError(
-        error instanceof Error ? error : new Error('Unknown error')
-      )
-      throw classifiedError
+  if (!apiKey) {
+    console.error('[API] No API key available (user or server-side)')
+    const error: ClassifiedError = {
+      type: 'authentication_error',
+      message: 'Service temporarily unavailable.',
+      shouldInvalidateKey: false,
+      originalError: new Error('No API key configured'),
     }
-  } else {
-    // Fall back to Ollama
-    const ollamaMessages = [{ role: 'system', content: systemPrompt }, ...messages]
-
-    // Set 120 second timeout for Ollama (LLM responses can be slow)
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 120000)
-
-    try {
-      const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: OLLAMA_MODEL,
-          messages: ollamaMessages,
-          stream: false,
-        }),
-        signal: controller.signal,
-      })
-
-      if (!response.ok) {
-        throw new Error(`Ollama API error: ${response.statusText}`)
-      }
-
-      const data = await response.json()
-
-      if (!data.message?.content) {
-        throw new Error('No text content in Ollama response')
-      }
-
-      return data.message.content
-    } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Ollama request timed out after 120 seconds')
-      }
-      throw error
-    } finally {
-      clearTimeout(timeoutId)
-    }
+    throw error
   }
-}
 
-/**
- * Validate that Ollama is running and accessible
- */
-export async function validateOllamaConnection(): Promise<void> {
+  // Create client with available key
+  const client = createAnthropicClient(apiKey)
+
   try {
-    const response = await fetch(`${OLLAMA_BASE_URL}/api/tags`)
-    if (!response.ok) {
-      throw new Error(`Ollama not accessible at ${OLLAMA_BASE_URL}`)
+    const response = await client.messages.create({
+      model: CLAUDE_MODEL,
+      max_tokens: MAX_TOKENS,
+      system: systemPrompt,
+      messages: messages.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      })),
+    })
+
+    // Extract text from response
+    const textContent = response.content.find((block) => block.type === 'text')
+    if (!textContent || textContent.type !== 'text') {
+      throw new Error('No text content in response')
     }
+
+    return textContent.text
   } catch (error) {
-    throw new Error(`Ollama is not running. Start it with: brew services start ollama`)
+    // If already a ClassifiedError, rethrow it
+    if ((error as ClassifiedError).type) {
+      throw error
+    }
+    // Classify and throw classified error (T056-T058)
+    const classifiedError = classifyClaudeError(
+      error instanceof Error ? error : new Error('Unknown error')
+    )
+    throw classifiedError
   }
 }

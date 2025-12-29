@@ -130,7 +130,7 @@ export default async function GoalsPage() {
             Start your learning journey
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
-            Create a learning goal and let AI generate a personalized skill tree to guide your study
+            Create a learning goal to generate a personalized skill tree to guide your study
           </p>
           <Link
             href="/goals/new"

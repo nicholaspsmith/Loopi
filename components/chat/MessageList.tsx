@@ -75,9 +75,9 @@ export default function MessageList({
       ))}
 
       {isLoading && messages.length > 0 && (
-        <div className="flex justify-start mb-4" role="status" aria-label="Claude is thinking">
+        <div className="flex justify-start mb-4" role="status" aria-label="Assistant is thinking">
           <div className="bg-gray-100 border border-gray-200 rounded-lg px-4 py-3">
-            <div className="text-xs font-semibold mb-1 text-gray-600">Claude</div>
+            <div className="text-xs font-semibold mb-1 text-gray-600">Assistant</div>
             <div className="flex items-center gap-2 text-gray-600">
               <span>Thinking</span>
               <div className="flex gap-1" aria-hidden="true">

@@ -5,33 +5,28 @@ import { getGoalByIdForUser } from '@/lib/db/operations/goals'
 import { getSkillTreeByGoalId } from '@/lib/db/operations/skill-trees'
 import { getSkillNodeById } from '@/lib/db/operations/skill-nodes'
 import * as logger from '@/lib/logger'
+import { createAnthropicClient, CLAUDE_MODEL, MAX_TOKENS } from '@/lib/claude/client'
 
 /**
- * POST /api/goals/[goalId]/generate/refine
- *
- * Refine generated cards based on user feedback.
- * Preserves context from original generation and iterates.
- *
- * Per contracts/cards.md
+ * Schema for refinement request
  */
-
-const CardSchema = z.object({
-  tempId: z.string(),
-  question: z.string(),
-  answer: z.string(),
-  cardType: z.enum(['flashcard', 'multiple_choice']),
-  distractors: z.array(z.string()).optional(),
-  approved: z.boolean(),
-  edited: z.boolean(),
-})
-
 const RefineRequestSchema = z.object({
   nodeId: z.string().uuid(),
-  cards: z.array(CardSchema),
-  feedback: z.string().min(1, 'Feedback is required'),
+  cards: z.array(
+    z.object({
+      tempId: z.string(),
+      question: z.string().min(1),
+      answer: z.string().min(1),
+      cardType: z.enum(['flashcard', 'multiple_choice']),
+      distractors: z.array(z.string()).optional(),
+      approved: z.boolean().optional(),
+      edited: z.boolean().optional(),
+    })
+  ),
+  feedback: z.string().min(1).max(1000),
 })
 
-interface RefinedCard {
+type RefinedCard = {
   tempId: string
   question: string
   answer: string
@@ -39,20 +34,6 @@ interface RefinedCard {
   distractors?: string[]
   approved: boolean
   edited: boolean
-}
-
-/**
- * Get Ollama API URL
- */
-function getOllamaUrl(): string {
-  return process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
-}
-
-/**
- * Get the model to use for generation
- */
-function getModel(): string {
-  return process.env.OLLAMA_CHAT_MODEL || 'llama3'
 }
 
 export async function POST(
@@ -136,41 +117,31 @@ Return JSON in this format:
 
 Maintain the same number of cards (${cards.length}). Return ONLY valid JSON, no markdown.`
 
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 60000)
+    // Use Claude API
+    const apiKey = process.env.ANTHROPIC_API_KEY
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'Service temporarily unavailable. Please try again later.' },
+        { status: 503 }
+      )
+    }
+
+    const client = createAnthropicClient(apiKey)
 
     try {
-      const response = await fetch(`${getOllamaUrl()}/api/generate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: getModel(),
-          prompt,
-          stream: false,
-          options: {
-            temperature: 0.7,
-            num_predict: 2048,
-          },
-        }),
-        signal: controller.signal,
+      const response = await client.messages.create({
+        model: CLAUDE_MODEL,
+        max_tokens: MAX_TOKENS,
+        messages: [{ role: 'user', content: prompt }],
       })
 
-      clearTimeout(timeoutId)
-
-      if (!response.ok) {
-        throw new Error(`Ollama API error: ${response.status} ${response.statusText}`)
-      }
-
-      const data = await response.json()
-
-      if (!data.response) {
-        throw new Error('Empty response from Ollama')
+      const textContent = response.content.find((block) => block.type === 'text')
+      if (!textContent || textContent.type !== 'text') {
+        throw new Error('No text response from API')
       }
 
       // Parse response
-      let jsonText = data.response.trim()
+      let jsonText = textContent.text.trim()
       if (jsonText.startsWith('```')) {
         const match = jsonText.match(/```(?:json)?\s*([\s\S]*?)```/)
         if (match) {
@@ -212,17 +183,21 @@ Maintain the same number of cards (${cards.length}). Return ONLY valid JSON, no 
         cards: refinedCards,
         refinementApplied: feedback,
       })
-    } finally {
-      clearTimeout(timeoutId)
+    } catch (error) {
+      logger.error('Card refinement API call failed', error as Error, {
+        goalId,
+        nodeId,
+      })
+      throw error
     }
   } catch (error) {
     logger.error('Card refinement failed', error as Error, {
       path: '/api/goals/[goalId]/generate/refine',
     })
 
-    // Return original cards on failure with error message
+    // Return error message
     return NextResponse.json(
-      { error: 'Failed to refine cards. Try adjusting your feedback.' },
+      { error: 'Failed to refine cards. Please try again.' },
       { status: 500 }
     )
   }
