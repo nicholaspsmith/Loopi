@@ -85,11 +85,16 @@
       "Bash(chmod:*)",
       "Bash(.claude/hooks/navigation-guardian.sh:*)",
       "Bash(/Users/nick/Code/memoryloop/.claude/hooks/navigation-guardian.sh)",
-      "Bash(shellcheck:*)"
+      "Bash(shellcheck:*)",
+      "Bash(npx tsc:*)",
+      "Bash(claude mcp restart serena)",
+      "Bash(claude mcp:*)",
+      "mcp__serena__get_symbols_overview"
     ]
   },
   "enabledMcpjsonServers": [
-    "lance-context"
+    "lance-context",
+    "serena"
   ],
   "hooks": {
     "PreToolUse": [
