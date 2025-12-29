@@ -3,17 +3,23 @@
 import { useState, useRef } from 'react'
 
 /**
- * MultipleChoiceMode Component (T055)
+ * MultipleChoiceMode Component
  *
- * 4-option quiz interface.
- * Correct = rating 3, Incorrect = rating 1.
+ * 4-option quiz interface for multiple choice study mode.
+ * Tracks response time and passes it to onRate for time-based FSRS rating.
+ *
+ * Per spec 017-multi-choice-distractors:
+ * - Time threshold: 10 seconds
+ * - Fast correct (≤10s) → Good (rating 3)
+ * - Slow correct (>10s) → Hard (rating 2) - adjusted server-side
+ * - Incorrect → Again (rating 1)
  */
 
 interface MultipleChoiceModeProps {
   question: string
   answer: string
   distractors: string[]
-  onRate: (rating: 1 | 2 | 3 | 4, correct: boolean) => void
+  onRate: (rating: 1 | 2 | 3, responseTimeMs: number) => void
   cardNumber: number
   totalCards: number
 }
@@ -49,15 +55,19 @@ export default function MultipleChoiceMode({
   const prevAnswerRef = useRef<string>('')
   const optionsRef = useRef<string[]>([])
 
+  // T014: Track response time from question display to answer selection
+  const startTimeRef = useRef<number>(Date.now())
+
   // Compute options: only reshuffle when answer changes
-  // Accessing refs during render is safe for reading/writing cached values
-  // This is a common memoization pattern that avoids re-renders
+  // Also reset timer when card changes (T014)
   if (prevAnswerRef.current !== answer) {
     prevAnswerRef.current = answer
     optionsRef.current = createShuffledOptions(answer, distractors)
+    startTimeRef.current = Date.now() // Reset timer for new card
   }
   const options = optionsRef.current
 
+  // T015: Calculate responseTimeMs in handleSelect
   const handleSelect = (option: string) => {
     if (showResult) return
 
@@ -65,10 +75,15 @@ export default function MultipleChoiceMode({
     setShowResult(true)
 
     const isCorrect = option === answer
+    // T015: Calculate response time
+    const responseTimeMs = Date.now() - startTimeRef.current
+    // Rating: correct = 3 (server will adjust to 2 if slow), incorrect = 1
+    const rating: 1 | 2 | 3 = isCorrect ? 3 : 1
 
     // Delay before moving to next card
     setTimeout(() => {
-      onRate(isCorrect ? 3 : 1, isCorrect)
+      // T016: Pass responseTimeMs to onRate
+      onRate(rating, responseTimeMs)
       setSelectedOption(null)
       setShowResult(false)
     }, 1500)
