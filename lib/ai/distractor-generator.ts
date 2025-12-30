@@ -33,7 +33,7 @@ export interface DistractorResult {
 const DEFAULT_OPTIONS: Required<DistractorGeneratorOptions> = {
   maxTokens: 256,
   temperature: 0.9,
-  timeoutMs: 5000,
+  timeoutMs: 15000, // 15 seconds - API calls need more time
 }
 
 // ============================================================================
