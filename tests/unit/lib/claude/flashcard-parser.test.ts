@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 /**
  * Unit Tests for Flashcard Response Parser
  *
- * Tests parsing of flashcard responses from both Claude and Ollama
+ * Tests parsing of flashcard responses from Claude
  */
 
 // Import the function directly - we'll need to export it from the module
@@ -218,66 +218,6 @@ These flashcards cover the key concepts.`
     })
   })
 
-  describe('Ollama responses', () => {
-    it('should parse clean JSON array from Ollama', () => {
-      const response = JSON.stringify([
-        { question: 'What is Docker?', answer: 'Platform for containerization' },
-        { question: 'What is Kubernetes?', answer: 'Container orchestration system' },
-      ])
-
-      const result = parseFlashcardsFromResponse(response, 'Ollama')
-
-      expect(result).toHaveLength(2)
-      expect(result[0]).toEqual({
-        question: 'What is Docker?',
-        answer: 'Platform for containerization',
-      })
-    })
-
-    it('should handle Ollama response with markdown', () => {
-      const response = `Here are the flashcards:
-
-\`\`\`
-[
-  {"question": "What is Python?", "answer": "High-level programming language"},
-  {"question": "What is pip?", "answer": "Python package installer"}
-]
-\`\`\``
-
-      const result = parseFlashcardsFromResponse(response, 'Ollama')
-
-      expect(result).toHaveLength(2)
-    })
-
-    it('should extract JSON array from Ollama text response', () => {
-      const response = `I've generated these flashcards based on the content:
-
-[
-  {"question": "What is Git?", "answer": "Version control system"},
-  {"question": "What is GitHub?", "answer": "Git hosting platform"}
-]
-
-Hope these help!`
-
-      const result = parseFlashcardsFromResponse(response, 'Ollama')
-
-      expect(result).toHaveLength(2)
-      expect(result[0].question).toBe('What is Git?')
-    })
-
-    it('should handle Ollama single flashcard', () => {
-      const response = JSON.stringify({
-        question: 'What is SQL?',
-        answer: 'Structured Query Language for databases',
-      })
-
-      const result = parseFlashcardsFromResponse(response, 'Ollama')
-
-      expect(result).toHaveLength(1)
-      expect(result[0].question).toBe('What is SQL?')
-    })
-  })
-
   describe('Edge cases', () => {
     it('should return empty array for invalid JSON', () => {
       const response = 'This is not JSON at all'
@@ -447,18 +387,6 @@ Let me generate flashcards...
 ]`
 
       const result = parseFlashcardsFromResponse(response, 'Claude')
-
-      expect(result).toHaveLength(2)
-    })
-
-    it('should handle Ollama streaming artifacts', () => {
-      // Ollama might have incomplete chunks in streaming
-      const response = `[
-  {"question": "Q1?", "answer": "A1"},
-  {"question": "Q2?", "answer": "A2"}
-]`
-
-      const result = parseFlashcardsFromResponse(response, 'Ollama')
 
       expect(result).toHaveLength(2)
     })

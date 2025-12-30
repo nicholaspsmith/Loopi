@@ -53,7 +53,6 @@ GET /api/health
 {
   "status": "healthy",
   "database": "connected",
-  "ollama": "connected",
   "timestamp": "2025-12-21T12:00:00Z"
 }
 ```

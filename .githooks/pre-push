@@ -7,7 +7,7 @@
 # 1. Unit tests (npm test -- --run)
 #
 # Note: Integration tests are run in CI, not pre-push, because they
-# require external services (Ollama, PostgreSQL) that may not be available.
+# require external services (PostgreSQL) that may not be available.
 #
 # Features:
 # - Retry logic: retries failed tests once before blocking (FR-004a)

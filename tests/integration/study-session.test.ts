@@ -26,7 +26,7 @@ import { generateAndPersistDistractors } from '@/lib/ai/distractor-generator'
  * Tests the complete study session lifecycle with database.
  * Maps to User Story 3: Study with Multiple Modes
  *
- * Note: These tests do NOT require Ollama as they only test database operations.
+ * Note: These tests only test database operations.
  * LanceDB sync is disabled in test mode via NODE_ENV check.
  */
 
