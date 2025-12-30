@@ -419,4 +419,98 @@ describe('QuizInterface - Navigation Arrows', () => {
       expect(screen.getAllByText('Second card question').length).toBeGreaterThanOrEqual(1)
     })
   })
+
+  describe('Slide Animations with Reduced Motion', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+    })
+
+    it('should respect prefers-reduced-motion preference', async () => {
+      // Mock matchMedia to indicate reduced motion preference
+      Object.defineProperty(window, 'matchMedia', {
+        writable: true,
+        value: vi.fn().mockImplementation((query) => ({
+          matches: query === '(prefers-reduced-motion: reduce)',
+          media: query,
+          onchange: null,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+          dispatchEvent: vi.fn(),
+        })),
+      })
+
+      const user = userEvent.setup()
+      render(<QuizInterface initialFlashcards={mockFlashcards} />)
+
+      await waitFor(() => {
+        const questions = screen.getAllByText('First card question')
+        expect(questions.length).toBeGreaterThanOrEqual(1)
+      })
+
+      // Navigate to next card
+      const rightArrow = screen.getByLabelText(/next card|navigate right/i)
+      await user.click(rightArrow)
+
+      // Should still navigate successfully (animation should be disabled/instant)
+      await waitFor(() => {
+        expect(screen.getAllByText('Second card question').length).toBeGreaterThanOrEqual(1)
+      })
+    })
+
+    it('should handle navigation with reduced motion disabled', async () => {
+      // Mock matchMedia to indicate no reduced motion preference
+      Object.defineProperty(window, 'matchMedia', {
+        writable: true,
+        value: vi.fn().mockImplementation((query) => ({
+          matches: false,
+          media: query,
+          onchange: null,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+          dispatchEvent: vi.fn(),
+        })),
+      })
+
+      const user = userEvent.setup()
+      render(<QuizInterface initialFlashcards={mockFlashcards} />)
+
+      await waitFor(() => {
+        const questions = screen.getAllByText('First card question')
+        expect(questions.length).toBeGreaterThanOrEqual(1)
+      })
+
+      // Navigate to next card
+      const rightArrow = screen.getByLabelText(/next card|navigate right/i)
+      await user.click(rightArrow)
+
+      // Should navigate with animations enabled
+      await waitFor(() => {
+        expect(screen.getAllByText('Second card question').length).toBeGreaterThanOrEqual(1)
+      })
+    })
+
+    it('should handle missing matchMedia gracefully', async () => {
+      // Mock missing matchMedia (older browsers)
+      Object.defineProperty(window, 'matchMedia', {
+        writable: true,
+        value: undefined,
+      })
+
+      const user = userEvent.setup()
+      render(<QuizInterface initialFlashcards={mockFlashcards} />)
+
+      await waitFor(() => {
+        const questions = screen.getAllByText('First card question')
+        expect(questions.length).toBeGreaterThanOrEqual(1)
+      })
+
+      // Should still work without matchMedia
+      const rightArrow = screen.getByLabelText(/next card|navigate right/i)
+      await user.click(rightArrow)
+
+      await waitFor(() => {
+        expect(screen.getAllByText('Second card question').length).toBeGreaterThanOrEqual(1)
+      })
+    })
+  })
 })

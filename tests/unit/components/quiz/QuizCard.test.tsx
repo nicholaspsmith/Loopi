@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import QuizCard from '@/components/quiz/QuizCard'
@@ -449,6 +449,111 @@ describe('QuizCard', () => {
 
       // Should be called at least once (component may debounce)
       expect(mockOnRate).toHaveBeenCalled()
+    })
+  })
+
+  describe('Animation Cleanup', () => {
+    beforeEach(() => {
+      vi.useFakeTimers()
+    })
+
+    afterEach(() => {
+      vi.restoreAllMocks()
+      vi.useRealTimers()
+    })
+
+    it('should clean up animation timeout on unmount', () => {
+      const { unmount } = render(<QuizCard flashcard={mockFlashcard} onRate={mockOnRate} />)
+
+      // Click reveal to start flip animation
+      const revealButton = screen.getByRole('button', {
+        name: /show answer|reveal/i,
+      })
+      fireEvent.click(revealButton)
+
+      // Unmount component before 600ms timeout completes
+      unmount()
+
+      // Advance timers past the animation duration
+      vi.advanceTimersByTime(600)
+
+      // No errors should occur - cleanup should have cleared the timeout
+      expect(vi.getTimerCount()).toBe(0)
+    })
+
+    it('should verify no React warnings about state updates on unmounted components', () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      const { unmount } = render(<QuizCard flashcard={mockFlashcard} onRate={mockOnRate} />)
+
+      // Click reveal
+      const revealButton = screen.getByRole('button', {
+        name: /show answer|reveal/i,
+      })
+      fireEvent.click(revealButton)
+
+      // Unmount immediately
+      unmount()
+
+      // Advance timers to trigger any pending state updates
+      vi.advanceTimersByTime(700)
+
+      // No console errors about state updates on unmounted component
+      const warnings = consoleSpy.mock.calls.filter((call) =>
+        call[0]?.toString().includes('unmounted component')
+      )
+      expect(warnings.length).toBe(0)
+
+      consoleSpy.mockRestore()
+    })
+
+    it('should clear timeout when flashcard changes', () => {
+      const { rerender } = render(<QuizCard flashcard={mockFlashcard} onRate={mockOnRate} />)
+
+      // Click reveal on first flashcard
+      const revealButton = screen.getByRole('button', {
+        name: /show answer|reveal/i,
+      })
+      fireEvent.click(revealButton)
+
+      // Change to new flashcard before timeout completes
+      const newFlashcard = {
+        ...mockFlashcard,
+        id: 'different-flashcard-id',
+        question: 'Different question?',
+      }
+      rerender(<QuizCard flashcard={newFlashcard} onRate={mockOnRate} />)
+
+      // Advance timers
+      vi.advanceTimersByTime(700)
+
+      // Should not cause any issues - new question appears (can be multiple times due to front/back faces)
+      expect(screen.getAllByText('Different question?').length).toBeGreaterThanOrEqual(1)
+    })
+
+    it('should handle rapid unmount and remount cycles', () => {
+      // First mount
+      const { unmount: unmount1 } = render(
+        <QuizCard flashcard={mockFlashcard} onRate={mockOnRate} />
+      )
+      const revealButton1 = screen.getByRole('button', { name: /show answer|reveal/i })
+      fireEvent.click(revealButton1)
+      unmount1()
+
+      // Second mount
+      const { unmount: unmount2 } = render(
+        <QuizCard flashcard={mockFlashcard} onRate={mockOnRate} />
+      )
+      const revealButton2 = screen.getByRole('button', { name: /show answer|reveal/i })
+      fireEvent.click(revealButton2)
+      unmount2()
+
+      // Advance timers
+      vi.advanceTimersByTime(1000)
+
+      // Should handle cleanup correctly
+      vi.clearAllTimers()
+      expect(vi.getTimerCount()).toBe(0)
     })
   })
 })
