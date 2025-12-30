@@ -94,7 +94,7 @@ User sends message
   → POST /api/chat/conversations/[id]/messages
   → createMessage() → PostgreSQL.messages (immediate)
   → syncMessageToLanceDB() → LanceDB.messages (async, with embedding)
-  → Stream Claude/Ollama response
+  → Stream Claude response
   → createMessage() → PostgreSQL.messages (immediate)
   → syncMessageToLanceDB() → LanceDB.messages (async, with embedding)
 ```
@@ -105,7 +105,7 @@ User sends message
 User clicks "Generate Flashcards"
   → POST /api/flashcards/generate
   → getMessageById() → PostgreSQL.messages (fetch message content)
-  → generateFlashcardsFromContent() → Claude/Ollama API
+  → generateFlashcardsFromContent() → Claude API
   → createFlashcard() → LanceDB.flashcards (save with embedding)
   → markMessageWithFlashcards() → PostgreSQL.messages (update flag)
   → updateMessageHasFlashcardsInLanceDB() → LanceDB.messages (async sync)

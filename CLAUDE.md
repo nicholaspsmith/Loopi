@@ -212,7 +212,7 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 ### AI/ML
 
 - Anthropic Claude SDK 0.71.2
-- Ollama (nomic-embed-text for local embeddings)
+- Jina Embeddings API (jina-embeddings-v3 for semantic search)
 - ts-fsrs 5.2.3 (spaced repetition)
 
 ### Authentication

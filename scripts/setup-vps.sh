@@ -215,7 +215,6 @@ mkdir -p "$DEPLOY_DIR"
 mkdir -p "$DATA_DIR"
 mkdir -p "${DATA_DIR}/postgres"
 mkdir -p "${DATA_DIR}/lancedb"
-mkdir -p "${DATA_DIR}/ollama"
 mkdir -p "${DEPLOY_DIR}/nginx"
 mkdir -p "${DEPLOY_DIR}/backups"
 

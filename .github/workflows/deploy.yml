@@ -75,7 +75,6 @@ jobs:
           mkdir -p /opt/memoryloop/scripts
           mkdir -p /opt/memoryloop/data/lancedb
           mkdir -p /opt/memoryloop/data/postgres
-          mkdir -p /opt/memoryloop/data/ollama
           mkdir -p /opt/memoryloop/backups
           mkdir -p /opt/memoryloop/nginx
           ENDSSH

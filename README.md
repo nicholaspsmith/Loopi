@@ -22,7 +22,7 @@ MemoryLoop is a web application that enables you to learn through conversation w
 - **Database**: Hybrid architecture
   - PostgreSQL (users, conversations, messages, API keys)
   - LanceDB (flashcards, review logs, vector embeddings)
-- **AI**: Anthropic Claude API with Ollama fallback
+- **AI**: Anthropic Claude API, Jina Embeddings API
 - **Styling**: Tailwind CSS 4
 - **Testing**: Vitest, Playwright, React Testing Library
 
@@ -64,8 +64,9 @@ DATABASE_URL=postgresql://user:pass@host:5432/database
 # LanceDB (local file-based)
 DATABASE_PATH=./data/lancedb
 
-# Ollama (local AI fallback - optional)
-OLLAMA_BASE_URL=http://localhost:11434
+# AI Services
+ANTHROPIC_API_KEY=your-anthropic-api-key
+JINA_API_KEY=your-jina-api-key
 
 # Email Configuration (SMTP)
 SMTP_HOST=smtp.ethereal.email
@@ -92,7 +93,7 @@ For development, use [Ethereal Email](https://ethereal.email) - a fake SMTP serv
 
 For production, configure a real SMTP provider (SendGrid, AWS SES, etc.).
 
-**Note:** Users can optionally add their own Claude API key via the Settings page in the app (encrypted storage). If no API key is configured, the app falls back to Ollama for local AI inference.
+**Note:** Users can optionally add their own Claude API key via the Settings page in the app (encrypted storage).
 
 ### 4. Initialize the database
 

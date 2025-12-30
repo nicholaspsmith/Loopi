@@ -120,12 +120,11 @@ crontab -e
 
 ### Data Directories
 
-| Directory                       | Contents          | Backup Priority       |
-| ------------------------------- | ----------------- | --------------------- |
-| `/opt/memoryloop/data/postgres` | PostgreSQL data   | High                  |
-| `/opt/memoryloop/data/lancedb`  | Vector embeddings | Medium                |
-| `/opt/memoryloop/data/ollama`   | Ollama models     | Low (can re-download) |
-| `/opt/memoryloop/backups`       | Database backups  | High                  |
+| Directory                       | Contents          | Backup Priority |
+| ------------------------------- | ----------------- | --------------- |
+| `/opt/memoryloop/data/postgres` | PostgreSQL data   | High            |
+| `/opt/memoryloop/data/lancedb`  | Vector embeddings | Medium          |
+| `/opt/memoryloop/backups`       | Database backups  | High            |
 
 ## Troubleshooting
 
@@ -244,25 +243,6 @@ crontab -e
 3. **Restart nginx**
    ```bash
    docker compose -f docker-compose.prod.yml restart nginx
-   ```
-
-### Ollama Model Issues
-
-1. **Check Ollama status**
-
-   ```bash
-   docker exec memoryloop-ollama ollama list
-   ```
-
-2. **Re-download model**
-
-   ```bash
-   docker exec memoryloop-ollama ollama pull nomic-embed-text
-   ```
-
-3. **Check Ollama logs**
-   ```bash
-   docker logs memoryloop-ollama --tail 100
    ```
 
 ## Performance Tuning
