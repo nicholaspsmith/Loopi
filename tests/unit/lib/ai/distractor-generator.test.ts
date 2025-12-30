@@ -9,7 +9,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
  *
  * Per spec 017-multi-choice-distractors:
  * - Must return exactly 3 distractors
- * - Must complete within 5 seconds (timeout)
+ * - Must complete within 15 seconds (timeout)
  * - Must handle Claude API errors gracefully
  * - Must validate distractors don't match correct answer
  */
@@ -91,12 +91,12 @@ describe('Distractor Generator', () => {
         expect(result.distractors).toBeUndefined()
       })
 
-      it('should timeout after 5 seconds', async () => {
-        // Mock slow response (>5 seconds)
+      it('should timeout after 15 seconds', async () => {
+        // Mock slow response (>15 seconds)
         mockGetChatCompletion.mockImplementation(
           () =>
             new Promise((resolve) => {
-              setTimeout(() => resolve(JSON.stringify({ distractors: ['a', 'b', 'c'] })), 6000)
+              setTimeout(() => resolve(JSON.stringify({ distractors: ['a', 'b', 'c'] })), 16000)
             })
         )
 
@@ -106,9 +106,9 @@ describe('Distractor Generator', () => {
 
         expect(result.success).toBe(false)
         expect(result.error).toBeDefined()
-        expect(duration).toBeLessThan(6000) // Should timeout before 6s
-        expect(duration).toBeGreaterThanOrEqual(4990) // Should wait ~5s (allow 10ms margin for timer precision)
-      }, 10000) // Test timeout of 10s
+        expect(duration).toBeLessThan(16000) // Should timeout before 16s
+        expect(duration).toBeGreaterThanOrEqual(14990) // Should wait ~15s (allow 10ms margin for timer precision)
+      }, 20000) // Test timeout of 20s
 
       it('should handle invalid JSON response from Claude', async () => {
         mockGetChatCompletion.mockResolvedValue('invalid json response')
