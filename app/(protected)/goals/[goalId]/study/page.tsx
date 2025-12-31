@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import StudyModeSelector, { type StudyMode } from '@/components/study/StudyModeSelector'
 import FlashcardMode from '@/components/study/FlashcardMode'
-import MultipleChoiceMode from '@/components/study/MultipleChoiceMode'
+import MultipleChoiceModeWrapper from '@/components/study/MultipleChoiceModeWrapper'
 import TimedChallengeMode from '@/components/study/TimedChallengeMode'
 import MixedMode from '@/components/study/MixedMode'
 
@@ -21,6 +21,7 @@ interface StudyCard {
   answer: string
   cardType: 'flashcard' | 'multiple_choice'
   distractors?: string[]
+  distractorsJobId?: string
   nodeId: string
   nodeTitle: string
   fsrsState: {
@@ -383,11 +384,12 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
     if (session.mode === 'multiple_choice' && currentCard) {
       return (
         <div className="flex flex-col min-h-screen p-6 max-w-4xl mx-auto">
-          <MultipleChoiceMode
+          <MultipleChoiceModeWrapper
             question={currentCard.question}
             answer={currentCard.answer}
-            distractors={currentCard.distractors || []}
-            onRate={(rating) => handleRate(rating)}
+            distractors={currentCard.distractors}
+            distractorsJobId={currentCard.distractorsJobId}
+            onRate={(rating, _responseTimeMs) => handleRate(rating)}
             cardNumber={currentIndex + 1}
             totalCards={session.cards.length}
           />
