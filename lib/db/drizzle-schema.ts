@@ -490,16 +490,26 @@ export type JobStatusValue = (typeof JobStatus)[keyof typeof JobStatus]
 // Job Rate Limits Table (for preventing abuse)
 // ============================================================================
 
-export const jobRateLimits = pgTable('job_rate_limits', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  jobType: varchar('job_type', { length: 50 }).notNull(),
-  windowStart: timestamp('window_start').notNull(),
-  count: integer('count').notNull().default(0),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-})
+export const jobRateLimits = pgTable(
+  'job_rate_limits',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    jobType: varchar('job_type', { length: 50 }).notNull(),
+    windowStart: timestamp('window_start').notNull(),
+    count: integer('count').notNull().default(0),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('job_rate_limits_user_type_window_idx').on(
+      table.userId,
+      table.jobType,
+      table.windowStart
+    ),
+  ]
+)
 
 export type JobRateLimit = typeof jobRateLimits.$inferSelect
 export type NewJobRateLimit = typeof jobRateLimits.$inferInsert
