@@ -25,10 +25,15 @@ export type JobStatusValue = 'pending' | 'processing' | 'completed' | 'failed'
 
 // Payload types for each job type
 export interface FlashcardGenerationPayload {
-  messageId: string
-  content: string
+  // Message-based generation (existing)
+  messageId?: string
+  content?: string
   goalId?: string
+  // Node-based generation (new for 019-auto-gen-guided-study)
   nodeId?: string
+  nodeTitle?: string
+  nodeDescription?: string
+  maxCards?: number
 }
 
 export interface DistractorGenerationPayload {
