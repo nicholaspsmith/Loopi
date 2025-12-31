@@ -13,19 +13,11 @@ import SkillNode, { type SkillNodeData } from './SkillNode'
 
 interface SkillTreeProps {
   nodes: SkillNodeData[]
-  isEditing?: boolean
-  onToggleNode?: (nodeId: string, enabled: boolean) => void
   onSelectNode?: (nodeId: string) => void
   selectedNodeId?: string | null
 }
 
-export default function SkillTree({
-  nodes,
-  isEditing = false,
-  onToggleNode,
-  onSelectNode,
-  selectedNodeId = null,
-}: SkillTreeProps) {
+export default function SkillTree({ nodes, onSelectNode, selectedNodeId = null }: SkillTreeProps) {
   // Render a node and its children recursively
   const renderNode = (node: SkillNodeData, level: number = 0) => {
     const hasChildren = node.children && node.children.length > 0
@@ -41,13 +33,7 @@ export default function SkillTree({
         )}
 
         <div style={{ paddingLeft: `${level * 24}px` }}>
-          <SkillNode
-            node={node}
-            isEditing={isEditing}
-            onToggle={onToggleNode}
-            onSelect={onSelectNode}
-            isSelected={selectedNodeId === node.id}
-          />
+          <SkillNode node={node} onSelect={onSelectNode} isSelected={selectedNodeId === node.id} />
         </div>
 
         {/* Children */}

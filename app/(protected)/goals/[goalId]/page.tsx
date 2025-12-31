@@ -143,53 +143,6 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
     retry()
   }
 
-  // Handle regenerate (for goals with existing skill tree)
-  const handleRegenerate = async (feedback?: string) => {
-    if (!goalId) return
-
-    const response = await fetch(`/api/goals/${goalId}/skill-tree/regenerate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ feedback }),
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to regenerate skill tree')
-    }
-
-    const data = await response.json()
-    setGoal((prev) =>
-      prev
-        ? {
-            ...prev,
-            skillTree: prev.skillTree
-              ? {
-                  ...prev.skillTree,
-                  nodes: data.nodes,
-                  nodeCount: data.nodeCount,
-                  maxDepth: data.maxDepth,
-                }
-              : null,
-          }
-        : null
-    )
-  }
-
-  // Handle nodes change
-  const handleNodesChange = (nodes: SkillNodeData[]) => {
-    setGoal((prev) =>
-      prev && prev.skillTree
-        ? {
-            ...prev,
-            skillTree: {
-              ...prev.skillTree,
-              nodes,
-            },
-          }
-        : prev
-    )
-  }
-
   // Handle archive
   const handleArchive = async () => {
     if (!goalId || !confirm('Are you sure you want to archive this goal?')) return
@@ -287,12 +240,7 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Skill Tree</h2>
 
         {goal.skillTree ? (
-          <SkillTreeEditor
-            goalId={goal.id}
-            nodes={goal.skillTree.nodes}
-            onNodesChange={handleNodesChange}
-            onRegenerate={handleRegenerate}
-          />
+          <SkillTreeEditor goalId={goal.id} nodes={goal.skillTree.nodes} />
         ) : isPolling && job ? (
           <div className="py-12 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
             <div className="max-w-2xl mx-auto px-6">

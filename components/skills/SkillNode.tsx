@@ -6,7 +6,6 @@
  * Renders a single skill tree node with:
  * - Title and description
  * - Mastery indicator
- * - Enable/disable toggle
  * - Card count badge
  */
 
@@ -25,19 +24,11 @@ export interface SkillNodeData {
 
 interface SkillNodeProps {
   node: SkillNodeData
-  isEditing?: boolean
-  onToggle?: (nodeId: string, enabled: boolean) => void
   onSelect?: (nodeId: string) => void
   isSelected?: boolean
 }
 
-export default function SkillNode({
-  node,
-  isEditing = false,
-  onToggle,
-  onSelect,
-  isSelected = false,
-}: SkillNodeProps) {
+export default function SkillNode({ node, onSelect, isSelected = false }: SkillNodeProps) {
   // Depth-based styling
   const depthStyles = {
     1: 'text-lg font-semibold', // Category
@@ -58,28 +49,11 @@ export default function SkillNode({
   return (
     <div
       className={`
-        flex items-center gap-3 p-3 rounded-lg transition-all
+        flex items-center gap-3 p-3 rounded-lg transition-all cursor-pointer
         ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}
-        ${!node.isEnabled && 'opacity-50'}
       `}
       onClick={() => onSelect?.(node.id)}
     >
-      {/* Enable/Disable Toggle (only in edit mode) */}
-      {isEditing && onToggle && (
-        <label className="relative inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            checked={node.isEnabled}
-            onChange={(e) => {
-              e.stopPropagation()
-              onToggle(node.id, e.target.checked)
-            }}
-            className="sr-only peer"
-          />
-          <div className="w-8 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-        </label>
-      )}
-
       {/* Mastery Indicator */}
       <div className="flex-shrink-0">
         <div
