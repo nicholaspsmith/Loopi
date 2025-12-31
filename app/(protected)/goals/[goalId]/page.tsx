@@ -223,8 +223,14 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
         </div>
 
         <div className="flex items-center gap-2">
-          {goal.skillTree && goal.skillTree.nodeCount > 0 && (
+          {goal.skillTree && goal.skillTree.nodeCount > 0 && goal.stats.totalCards > 0 && (
             <StudyNowButton onClick={() => router.push(`/goals/${goal.id}/study?mode=guided`)} />
+          )}
+          {goal.skillTree && goal.skillTree.nodeCount > 0 && goal.stats.totalCards === 0 && (
+            <div className="px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 rounded-lg flex items-center gap-2 text-sm">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-600 dark:border-yellow-400"></div>
+              <span>Generating flashcards...</span>
+            </div>
           )}
           <button
             onClick={handleArchive}
