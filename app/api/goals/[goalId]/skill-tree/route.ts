@@ -4,11 +4,10 @@ import { getGoalByIdForUser } from '@/lib/db/operations/goals'
 import {
   getSkillTreeByGoalIdWithNodes,
   getSkillTreeByGoalId,
-  createSkillTree,
-  updateSkillTreeStats,
 } from '@/lib/db/operations/skill-trees'
-import { buildNodeTree, createSkillNodes, getNodesByTreeId } from '@/lib/db/operations/skill-nodes'
-import { generateSkillTree, flattenGeneratedNodes } from '@/lib/ai/skill-tree-generator'
+import { buildNodeTree } from '@/lib/db/operations/skill-nodes'
+import { createJob, checkRateLimit } from '@/lib/db/operations/background-jobs'
+import { JobType } from '@/lib/db/drizzle-schema'
 import * as logger from '@/lib/logger'
 
 interface RouteContext {
@@ -73,8 +72,11 @@ export async function GET(_request: Request, context: RouteContext) {
 /**
  * POST /api/goals/[goalId]/skill-tree
  *
- * Create a skill tree for a goal that doesn't have one
- * This is used when initial goal creation failed to generate a tree
+ * Create a skill tree for a goal that doesn't have one.
+ * Creates a background job for async generation.
+ * Returns job ID for polling status.
+ *
+ * Maps to spec: 018-background-flashcard-generation (User Story 3)
  */
 export async function POST(_request: Request, context: RouteContext) {
   try {
@@ -104,115 +106,51 @@ export async function POST(_request: Request, context: RouteContext) {
       )
     }
 
-    logger.info('Creating skill tree for goal', { goalId, title: goal.title })
-
-    try {
-      // Generate skill tree using AI
-      const generated = await generateSkillTree(goal.title)
-
-      // Create skill tree record
-      const tree = await createSkillTree({
-        goalId: goal.id,
-        generatedBy: 'ai',
-      })
-
-      // Flatten and insert nodes
-      const flatNodes = flattenGeneratedNodes(generated.nodes)
-
-      // Create nodes in order, tracking IDs for parent relationships
-      for (const node of flatNodes) {
-        const createdNode = await createSkillNodes([
-          {
-            treeId: tree.id,
-            parentId: null,
-            title: node.title,
-            description: node.description,
-            depth: node.depth,
-            path: node.path,
-            sortOrder: node.sortOrder,
-          },
-        ])
-
-        // Recursively create children
-        if (node.children && node.children.length > 0) {
-          const childFlat = flattenGeneratedNodes(node.children, createdNode[0].id, node.path)
-          for (const child of childFlat) {
-            const createdChild = await createSkillNodes([
-              {
-                treeId: tree.id,
-                parentId: createdNode[0].id,
-                title: child.title,
-                description: child.description,
-                depth: child.depth,
-                path: child.path,
-                sortOrder: child.sortOrder,
-              },
-            ])
-
-            // Handle third level (subtopics)
-            if (child.children && child.children.length > 0) {
-              const subtopicFlat = flattenGeneratedNodes(
-                child.children,
-                createdChild[0].id,
-                child.path
-              )
-              for (const subtopic of subtopicFlat) {
-                await createSkillNodes([
-                  {
-                    treeId: tree.id,
-                    parentId: createdChild[0].id,
-                    title: subtopic.title,
-                    description: subtopic.description,
-                    depth: subtopic.depth,
-                    path: subtopic.path,
-                    sortOrder: subtopic.sortOrder,
-                  },
-                ])
-              }
-            }
-          }
-        }
-      }
-
-      // Update tree stats
-      await updateSkillTreeStats(tree.id)
-
-      // Get nodes and build tree structure for response
-      const nodes = await getNodesByTreeId(tree.id)
-      const nodeTree = buildNodeTree(nodes)
-
-      logger.info('Skill tree created successfully', {
-        goalId,
-        treeId: tree.id,
-        nodeCount: generated.metadata.nodeCount,
-        generationTimeMs: generated.metadata.generationTimeMs,
-      })
-
+    // Check rate limit
+    const rateLimit = await checkRateLimit(userId, JobType.SKILL_TREE_GENERATION)
+    if (!rateLimit.allowed) {
+      const retryAfter = Math.ceil((rateLimit.resetAt.getTime() - Date.now()) / 1000)
       return NextResponse.json(
         {
-          id: tree.id,
-          nodeCount: nodes.length,
-          maxDepth: Math.max(...nodes.map((n) => n.depth), 0),
-          nodes: nodeTree,
+          error: 'Rate limit exceeded',
+          code: 'RATE_LIMITED',
+          retryAfter,
         },
-        { status: 201 }
-      )
-    } catch (error) {
-      logger.error('Skill tree creation failed', error as Error, { goalId })
-
-      return NextResponse.json(
-        {
-          error: 'Failed to generate skill tree',
-          code: 'GENERATION_FAILED',
-          message: (error as Error).message,
-        },
-        { status: 500 }
+        { status: 429 }
       )
     }
-  } catch (error) {
-    logger.error('Failed to create skill tree', error as Error)
+
+    logger.info('Creating skill tree generation job', { goalId, title: goal.title })
+
+    // Create background job for skill tree generation
+    const job = await createJob({
+      type: JobType.SKILL_TREE_GENERATION,
+      payload: {
+        goalId,
+        topic: goal.title,
+      },
+      userId,
+      priority: 5, // Higher priority than flashcard generation
+    })
+
+    logger.info('Skill tree generation job created', {
+      goalId,
+      jobId: job.id,
+    })
+
+    // Return job ID for polling
     return NextResponse.json(
-      { error: 'Failed to create skill tree', code: 'INTERNAL_ERROR' },
+      {
+        jobId: job.id,
+        status: 'pending',
+        message: 'Skill tree generation started',
+      },
+      { status: 202 }
+    )
+  } catch (error) {
+    logger.error('Failed to create skill tree generation job', error as Error)
+    return NextResponse.json(
+      { error: 'Failed to start skill tree generation', code: 'INTERNAL_ERROR' },
       { status: 500 }
     )
   }
