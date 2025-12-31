@@ -146,9 +146,9 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T035 [P] Add rate limit exceeded user-facing error message with retry-after countdown in components/ui/GenerationPlaceholder.tsx
-- [ ] T036 [P] Add job cleanup for old completed/failed jobs (optional scheduled task) in lib/jobs/cleanup.ts
-- [ ] T037 Code review and refactoring for consistency across all job handlers
+- [x] T035 [P] Add rate limit exceeded user-facing error message with retry-after countdown in components/ui/GenerationPlaceholder.tsx
+- [x] T036 [P] Add job cleanup for old completed/failed jobs (optional scheduled task) in lib/jobs/cleanup.ts
+- [x] T037 Code review and refactoring for consistency across all job handlers (unified logging with logger module)
 - [ ] T038 Run quickstart.md validation (manual test all flows end-to-end)
 
 ---
