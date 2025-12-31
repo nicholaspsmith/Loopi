@@ -11,7 +11,7 @@
 
 import { getDb } from '@/lib/db/pg-client'
 import { backgroundJobs, jobRateLimits } from '@/lib/db/drizzle-schema'
-import { lt, and, eq } from 'drizzle-orm'
+import { lt, and, eq, count, min } from 'drizzle-orm'
 import * as logger from '@/lib/logger'
 
 export interface CleanupOptions {
@@ -171,30 +171,29 @@ export async function getJobStats(): Promise<{
   const db = getDb()
 
   const [pendingResult] = await db
-    .select({ count: backgroundJobs.id })
+    .select({ count: count() })
     .from(backgroundJobs)
     .where(eq(backgroundJobs.status, 'pending'))
 
   const [processingResult] = await db
-    .select({ count: backgroundJobs.id })
+    .select({ count: count() })
     .from(backgroundJobs)
     .where(eq(backgroundJobs.status, 'processing'))
 
   const [completedResult] = await db
-    .select({ count: backgroundJobs.id })
+    .select({ count: count(), oldest: min(backgroundJobs.completedAt) })
     .from(backgroundJobs)
     .where(eq(backgroundJobs.status, 'completed'))
 
   const [failedResult] = await db
-    .select({ count: backgroundJobs.id })
+    .select({ count: count(), oldest: min(backgroundJobs.createdAt) })
     .from(backgroundJobs)
     .where(eq(backgroundJobs.status, 'failed'))
 
-  // This is a simplified count - in production you'd use COUNT(*)
-  const pending = pendingResult ? 1 : 0
-  const processing = processingResult ? 1 : 0
-  const completed = completedResult ? 1 : 0
-  const failed = failedResult ? 1 : 0
+  const pending = pendingResult?.count ?? 0
+  const processing = processingResult?.count ?? 0
+  const completed = completedResult?.count ?? 0
+  const failed = failedResult?.count ?? 0
 
   return {
     pending,
@@ -202,7 +201,7 @@ export async function getJobStats(): Promise<{
     completed,
     failed,
     total: pending + processing + completed + failed,
-    oldestCompletedAt: null, // Would need additional query
-    oldestFailedAt: null, // Would need additional query
+    oldestCompletedAt: completedResult?.oldest ?? null,
+    oldestFailedAt: failedResult?.oldest ?? null,
   }
 }
