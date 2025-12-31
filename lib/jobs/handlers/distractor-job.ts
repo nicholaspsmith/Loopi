@@ -17,6 +17,7 @@ import type {
   DistractorGenerationResult,
   JobHandler,
 } from '@/lib/jobs/types'
+import * as logger from '@/lib/logger'
 
 /**
  * Handle distractor generation for a flashcard
@@ -28,7 +29,7 @@ import type {
 export async function handleDistractorGeneration(
   payload: DistractorGenerationPayload
 ): Promise<DistractorGenerationResult> {
-  console.log('[DistractorJob] Starting distractor generation', {
+  logger.info('[DistractorJob] Starting distractor generation', {
     flashcardId: payload.flashcardId,
     questionLength: payload.question.length,
     answerLength: payload.answer.length,
@@ -42,15 +43,18 @@ export async function handleDistractorGeneration(
   )
 
   if (!result.success || !result.distractors) {
-    console.error('[DistractorJob] Distractor generation failed', {
-      flashcardId: payload.flashcardId,
-      error: result.error,
-      generationTimeMs: result.generationTimeMs,
-    })
+    logger.error(
+      '[DistractorJob] Distractor generation failed',
+      new Error(result.error || 'Unknown error'),
+      {
+        flashcardId: payload.flashcardId,
+        generationTimeMs: result.generationTimeMs,
+      }
+    )
     throw new Error(result.error || 'Failed to generate distractors')
   }
 
-  console.log('[DistractorJob] Distractor generation completed', {
+  logger.info('[DistractorJob] Distractor generation completed', {
     flashcardId: payload.flashcardId,
     distractorCount: result.distractors.length,
     generationTimeMs: result.generationTimeMs,
