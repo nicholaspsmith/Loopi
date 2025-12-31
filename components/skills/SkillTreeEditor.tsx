@@ -100,6 +100,25 @@ export default function SkillTreeEditor({
 
   const nodeCounts = countNodes(nodes)
 
+  // Find a node by ID in the tree
+  const findNode = (nodeList: SkillNodeData[], nodeId: string): SkillNodeData | null => {
+    for (const node of nodeList) {
+      if (node.id === nodeId) return node
+      if (node.children) {
+        const found = findNode(node.children, nodeId)
+        if (found) return found
+      }
+    }
+    return null
+  }
+
+  // Get selected node data
+  const selectedNode = selectedNodeId ? findNode(nodes, selectedNodeId) : null
+
+  // Only show Generate Cards if node is fully mastered (100%) or has no cards
+  const canGenerateCards =
+    selectedNode && (selectedNode.masteryPercentage === 100 || selectedNode.cardCount === 0)
+
   return (
     <div className="space-y-4">
       {/* Toolbar */}
@@ -135,7 +154,7 @@ export default function SkillTreeEditor({
         </div>
 
         <div className="flex items-center gap-4">
-          {selectedNodeId && (
+          {canGenerateCards && (
             <Link
               href={`/goals/${goalId}/generate?nodeId=${selectedNodeId}`}
               className="px-3 py-1.5 text-sm bg-green-600 text-white hover:bg-green-700 rounded-lg transition-colors flex items-center gap-1"
@@ -148,7 +167,7 @@ export default function SkillTreeEditor({
                   d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                 />
               </svg>
-              Generate Cards
+              Generate More Cards
             </Link>
           )}
           <span className="text-sm text-gray-500 dark:text-gray-400">
