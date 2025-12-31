@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import GoalProgress from '@/components/goals/GoalProgress'
+import StudyNowButton from '@/components/goals/StudyNowButton'
 import SkillTreeEditor from '@/components/skills/SkillTreeEditor'
 import { type SkillNodeData } from '@/components/skills/SkillNode'
 import { useJobStatus } from '@/hooks/useJobStatus'
@@ -270,12 +271,7 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
 
         <div className="flex items-center gap-2">
           {goal.skillTree && goal.skillTree.nodeCount > 0 && (
-            <Link
-              href={`/goals/${goal.id}/study`}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Study Now
-            </Link>
+            <StudyNowButton onClick={() => router.push(`/goals/${goal.id}/study?mode=guided`)} />
           )}
           <button
             onClick={handleArchive}
