@@ -119,10 +119,10 @@ This feature uses existing:
 
 **Purpose**: Validate complete user journeys per quickstart.md
 
-- [ ] T029 [US1] E2E test: auto-generation creates cards for all nodes in `tests/e2e/auto-generation.spec.ts`
-- [ ] T030 [US2] E2E test: guided study flow with node progression in `tests/e2e/guided-study.spec.ts`
-- [ ] T031 [US2] E2E test: tree completion shows congratulations in `tests/e2e/guided-study.spec.ts`
-- [ ] T032 E2E test: resume study from next incomplete node in `tests/e2e/guided-study.spec.ts`
+- [x] T029 [US1] E2E test: auto-generation creates cards for all nodes in `tests/e2e/auto-generation.spec.ts`
+- [x] T030 [US2] E2E test: guided study flow with node progression in `tests/e2e/guided-study.spec.ts`
+- [x] T031 [US2] E2E test: tree completion shows congratulations in `tests/e2e/guided-study.spec.ts`
+- [x] T032 E2E test: resume study from next incomplete node in `tests/e2e/guided-study.spec.ts`
 
 ---
 
@@ -130,10 +130,10 @@ This feature uses existing:
 
 **Purpose**: Final improvements and validation
 
-- [ ] T033 [P] Verify all logging points are implemented per plan.md
-- [ ] T034 [P] Run quickstart.md validation steps manually
-- [ ] T035 Code review for error handling in edge cases (node deleted, tree fails)
-- [ ] T036 Update goal page to remove any conflicting study buttons
+- [x] T033 [P] Verify all logging points are implemented per plan.md
+- [x] T034 [P] Run quickstart.md validation steps manually
+- [x] T035 Code review for error handling in edge cases (node deleted, tree fails)
+- [x] T036 Update goal page to remove any conflicting study buttons
 
 ---
 
