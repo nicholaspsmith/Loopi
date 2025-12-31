@@ -186,6 +186,41 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
     router.push(`/goals/${goalId}`)
   }, [router, goalId])
 
+  // Complete session (moved before handleRate to fix dependency issue)
+  const handleCompleteSession = useCallback(async () => {
+    if (!session || !goalId || !startTime) return
+
+    setLoading(true)
+
+    try {
+      const durationSeconds = Math.round((Date.now() - startTime.getTime()) / 1000)
+
+      const response = await fetch('/api/study/session/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: session.sessionId,
+          goalId,
+          mode: session.mode,
+          durationSeconds,
+          ratings: responses,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to complete session')
+      }
+
+      const data = await response.json()
+      setSummary(data.summary)
+      setPhase('complete')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to complete session')
+    } finally {
+      setLoading(false)
+    }
+  }, [session, goalId, startTime, responses])
+
   // Rate card and move to next
   const handleRate = useCallback(
     async (rating: 1 | 2 | 3 | 4) => {
@@ -220,43 +255,8 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
         setCurrentIndex((prev) => prev + 1)
       }
     },
-    [session, currentIndex, startTime]
+    [session, currentIndex, startTime, handleCompleteSession]
   )
-
-  // Complete session
-  const handleCompleteSession = async () => {
-    if (!session || !goalId || !startTime) return
-
-    setLoading(true)
-
-    try {
-      const durationSeconds = Math.round((Date.now() - startTime.getTime()) / 1000)
-
-      const response = await fetch('/api/study/session/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId: session.sessionId,
-          goalId,
-          mode: session.mode,
-          durationSeconds,
-          ratings: responses,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to complete session')
-      }
-
-      const data = await response.json()
-      setSummary(data.summary)
-      setPhase('complete')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to complete session')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   // Handle timed mode completion
   const handleTimedComplete = async (score: number, correct: number, total: number) => {

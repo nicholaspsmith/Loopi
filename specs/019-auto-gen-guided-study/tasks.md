@@ -100,16 +100,16 @@ This feature uses existing:
 
 ### Tests for User Story 2 Frontend
 
-- [ ] T022 [P] [US2] Component test for StudyNowButton rendering in `tests/unit/components/StudyNowButton.test.tsx`
-- [ ] T023 [P] [US2] Component test for GuidedStudyFlow state transitions in `tests/unit/components/GuidedStudyFlow.test.tsx`
+- [x] T022 [P] [US2] Component test for StudyNowButton rendering in `tests/unit/components/goals/StudyNowButton.test.tsx`
+- [x] T023 [P] [US2] Component test for GuidedStudyFlow state transitions in `tests/unit/components/study/GuidedStudyFlow.test.tsx`
 
 ### Implementation for User Story 2 Frontend
 
-- [ ] T024 [P] [US2] Create StudyNowButton.tsx (green button with play icon) in `components/goals/StudyNowButton.tsx`
-- [ ] T025 [P] [US2] Create GuidedStudyFlow.tsx with Continue/Return options in `components/study/GuidedStudyFlow.tsx`
-- [ ] T026 [US2] Integrate StudyNowButton into goal page in `app/(protected)/goals/[goalId]/page.tsx`
-- [ ] T027 [US2] Integrate GuidedStudyFlow into study page in `app/(protected)/goals/[goalId]/study/page.tsx`
-- [ ] T028 [US2] Handle tree complete state with congratulations message in `components/study/GuidedStudyFlow.tsx`
+- [x] T024 [P] [US2] Create StudyNowButton.tsx (green button with play icon) in `components/goals/StudyNowButton.tsx`
+- [x] T025 [P] [US2] Create GuidedStudyFlow.tsx with Continue/Return options in `components/study/GuidedStudyFlow.tsx`
+- [x] T026 [US2] Integrate StudyNowButton into goal page in `app/(protected)/goals/[goalId]/page.tsx`
+- [x] T027 [US2] Integrate GuidedStudyFlow into study page in `app/(protected)/goals/[goalId]/study/page.tsx`
+- [x] T028 [US2] Handle tree complete state with congratulations message in `components/study/GuidedStudyFlow.tsx`
 
 **Checkpoint**: User Story 2 is complete - users can click Study Now and progress through nodes sequentially.
 
