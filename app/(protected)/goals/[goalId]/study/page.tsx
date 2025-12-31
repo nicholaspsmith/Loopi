@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import StudyModeSelector, { type StudyMode } from '@/components/study/StudyModeSelector'
 import FlashcardMode from '@/components/study/FlashcardMode'
 import MultipleChoiceModeWrapper from '@/components/study/MultipleChoiceModeWrapper'
 import TimedChallengeMode from '@/components/study/TimedChallengeMode'
 import MixedMode from '@/components/study/MixedMode'
+import GuidedStudyFlow from '@/components/study/GuidedStudyFlow'
 
 /**
  * Study Session Page (T059)
@@ -40,6 +42,16 @@ interface SessionData {
     durationSeconds: number
     pointsPerCard: number
   }
+  // Guided mode fields (T027)
+  currentNode?: {
+    id: string
+    title: string
+    path: string
+  }
+  nodeProgress?: {
+    completedInNode: number
+    totalInNode: number
+  }
 }
 
 interface SessionSummary {
@@ -50,6 +62,8 @@ interface SessionSummary {
 }
 
 export default function StudyPage({ params }: { params: Promise<{ goalId: string }> }) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [goalId, setGoalId] = useState<string | null>(null)
   const [goalTitle, setGoalTitle] = useState<string>('')
 
@@ -61,10 +75,23 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
   const [startTime, setStartTime] = useState<Date | null>(null)
   const [summary, setSummary] = useState<SessionSummary | null>(null)
 
+  // Guided mode state (T027)
+  const [isGuidedMode, setIsGuidedMode] = useState(false)
+  const [isTreeComplete, setIsTreeComplete] = useState(false)
+
   // UI state
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [phase, setPhase] = useState<'select' | 'study' | 'complete'>('select')
+
+  // Check for guided mode from URL (T027)
+  useEffect(() => {
+    const mode = searchParams.get('mode')
+    if (mode === 'guided') {
+      setIsGuidedMode(true)
+      setSelectedMode('flashcard') // Guided mode uses flashcard presentation
+    }
+  }, [searchParams])
 
   // Unwrap params
   useEffect(() => {
@@ -91,17 +118,20 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
   }, [goalId])
 
   // Start study session
-  const handleStartSession = async () => {
+  const handleStartSession = useCallback(async () => {
     if (!goalId) return
 
     setLoading(true)
     setError(null)
 
     try {
+      // Use guided mode if enabled (T027)
+      const modeToUse = isGuidedMode ? 'guided' : selectedMode
+
       const response = await fetch('/api/study/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ goalId, mode: selectedMode }),
+        body: JSON.stringify({ goalId, mode: modeToUse }),
       })
 
       if (!response.ok) {
@@ -110,6 +140,14 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
       }
 
       const data: SessionData = await response.json()
+
+      // Handle guided mode response (T027)
+      if (isGuidedMode && !data.sessionId) {
+        // No more nodes or cards being generated
+        setIsTreeComplete(true)
+        setPhase('complete')
+        return
+      }
 
       if (data.cards.length === 0) {
         throw new Error('No cards available. Generate some cards first.')
@@ -125,7 +163,28 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
     } finally {
       setLoading(false)
     }
-  }
+  }, [goalId, isGuidedMode, selectedMode])
+
+  // Auto-start guided mode (T027)
+  useEffect(() => {
+    if (isGuidedMode && goalId && phase === 'select') {
+      handleStartSession()
+    }
+  }, [isGuidedMode, goalId, phase, handleStartSession])
+
+  // Handle continue to next node (T027)
+  const handleContinueToNextNode = useCallback(async () => {
+    setPhase('select')
+    setSession(null)
+    setSummary(null)
+    setIsTreeComplete(false)
+    // The auto-start effect will trigger the next session
+  }, [])
+
+  // Handle return to goal (T027)
+  const handleReturnToGoal = useCallback(() => {
+    router.push(`/goals/${goalId}`)
+  }, [router, goalId])
 
   // Rate card and move to next
   const handleRate = useCallback(
@@ -400,6 +459,22 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
 
   // Render completion summary
   if (phase === 'complete') {
+    // Show GuidedStudyFlow for guided mode (T027)
+    if (isGuidedMode) {
+      return (
+        <div className="flex flex-col min-h-screen p-6 max-w-4xl mx-auto">
+          <GuidedStudyFlow
+            currentNode={session?.currentNode || null}
+            nodeProgress={session?.nodeProgress || { completedInNode: 0, totalInNode: 0 }}
+            isTreeComplete={isTreeComplete}
+            onContinue={handleContinueToNextNode}
+            onReturn={handleReturnToGoal}
+          />
+        </div>
+      )
+    }
+
+    // Regular completion summary
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-6 max-w-2xl mx-auto">
         <div className="text-6xl mb-4">🎉</div>
