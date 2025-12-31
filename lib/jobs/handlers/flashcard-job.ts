@@ -22,6 +22,7 @@ import type {
   DistractorGenerationPayload,
   JobHandler,
 } from '@/lib/jobs/types'
+import * as logger from '@/lib/logger'
 
 /**
  * Handle flashcard generation from message content
@@ -35,7 +36,7 @@ export async function handleFlashcardGeneration(
   payload: FlashcardGenerationPayload,
   userId: string
 ): Promise<FlashcardGenerationResult> {
-  console.log('[FlashcardJob] Starting flashcard generation', {
+  logger.info('[FlashcardJob] Starting flashcard generation', {
     messageId: payload.messageId,
     userId,
     contentLength: payload.content.length,
@@ -50,7 +51,7 @@ export async function handleFlashcardGeneration(
     throw new Error('Unauthorized')
   }
 
-  console.log('[FlashcardJob] Message validated, generating flashcards')
+  logger.info('[FlashcardJob] Message validated, generating flashcards')
 
   // Generate flashcard pairs using Claude
   const flashcardPairs = await generateFlashcardsFromContent(payload.content, {
@@ -58,11 +59,11 @@ export async function handleFlashcardGeneration(
   })
 
   if (flashcardPairs.length === 0) {
-    console.log('[FlashcardJob] No flashcards generated from content')
+    logger.info('[FlashcardJob] No flashcards generated from content')
     return { flashcardIds: [], count: 0 }
   }
 
-  console.log('[FlashcardJob] Generated flashcard pairs', { count: flashcardPairs.length })
+  logger.info('[FlashcardJob] Generated flashcard pairs', { count: flashcardPairs.length })
 
   // Persist flashcards to database
   const flashcardIds: string[] = []
@@ -91,14 +92,13 @@ export async function handleFlashcardGeneration(
       userId,
       priority: 0, // Lower priority than flashcard generation
     }).catch((error) => {
-      console.error('[FlashcardJob] Failed to enqueue distractor generation', {
+      logger.error('[FlashcardJob] Failed to enqueue distractor generation', error as Error, {
         flashcardId: flashcard.id,
-        error: error instanceof Error ? error.message : 'Unknown error',
       })
     })
   }
 
-  console.log('[FlashcardJob] Flashcard generation completed', {
+  logger.info('[FlashcardJob] Flashcard generation completed', {
     flashcardIds,
     count: flashcardIds.length,
   })
