@@ -65,7 +65,7 @@ export async function processJob(job: BackgroundJob): Promise<void> {
 
   try {
     // Execute the handler
-    const result = await handler(job.payload as JobPayload)
+    const result = await handler(job.payload as JobPayload, job)
 
     // Success - mark as completed
     await updateJobStatus(job.id, JobStatus.COMPLETED, {

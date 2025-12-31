@@ -73,7 +73,10 @@ export type JobResult =
   | SkillTreeGenerationResult
 
 // Job handler function signature
-export type JobHandler<P = JobPayload, R = JobResult> = (payload: P) => Promise<R>
+export type JobHandler<P = JobPayload, R = JobResult> = (
+  payload: P,
+  job: BackgroundJob
+) => Promise<R>
 
 // Rate limit check result
 export interface RateLimitResult {
