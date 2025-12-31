@@ -355,3 +355,12 @@ CREATE INDEX IF NOT EXISTS idx_background_jobs_status ON background_jobs(status)
 -- Indexes for job rate limits
 CREATE INDEX IF NOT EXISTS idx_job_rate_limits_lookup 
   ON job_rate_limits(user_id, job_type, window_start);
+
+-- Make conversation_id and message_id nullable for goal-based flashcards
+DO $$
+BEGIN
+  ALTER TABLE flashcards ALTER COLUMN conversation_id DROP NOT NULL;
+  ALTER TABLE flashcards ALTER COLUMN message_id DROP NOT NULL;
+EXCEPTION
+  WHEN others THEN NULL; -- Ignore if already nullable
+END $$;
