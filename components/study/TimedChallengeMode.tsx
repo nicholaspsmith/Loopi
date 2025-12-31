@@ -15,6 +15,7 @@ interface StudyCard {
   answer: string
   cardType: 'flashcard' | 'multiple_choice'
   distractors?: string[]
+  distractorsJobId?: string
 }
 
 interface TimedChallengeModeProps {
@@ -66,16 +67,24 @@ export default function TimedChallengeMode({
   const currentCard = cards[currentIndex]
   const isComplete = currentIndex >= cards.length || timeRemaining <= 0
 
+  // Check if MC card has valid distractors (fallback to flashcard if not ready)
+  const hasValidDistractors =
+    currentCard?.distractors && currentCard.distractors.length >= 3 && !currentCard.distractorsJobId
+  const effectiveCardType =
+    currentCard?.cardType === 'multiple_choice' && hasValidDistractors
+      ? 'multiple_choice'
+      : 'flashcard'
+
   // Compute options: only reshuffle when card changes
   if (
     currentCard &&
-    currentCard.cardType === 'multiple_choice' &&
+    effectiveCardType === 'multiple_choice' &&
     prevCardIdRef.current !== currentCard.id
   ) {
     prevCardIdRef.current = currentCard.id
     optionsRef.current = createShuffledOptions(currentCard.answer, currentCard.distractors)
   }
-  const options = currentCard?.cardType === 'multiple_choice' ? optionsRef.current : []
+  const options = effectiveCardType === 'multiple_choice' ? optionsRef.current : []
 
   // Timer countdown
   useEffect(() => {
@@ -190,7 +199,7 @@ export default function TimedChallengeMode({
       </div>
 
       {/* Card Content */}
-      {currentCard.cardType === 'multiple_choice' ? (
+      {effectiveCardType === 'multiple_choice' ? (
         <div className="w-full max-w-2xl">
           <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-6 mb-4">
             <p className="text-lg text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
