@@ -6,6 +6,8 @@ import { createSkillTree, getSkillTreeByGoalId } from '@/lib/db/operations/skill
 import { createSkillNodes, buildNodeTree } from '@/lib/db/operations/skill-nodes'
 import { generateSkillTree, flattenGeneratedNodes } from '@/lib/ai/skill-tree-generator'
 import { recordTopicUsage } from '@/lib/db/operations/topic-analytics'
+import { createJob } from '@/lib/db/operations/background-jobs'
+import { JobType, type FlashcardGenerationPayload } from '@/lib/jobs/types'
 import * as logger from '@/lib/logger'
 
 /**
@@ -229,6 +231,36 @@ export async function POST(request: Request) {
         skillTreeResponse = {
           id: tree.id,
           nodes: nodeTree,
+        }
+
+        // Queue flashcard generation jobs for each node (019-auto-gen-guided-study)
+        const FREE_TIER_MAX_CARDS = 5
+
+        logger.info('[GoalCreate] Queuing flashcard generation for nodes', {
+          treeId: tree.id,
+          nodeCount: nodes.length,
+          maxCardsPerNode: FREE_TIER_MAX_CARDS,
+        })
+
+        for (const node of nodes) {
+          const flashcardPayload: FlashcardGenerationPayload = {
+            nodeId: node.id,
+            nodeTitle: node.title,
+            nodeDescription: node.description ?? undefined,
+            maxCards: FREE_TIER_MAX_CARDS,
+          }
+
+          await createJob({
+            type: JobType.FLASHCARD_GENERATION,
+            payload: flashcardPayload,
+            userId,
+            priority: 0, // Lower priority than tree generation
+          })
+
+          logger.debug('[GoalCreate] Queued flashcard job for node', {
+            nodeId: node.id,
+            nodeTitle: node.title,
+          })
         }
 
         logger.info('Skill tree generated successfully', {
