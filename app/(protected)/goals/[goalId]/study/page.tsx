@@ -37,6 +37,8 @@ interface StudyCard {
 interface SessionData {
   sessionId: string
   mode: string
+  isGuided?: boolean
+  isTreeComplete?: boolean
   cards: StudyCard[]
   timedSettings?: {
     durationSeconds: number
@@ -125,13 +127,14 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
     setError(null)
 
     try {
-      // Use guided mode if enabled (T027)
-      const modeToUse = isGuidedMode ? 'guided' : selectedMode
-
       const response = await fetch('/api/study/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ goalId, mode: modeToUse }),
+        body: JSON.stringify({
+          goalId,
+          mode: selectedMode,
+          isGuided: isGuidedMode, // Pass guided flag separately
+        }),
       })
 
       if (!response.ok) {
@@ -142,9 +145,9 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
       const data: SessionData = await response.json()
 
       // Handle guided mode response (T027)
-      if (isGuidedMode && !data.sessionId) {
+      if (data.isGuided && !data.sessionId) {
         // No more nodes or cards being generated
-        setIsTreeComplete(true)
+        setIsTreeComplete(data.isTreeComplete ?? false)
         setPhase('complete')
         return
       }
@@ -165,12 +168,8 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
     }
   }, [goalId, isGuidedMode, selectedMode])
 
-  // Auto-start guided mode (T027)
-  useEffect(() => {
-    if (isGuidedMode && goalId && phase === 'select') {
-      handleStartSession()
-    }
-  }, [isGuidedMode, goalId, phase, handleStartSession])
+  // Note: Guided mode no longer auto-starts - users choose their study mode first
+  // The isGuidedMode flag controls node selection, not presentation mode
 
   // Handle continue to next node (T027)
   const handleContinueToNextNode = useCallback(async () => {
