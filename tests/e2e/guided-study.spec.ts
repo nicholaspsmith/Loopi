@@ -60,7 +60,8 @@ const mockTreeCompleteResponse = {
 
 const mockStudySession = {
   sessionId: 'session-123',
-  mode: 'guided',
+  mode: 'flashcard',
+  isGuided: true,
   currentNode: {
     id: 'node-1',
     title: 'Basic Types',
@@ -198,13 +199,13 @@ test.describe('Guided Study Flow - T030', () => {
     // Click Study Now
     await studyNowButton.click()
 
-    // Should navigate to study page with guided mode
-    await expect(page).toHaveURL(/\/study\?.*mode=guided/, { timeout: 5000 })
+    // Should navigate to study page with guided flag
+    await expect(page).toHaveURL(/\/study\?.*isGuided=true/, { timeout: 5000 })
   })
 
   test('can progress through cards in guided mode', async ({ page }) => {
     // Start study session
-    await page.goto('/goals/test-goal-id/study?mode=guided&nodeId=node-1')
+    await page.goto('/goals/test-goal-id/study?mode=flashcard&isGuided=true&nodeId=node-1')
     await page.waitForLoadState('networkidle')
 
     // Should see flashcard question
@@ -235,7 +236,7 @@ test.describe('Guided Study Flow - T030', () => {
   })
 
   test('displays progress indicator during guided study', async ({ page }) => {
-    await page.goto('/goals/test-goal-id/study?mode=guided&nodeId=node-1')
+    await page.goto('/goals/test-goal-id/study?mode=flashcard&isGuided=true&nodeId=node-1')
     await page.waitForLoadState('networkidle')
 
     // Look for progress indicator (e.g., "1 / 3 cards")
@@ -250,7 +251,7 @@ test.describe('Guided Study Flow - T030', () => {
   })
 
   test('shows node title in guided study mode', async ({ page }) => {
-    await page.goto('/goals/test-goal-id/study?mode=guided&nodeId=node-1')
+    await page.goto('/goals/test-goal-id/study?mode=flashcard&isGuided=true&nodeId=node-1')
     await page.waitForLoadState('networkidle')
 
     // Should display current node title
@@ -265,7 +266,7 @@ test.describe('Guided Study Completion - T031', () => {
 
   test('shows Continue and Return buttons after completing a node', async ({ page }) => {
     await mockGuidedStudyAPI(page)
-    await page.goto('/goals/test-goal-id/study?mode=guided&nodeId=node-1')
+    await page.goto('/goals/test-goal-id/study?mode=flashcard&isGuided=true&nodeId=node-1')
     await page.waitForLoadState('networkidle')
 
     // Simulate completing all cards in node
@@ -312,7 +313,7 @@ test.describe('Guided Study Completion - T031', () => {
       })
     })
 
-    await page.goto('/goals/test-goal-id/study?mode=guided')
+    await page.goto('/goals/test-goal-id/study?mode=flashcard&isGuided=true')
     await page.waitForLoadState('networkidle')
 
     // Find Continue button (would appear after completing cards)
@@ -331,7 +332,7 @@ test.describe('Guided Study Completion - T031', () => {
 
   test('clicking Return button navigates back to goal page', async ({ page }) => {
     await mockGuidedStudyAPI(page)
-    await page.goto('/goals/test-goal-id/study?mode=guided&nodeId=node-1')
+    await page.goto('/goals/test-goal-id/study?mode=flashcard&isGuided=true&nodeId=node-1')
     await page.waitForLoadState('networkidle')
 
     const returnButton = page.locator('button:has-text("Return to Goal")')
@@ -348,7 +349,7 @@ test.describe('Guided Study Completion - T031', () => {
     // Mock tree as complete
     await mockGuidedStudyAPI(page, true)
 
-    await page.goto('/goals/test-goal-id/study?mode=guided')
+    await page.goto('/goals/test-goal-id/study?mode=flashcard&isGuided=true')
     await page.waitForLoadState('networkidle')
 
     // Should show congratulations message
@@ -400,6 +401,8 @@ test.describe('Resume Study Flow - T032', () => {
         contentType: 'application/json',
         body: JSON.stringify({
           ...mockStudySession,
+          mode: 'flashcard',
+          isGuided: true,
           currentNode: {
             id: 'node-1-1',
             title: 'Primitives',
@@ -472,6 +475,8 @@ test.describe('Resume Study Flow - T032', () => {
         contentType: 'application/json',
         body: JSON.stringify({
           ...mockStudySession,
+          mode: 'flashcard',
+          isGuided: true,
           currentNode: mockNextNodeSecond.node,
         }),
       })

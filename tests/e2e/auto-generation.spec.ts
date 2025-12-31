@@ -67,7 +67,8 @@ const mockGoalWithCards = {
 // Mock session response with cards
 const mockSessionWithCards = {
   sessionId: 'session-123',
-  mode: 'guided',
+  mode: 'flashcard',
+  isGuided: true,
   currentNode: {
     id: 'node-1',
     title: 'Basic Types',
