@@ -118,19 +118,23 @@ Content-Type: application/json
 
 {
   "goalId": "goal-123",
-  "mode": "guided",           // NEW: "guided" | "node" | "all"
-  "nodeId": "node-456",       // Required for mode="node", auto-determined for mode="guided"
+  "mode": "flashcard",        // Presentation mode: "flashcard" | "multiple_choice" | "timed" | "mixed" | "node" | "all"
+  "isGuided": true,           // NEW: When true, auto-selects next incomplete node
+  "nodeId": "node-456",       // Required for mode="node", auto-determined when isGuided=true
   "includeChildren": true,    // For mode="node" only
   "cardLimit": 20             // Optional, default 20
 }
 ```
+
+**Note**: The `mode` parameter controls how cards are presented (flashcard, multiple choice, etc.), while `isGuided` controls whether the system automatically selects the next incomplete node in depth-first order.
 
 ### Response
 
 ```json
 {
   "sessionId": "session-789",
-  "mode": "guided",
+  "mode": "flashcard",
+  "isGuided": true,
   "currentNode": {
     "id": "node-456",
     "title": "Variables",
