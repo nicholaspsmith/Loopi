@@ -106,14 +106,14 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T025 [P] [US2] E2E test for distractor generation background flow in tests/e2e/distractor-generation.spec.ts
+- [x] T025 [P] [US2] E2E test for distractor generation background flow in tests/e2e/distractor-generation.spec.ts
 
 ### Implementation for User Story 2
 
-- [ ] T026 [P] [US2] Create distractor job handler wrapping generateDistractors() in lib/jobs/handlers/distractor-job.ts
-- [ ] T027 [US2] Modify app/api/study/distractors/route.ts to create distractor_generation job instead of sync call
-- [ ] T028 [US2] Update multi-choice study UI to use GenerationPlaceholder with fallback to Q&A mode in app/(app)/study/components/MultiChoiceCard.tsx
-- [ ] T029 [US2] Add logging for distractor job processing in lib/jobs/handlers/distractor-job.ts
+- [x] T026 [P] [US2] Create distractor job handler wrapping generateDistractors() in lib/jobs/handlers/distractor-job.ts
+- [x] T027 [US2] Modify app/api/study/session/route.ts to create distractor_generation job instead of sync call
+- [x] T028 [US2] Update multi-choice study UI to use GenerationPlaceholder with fallback to Q&A mode in components/study/MultipleChoiceModeWrapper.tsx
+- [x] T029 [US2] Add logging for distractor job processing in lib/jobs/handlers/distractor-job.ts
 
 **Checkpoint**: User Stories 1 AND 2 should both work independently
 
