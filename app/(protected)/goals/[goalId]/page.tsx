@@ -6,6 +6,8 @@ import Link from 'next/link'
 import GoalProgress from '@/components/goals/GoalProgress'
 import SkillTreeEditor from '@/components/skills/SkillTreeEditor'
 import { type SkillNodeData } from '@/components/skills/SkillNode'
+import { useJobStatus } from '@/hooks/useJobStatus'
+import { GenerationPlaceholder } from '@/components/ui/GenerationPlaceholder'
 
 /**
  * Goal Detail Page (T035)
@@ -79,13 +81,40 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
   }, [goalId])
 
   // Handle create skill tree (for goals without one)
-  const [creatingTree, setCreatingTree] = useState(false)
+  const [skillTreeJobId, setSkillTreeJobId] = useState<string | null>(null)
   const [createError, setCreateError] = useState<string | null>(null)
+
+  // Poll job status
+  const { job, isPolling, error: pollError, retry } = useJobStatus(skillTreeJobId)
+
+  // Handle job completion
+  useEffect(() => {
+    if (!job || !goalId) return
+
+    if (job.status === 'completed') {
+      // Fetch the updated goal data with the new skill tree
+      const fetchUpdatedGoal = async () => {
+        try {
+          const response = await fetch(`/api/goals/${goalId}`)
+          if (response.ok) {
+            const data = await response.json()
+            setGoal(data)
+          }
+        } catch (err) {
+          console.error('Error fetching updated goal:', err)
+        }
+      }
+      fetchUpdatedGoal()
+      setSkillTreeJobId(null) // Stop polling
+    } else if (job.status === 'failed') {
+      setCreateError(job.error || 'Failed to generate skill tree')
+      setSkillTreeJobId(null) // Stop polling
+    }
+  }, [job, goalId])
 
   const handleCreateSkillTree = async () => {
     if (!goalId) return
 
-    setCreatingTree(true)
     setCreateError(null)
 
     try {
@@ -94,31 +123,23 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
         headers: { 'Content-Type': 'application/json' },
       })
 
-      if (!response.ok) {
+      if (response.status === 202) {
+        // Job created successfully - start polling
+        const data = await response.json()
+        setSkillTreeJobId(data.jobId)
+      } else {
+        // Error handling
         const data = await response.json()
         throw new Error(data.message || data.error || 'Failed to generate skill tree')
       }
-
-      const data = await response.json()
-      setGoal((prev) =>
-        prev
-          ? {
-              ...prev,
-              skillTree: {
-                id: data.id,
-                generatedBy: 'ai',
-                nodes: data.nodes,
-                nodeCount: data.nodeCount,
-                maxDepth: data.maxDepth,
-              },
-            }
-          : null
-      )
     } catch (err) {
       setCreateError(err instanceof Error ? err.message : 'Failed to generate skill tree')
-    } finally {
-      setCreatingTree(false)
     }
+  }
+
+  const handleRetry = () => {
+    setCreateError(null)
+    retry()
   }
 
   // Handle regenerate (for goals with existing skill tree)
@@ -276,6 +297,17 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
             onNodesChange={handleNodesChange}
             onRegenerate={handleRegenerate}
           />
+        ) : isPolling && job ? (
+          <div className="py-12 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="max-w-2xl mx-auto px-6">
+              <GenerationPlaceholder
+                jobType="skill_tree"
+                status={job.status as 'pending' | 'processing' | 'failed'}
+                error={job.error || pollError || createError || undefined}
+                onRetry={handleRetry}
+              />
+            </div>
+          </div>
         ) : (
           <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
             <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -286,17 +318,10 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
             )}
             <button
               onClick={handleCreateSkillTree}
-              disabled={creatingTree}
+              disabled={isPolling}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {creatingTree ? (
-                <span className="flex items-center gap-2">
-                  <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
-                  Generating...
-                </span>
-              ) : (
-                'Generate Skill Tree'
-              )}
+              Generate Skill Tree
             </button>
           </div>
         )}
