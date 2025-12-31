@@ -44,7 +44,7 @@ export default async function DecksPage() {
   return (
     <div className="flex flex-col h-full p-6 max-w-7xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
-        <div>
+        <div className="px-3">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">My Decks</h1>
           <p className="text-gray-600 dark:text-gray-400">
             Organize your flashcards into focused study collections

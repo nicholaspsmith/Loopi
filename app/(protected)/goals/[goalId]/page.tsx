@@ -252,7 +252,7 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
       <div className="mb-6 flex items-start justify-between">
         <div className="flex items-start gap-6">
           <GoalProgress masteryPercentage={goal.masteryPercentage} size="lg" />
-          <div>
+          <div className="px-3">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {goal.title}
             </h1>

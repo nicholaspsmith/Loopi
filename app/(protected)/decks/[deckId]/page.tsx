@@ -76,7 +76,7 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ dec
         </div>
 
         <div className="flex items-start justify-between mb-4">
-          <div>
+          <div className="px-3">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {deck.name}
             </h1>
