@@ -25,7 +25,9 @@ import { getNextIncompleteNode, getNodeProgress } from '@/lib/study/guided-flow'
 
 const SessionRequestSchema = z.object({
   goalId: z.string().uuid(),
-  mode: z.enum(['flashcard', 'multiple_choice', 'timed', 'mixed', 'guided', 'node', 'all']),
+  mode: z.enum(['flashcard', 'multiple_choice', 'timed', 'mixed', 'node', 'all']),
+  // Guided mode flag - when true, automatically selects next incomplete node
+  isGuided: z.boolean().optional().default(false),
   nodeId: z.string().uuid().optional(),
   includeChildren: z.boolean().optional().default(true),
   cardLimit: z.number().int().min(1).max(50).optional().default(20),
@@ -65,9 +67,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { goalId, mode, nodeId: requestedNodeId, includeChildren, cardLimit } = parseResult.data
+    const {
+      goalId,
+      mode,
+      isGuided,
+      nodeId: requestedNodeId,
+      includeChildren,
+      cardLimit,
+    } = parseResult.data
 
-    logger.info('Starting study session', { goalId, mode, nodeId: requestedNodeId, cardLimit })
+    logger.info('Starting study session', {
+      goalId,
+      mode,
+      isGuided,
+      nodeId: requestedNodeId,
+      cardLimit,
+    })
 
     // Validate goal belongs to user
     const goal = await getGoalByIdForUser(goalId, session.user.id)
@@ -89,7 +104,7 @@ export async function POST(request: NextRequest) {
     let currentNode: { id: string; title: string; path: string } | null = null
     let nodeProgress: { completedInNode: number; totalInNode: number } | null = null
 
-    if (mode === 'guided') {
+    if (isGuided) {
       const nextNode = await getNextIncompleteNode(skillTree.id)
       if (!nextNode) {
         // All nodes complete or no cards yet
@@ -97,7 +112,9 @@ export async function POST(request: NextRequest) {
         const isComplete = summary.completedNodes === summary.totalNodes && summary.totalNodes > 0
         return NextResponse.json({
           sessionId: null,
-          mode: 'guided',
+          mode,
+          isGuided: true,
+          isTreeComplete: isComplete,
           currentNode: null,
           cards: [],
           totalCards: 0,
@@ -125,7 +142,7 @@ export async function POST(request: NextRequest) {
       }
       filterPath = includeChildren ? node.path : null
       // For guided/node mode without children, filter to exact node only
-      if ((mode === 'guided' || mode === 'node') && !includeChildren) {
+      if ((isGuided || mode === 'node') && !includeChildren) {
         filterPath = null // We'll filter by exact nodeId below
       }
     }
@@ -302,12 +319,13 @@ export async function POST(request: NextRequest) {
     const response: Record<string, unknown> = {
       sessionId,
       mode,
+      isGuided,
       cards: shuffledCards,
       totalCards: shuffledCards.length,
     }
 
     // Add guided mode info
-    if (mode === 'guided' && currentNode) {
+    if (isGuided && currentNode) {
       response.currentNode = currentNode
       response.nodeProgress = nodeProgress
     }
