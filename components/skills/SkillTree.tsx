@@ -15,12 +15,19 @@ interface SkillTreeProps {
   nodes: SkillNodeData[]
   onSelectNode?: (nodeId: string) => void
   selectedNodeId?: string | null
+  highlightedNodeIds?: string[]
 }
 
-export default function SkillTree({ nodes, onSelectNode, selectedNodeId = null }: SkillTreeProps) {
+export default function SkillTree({
+  nodes,
+  onSelectNode,
+  selectedNodeId = null,
+  highlightedNodeIds = [],
+}: SkillTreeProps) {
   // Render a node and its children recursively
   const renderNode = (node: SkillNodeData, level: number = 0) => {
     const hasChildren = node.children && node.children.length > 0
+    const isHighlighted = highlightedNodeIds.includes(node.id)
 
     return (
       <div key={node.id} className="relative">
@@ -33,7 +40,12 @@ export default function SkillTree({ nodes, onSelectNode, selectedNodeId = null }
         )}
 
         <div style={{ paddingLeft: `${level * 24}px` }}>
-          <SkillNode node={node} onSelect={onSelectNode} isSelected={selectedNodeId === node.id} />
+          <SkillNode
+            node={node}
+            onSelect={onSelectNode}
+            isSelected={selectedNodeId === node.id}
+            isHighlighted={isHighlighted}
+          />
         </div>
 
         {/* Children */}

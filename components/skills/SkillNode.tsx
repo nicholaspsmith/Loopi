@@ -26,9 +26,15 @@ interface SkillNodeProps {
   node: SkillNodeData
   onSelect?: (nodeId: string) => void
   isSelected?: boolean
+  isHighlighted?: boolean
 }
 
-export default function SkillNode({ node, onSelect, isSelected = false }: SkillNodeProps) {
+export default function SkillNode({
+  node,
+  onSelect,
+  isSelected = false,
+  isHighlighted = false,
+}: SkillNodeProps) {
   // Depth-based styling
   const depthStyles = {
     1: 'text-lg font-semibold', // Category
@@ -50,7 +56,13 @@ export default function SkillNode({ node, onSelect, isSelected = false }: SkillN
     <div
       className={`
         flex items-center gap-3 p-3 rounded-lg transition-all cursor-pointer
-        ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}
+        ${
+          isSelected
+            ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700'
+            : isHighlighted
+              ? 'bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800'
+              : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+        }
       `}
       onClick={() => onSelect?.(node.id)}
     >

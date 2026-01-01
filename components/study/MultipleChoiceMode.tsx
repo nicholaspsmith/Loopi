@@ -48,61 +48,76 @@ export default function MultipleChoiceMode({
   cardNumber,
   totalCards,
 }: MultipleChoiceModeProps) {
+  // T012: Add selectedOption state (separate from submission)
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
-  const [showResult, setShowResult] = useState(false)
+  // T013: Add isSubmitted state to track submission status
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
   // Track previous answer to detect card changes and store shuffled options
   const prevAnswerRef = useRef<string>('')
   const optionsRef = useRef<string[]>([])
 
-  // T014: Track response time from question display to answer selection
+  // Track response time from question display to submission
   const startTimeRef = useRef<number>(Date.now())
 
   // Compute options: only reshuffle when answer changes
-  // Also reset timer when card changes (T014)
+  // Also reset state when card changes
   if (prevAnswerRef.current !== answer) {
     prevAnswerRef.current = answer
     optionsRef.current = createShuffledOptions(answer, distractors)
     startTimeRef.current = Date.now() // Reset timer for new card
+    // Reset state for new card
+    setSelectedOption(null)
+    setIsSubmitted(false)
   }
   const options = optionsRef.current
 
-  // T015: Calculate responseTimeMs in handleSelect
+  // T014: Handle option selection (highlighting only, no submission)
   const handleSelect = (option: string) => {
-    if (showResult) return
-
+    // T019: Disable option selection after submission
+    if (isSubmitted) return
     setSelectedOption(option)
-    setShowResult(true)
+  }
 
-    const isCorrect = option === answer
-    // T015: Calculate response time
+  // T016: Handle submission - show correct/incorrect feedback
+  const handleSubmit = () => {
+    if (!selectedOption) return
+    setIsSubmitted(true)
+  }
+
+  // T017: Handle Next button - proceed to next card
+  const handleNext = () => {
+    if (!selectedOption) return
+
+    const isCorrect = selectedOption === answer
     const responseTimeMs = Date.now() - startTimeRef.current
     // Rating: correct = 3 (server will adjust to 2 if slow), incorrect = 1
     const rating: 1 | 2 | 3 = isCorrect ? 3 : 1
 
-    // Delay before moving to next card
-    setTimeout(() => {
-      // T016: Pass responseTimeMs to onRate
-      onRate(rating, responseTimeMs)
-      setSelectedOption(null)
-      setShowResult(false)
-    }, 1500)
+    // Call onRate which will trigger next card
+    onRate(rating, responseTimeMs)
   }
 
   const getOptionClass = (option: string) => {
-    if (!showResult) {
-      return 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+    // T016: After submission, show correct (green) / incorrect (red) feedback
+    if (isSubmitted) {
+      if (option === answer) {
+        return 'bg-green-50 dark:bg-green-900/30 border-green-500 dark:border-green-600'
+      }
+
+      if (option === selectedOption && option !== answer) {
+        return 'bg-red-50 dark:bg-red-900/30 border-red-500 dark:border-red-600'
+      }
+
+      return 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 opacity-50'
     }
 
-    if (option === answer) {
-      return 'bg-green-50 dark:bg-green-900/30 border-green-500 dark:border-green-600'
+    // T014: Before submission, show blue border for selected option
+    if (option === selectedOption) {
+      return 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-600'
     }
 
-    if (option === selectedOption && option !== answer) {
-      return 'bg-red-50 dark:bg-red-900/30 border-red-500 dark:border-red-600'
-    }
-
-    return 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 opacity-50'
+    return 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'
   }
 
   return (
@@ -126,17 +141,18 @@ export default function MultipleChoiceMode({
           <button
             key={index}
             onClick={() => handleSelect(option)}
-            disabled={showResult}
+            disabled={isSubmitted}
+            data-testid="mc-option"
             className={`p-4 rounded-lg border-2 text-left transition-all ${getOptionClass(option)} ${
-              showResult ? 'cursor-default' : 'cursor-pointer'
+              isSubmitted ? 'cursor-default' : 'cursor-pointer'
             }`}
           >
             <div className="flex items-center gap-3">
               <span
                 className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium ${
-                  showResult && option === answer
+                  isSubmitted && option === answer
                     ? 'bg-green-500 text-white'
-                    : showResult && option === selectedOption && option !== answer
+                    : isSubmitted && option === selectedOption && option !== answer
                       ? 'bg-red-500 text-white'
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                 }`}
@@ -144,10 +160,10 @@ export default function MultipleChoiceMode({
                 {String.fromCharCode(65 + index)}
               </span>
               <span className="text-gray-900 dark:text-gray-100">{option}</span>
-              {showResult && option === answer && (
+              {isSubmitted && option === answer && (
                 <span className="ml-auto text-green-600 dark:text-green-400">✓ Correct</span>
               )}
-              {showResult && option === selectedOption && option !== answer && (
+              {isSubmitted && option === selectedOption && option !== answer && (
                 <span className="ml-auto text-red-600 dark:text-red-400">✗ Incorrect</span>
               )}
             </div>
@@ -155,8 +171,26 @@ export default function MultipleChoiceMode({
         ))}
       </div>
 
+      {/* T015: Submit button (disabled until selection, hidden after submission) */}
+      {!isSubmitted && (
+        <div className="mt-6">
+          <button
+            onClick={handleSubmit}
+            disabled={!selectedOption}
+            data-testid="mc-submit"
+            className={`px-8 py-3 rounded-lg font-medium transition-all ${
+              selectedOption
+                ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer'
+                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            Submit
+          </button>
+        </div>
+      )}
+
       {/* Result feedback */}
-      {showResult && (
+      {isSubmitted && (
         <div
           className={`mt-6 px-6 py-3 rounded-lg ${
             selectedOption === answer
@@ -167,6 +201,19 @@ export default function MultipleChoiceMode({
           {selectedOption === answer
             ? 'Correct! Well done.'
             : `Incorrect. The answer was: ${answer}`}
+        </div>
+      )}
+
+      {/* T017: Next button (visible after submission) */}
+      {isSubmitted && (
+        <div className="mt-4">
+          <button
+            onClick={handleNext}
+            data-testid="mc-next"
+            className="px-8 py-3 rounded-lg font-medium bg-blue-600 hover:bg-blue-700 text-white transition-all"
+          >
+            Next
+          </button>
         </div>
       )}
     </div>
