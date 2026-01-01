@@ -205,7 +205,7 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
     }
   }, [goalId, goal?.skillTree, goal?.stats.totalCards])
 
-  // Handle archive
+  /* Archive functionality hidden for streamlined UI
   const handleArchive = async () => {
     if (!goalId || !confirm('Are you sure you want to archive this goal?')) return
 
@@ -223,6 +223,7 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
       setError(err instanceof Error ? err.message : 'An error occurred')
     }
   }
+  */
 
   // Format time
   const formatTime = (seconds: number) => {
@@ -267,7 +268,7 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
       <div className="mb-6 flex items-start justify-between">
         <div className="flex items-start gap-6">
           <GoalProgress masteryPercentage={goal.masteryPercentage} size="lg" />
-          <div className="px-3">
+          <div className="px-6">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {goal.title}
             </h1>
@@ -299,12 +300,14 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
               </span>
             </div>
           )}
+          {/* Archive button hidden for streamlined UI
           <button
             onClick={handleArchive}
             className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             Archive
           </button>
+*/}
         </div>
       </div>
 
