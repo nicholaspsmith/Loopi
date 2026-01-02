@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import { getDb } from '@/lib/db/pg-client'
 import { learningGoals, skillTrees } from '@/lib/db/drizzle-schema'
-import { eq, and, desc } from 'drizzle-orm'
+import { eq, and, desc, inArray } from 'drizzle-orm'
 import type { LearningGoal, NewLearningGoal } from '@/lib/db/drizzle-schema'
 
 /**
@@ -25,6 +25,12 @@ export interface UpdateGoalInput {
   status?: GoalStatus
   masteryPercentage?: number
   totalTimeSeconds?: number
+}
+
+export interface GoalCounts {
+  active: number
+  archived: number
+  total: number
 }
 
 /**
@@ -242,4 +248,104 @@ export async function getGoalWithSkillTree(goalId: string): Promise<{
     goal,
     skillTree: tree ?? null,
   }
+}
+
+/**
+ * Get goal counts by status for a user
+ */
+export async function getGoalCounts(userId: string): Promise<GoalCounts> {
+  const db = getDb()
+  const goals = await db
+    .select({ status: learningGoals.status })
+    .from(learningGoals)
+    .where(eq(learningGoals.userId, userId))
+
+  const active = goals.filter((g) => g.status === 'active').length
+  const archived = goals.filter((g) => g.status === 'archived').length
+
+  return { active, archived, total: goals.length }
+}
+
+/**
+ * Get multiple goals by their IDs
+ */
+export async function getGoalsByIds(goalIds: string[]): Promise<LearningGoal[]> {
+  if (goalIds.length === 0) return []
+
+  const db = getDb()
+  return db.select().from(learningGoals).where(inArray(learningGoals.id, goalIds))
+}
+
+/**
+ * Bulk archive multiple goals
+ */
+export async function bulkArchiveGoals(goalIds: string[], userId: string): Promise<LearningGoal[]> {
+  if (goalIds.length === 0) return []
+
+  const db = getDb()
+  const now = new Date()
+
+  const result = await db
+    .update(learningGoals)
+    .set({
+      status: 'archived',
+      archivedAt: now,
+      updatedAt: now,
+    })
+    .where(
+      and(
+        inArray(learningGoals.id, goalIds),
+        eq(learningGoals.userId, userId),
+        eq(learningGoals.status, 'active')
+      )
+    )
+    .returning()
+
+  console.log(`[Goals] Archived ${result.length} goals for user ${userId}`)
+  return result
+}
+
+/**
+ * Bulk delete multiple goals
+ */
+export async function bulkDeleteGoals(goalIds: string[], userId: string): Promise<void> {
+  if (goalIds.length === 0) return
+
+  const db = getDb()
+
+  // Foreign keys with ON DELETE CASCADE handle:
+  // - skill_trees -> skill_nodes -> flashcards
+  // - review_logs (via flashcard cascade)
+  await db
+    .delete(learningGoals)
+    .where(and(inArray(learningGoals.id, goalIds), eq(learningGoals.userId, userId)))
+
+  console.log(`[Goals] Deleted ${goalIds.length} goals for user ${userId}`)
+}
+
+/**
+ * Restore an archived goal to active status
+ */
+export async function restoreGoal(goalId: string, userId: string): Promise<LearningGoal> {
+  const db = getDb()
+  const now = new Date()
+
+  const [result] = await db
+    .update(learningGoals)
+    .set({
+      status: 'active',
+      archivedAt: null,
+      updatedAt: now,
+    })
+    .where(
+      and(
+        eq(learningGoals.id, goalId),
+        eq(learningGoals.userId, userId),
+        eq(learningGoals.status, 'archived')
+      )
+    )
+    .returning()
+
+  console.log(`[Goals] Restored goal ${goalId} for user ${userId}`)
+  return result
 }

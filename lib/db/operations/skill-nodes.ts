@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 import { getDb } from '@/lib/db/pg-client'
-import { skillNodes, flashcards } from '@/lib/db/drizzle-schema'
+import { skillNodes, flashcards, skillTrees, learningGoals } from '@/lib/db/drizzle-schema'
 import { eq, and, like, isNull, sql } from 'drizzle-orm'
 import type { SkillNode, NewSkillNode } from '@/lib/db/drizzle-schema'
 import { State, type Card } from 'ts-fsrs'
@@ -400,4 +400,32 @@ export async function countNodesByDepth(treeId: string): Promise<Record<number, 
   })
 
   return counts
+}
+
+/**
+ * Get a node with its associated goal (for ownership verification)
+ */
+export async function getNodeWithGoal(
+  nodeId: string
+): Promise<{ node: SkillNode; goal: { id: string; userId: string; title: string } } | null> {
+  const db = getDb()
+
+  const result = await db
+    .select({
+      node: skillNodes,
+      goal: {
+        id: learningGoals.id,
+        userId: learningGoals.userId,
+        title: learningGoals.title,
+      },
+    })
+    .from(skillNodes)
+    .innerJoin(skillTrees, eq(skillNodes.treeId, skillTrees.id))
+    .innerJoin(learningGoals, eq(skillTrees.goalId, learningGoals.id))
+    .where(eq(skillNodes.id, nodeId))
+    .limit(1)
+
+  if (result.length === 0) return null
+
+  return result[0]
 }

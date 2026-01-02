@@ -149,7 +149,7 @@ export default function MultipleChoiceMode({
           >
             <div className="flex items-center gap-3">
               <span
-                className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium ${
+                className={`w-8 h-8 shrink-0 flex items-center justify-center rounded-full text-sm font-medium ${
                   isSubmitted && option === answer
                     ? 'bg-green-500 text-white'
                     : isSubmitted && option === selectedOption && option !== answer
@@ -161,10 +161,14 @@ export default function MultipleChoiceMode({
               </span>
               <span className="text-gray-900 dark:text-gray-100">{option}</span>
               {isSubmitted && option === answer && (
-                <span className="ml-auto text-green-600 dark:text-green-400">✓ Correct</span>
+                <span className="text-nowrap ml-auto text-green-600 dark:text-green-400">
+                  ✓ Correct
+                </span>
               )}
               {isSubmitted && option === selectedOption && option !== answer && (
-                <span className="ml-auto text-red-600 dark:text-red-400">✗ Incorrect</span>
+                <span className="text-nowrap ml-auto text-red-600 dark:text-red-400">
+                  ✗ Incorrect
+                </span>
               )}
             </div>
           </button>

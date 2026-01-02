@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import SkillTree from './SkillTree'
 import { type SkillNodeData } from './SkillNode'
 import NodeStudyModal from '../study/NodeStudyModal'
+import CustomCardModal from '../goals/CustomCardModal'
 
 /**
  * SkillTreeEditor Component (T032)
@@ -24,6 +25,7 @@ export default function SkillTreeEditor({ goalId, nodes }: SkillTreeEditorProps)
   const router = useRouter()
   const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null)
   const [isStudyModalOpen, setIsStudyModalOpen] = useState(false)
+  const [isCustomCardModalOpen, setIsCustomCardModalOpen] = useState(false)
 
   // Count enabled nodes (all nodes are enabled by default now)
   const countNodes = (nodeList: SkillNodeData[]): { enabled: number; total: number } => {
@@ -117,6 +119,25 @@ export default function SkillTreeEditor({ goalId, nodes }: SkillTreeEditorProps)
         </div>
 
         <div className="flex items-center gap-4">
+          {/* Add Custom Card Button */}
+          {highlightedNodeId && (
+            <button
+              onClick={() => setIsCustomCardModalOpen(true)}
+              data-testid="add-custom-card-button"
+              className="px-3 py-1.5 text-sm bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors flex items-center gap-1"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+              Add Custom Card
+            </button>
+          )}
+
           {/* Generate Cards or Study Button */}
           {highlightedNodeId && totalCardCount === 0 && (
             <Link
@@ -175,6 +196,18 @@ export default function SkillTreeEditor({ goalId, nodes }: SkillTreeEditorProps)
         totalCardCount={totalCardCount}
         onClose={() => setIsStudyModalOpen(false)}
         onConfirm={handleStudyConfirm}
+      />
+
+      {/* Custom Card Modal (T015, T016) */}
+      <CustomCardModal
+        isOpen={isCustomCardModalOpen}
+        nodeId={highlightedNodeId || ''}
+        nodeTitle={highlightedNode?.title || ''}
+        onClose={() => setIsCustomCardModalOpen(false)}
+        onSuccess={() => {
+          setIsCustomCardModalOpen(false)
+          // TODO: Refresh node card count
+        }}
       />
     </div>
   )

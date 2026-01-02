@@ -27,9 +27,23 @@ interface GoalCardProps {
       maxDepth: number
     } | null
   }
+  selectionMode?: boolean
+  isSelected?: boolean
+  onToggleSelect?: (id: string) => void
+  onRestore?: (id: string) => void
+  canRestore?: boolean
+  isRestoring?: boolean
 }
 
-export default function GoalCard({ goal }: GoalCardProps) {
+export default function GoalCard({
+  goal,
+  selectionMode = false,
+  isSelected = false,
+  onToggleSelect,
+  onRestore,
+  canRestore = false,
+  isRestoring = false,
+}: GoalCardProps) {
   // Format time for display
   const formatTime = (seconds: number) => {
     if (seconds < 60) return `${seconds}s`
@@ -53,18 +67,55 @@ export default function GoalCard({ goal }: GoalCardProps) {
     return 'bg-gray-400'
   }
 
-  return (
-    <Link
-      href={`/goals/${goal.id}`}
-      className="block p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-md transition-all"
-    >
-      <div className="flex items-start justify-between mb-4">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 line-clamp-2">
-          {goal.title}
-        </h3>
-        <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[goal.status]}`}>
-          {goal.status.charAt(0).toUpperCase() + goal.status.slice(1)}
-        </span>
+  const handleClick = () => {
+    if (selectionMode && onToggleSelect) {
+      onToggleSelect(goal.id)
+    }
+  }
+
+  const handleRestoreClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (onRestore) {
+      onRestore(goal.id)
+    }
+  }
+
+  // Base card classes
+  const baseCardClasses = `relative p-6 bg-white dark:bg-gray-800 rounded-lg border transition-all ${
+    isSelected
+      ? 'border-blue-500 dark:border-blue-400 shadow-md'
+      : 'border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-md'
+  }`
+
+  // Card content component (shared between Link and div versions)
+  const cardContent = (
+    <>
+      <div className="flex items-start gap-3 mb-4">
+        {selectionMode && (
+          <div className="flex-shrink-0 pt-1">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => onToggleSelect?.(goal.id)}
+              data-testid={`goal-checkbox-${goal.id}`}
+              className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 line-clamp-2">
+              {goal.title}
+            </h3>
+            <span
+              className={`flex-shrink-0 px-2 py-1 text-xs font-medium rounded-full ${statusColors[goal.status]}`}
+            >
+              {goal.status.charAt(0).toUpperCase() + goal.status.slice(1)}
+            </span>
+          </div>
+        </div>
       </div>
 
       {goal.description && (
@@ -118,6 +169,46 @@ export default function GoalCard({ goal }: GoalCardProps) {
           )}
         </div>
       </div>
+
+      {/* Restore button for archived goals (not in selection mode) */}
+      {!selectionMode && goal.status === 'archived' && onRestore && (
+        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <button
+            onClick={handleRestoreClick}
+            disabled={!canRestore || isRestoring}
+            data-testid={`restore-button-${goal.id}`}
+            className="w-full px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isRestoring && (
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 dark:border-blue-400 border-t-transparent" />
+            )}
+            {canRestore ? 'Restore Goal' : 'Active Limit Reached'}
+          </button>
+        </div>
+      )}
+    </>
+  )
+
+  // Render as clickable div in selection mode, Link otherwise
+  if (selectionMode) {
+    return (
+      <div
+        onClick={handleClick}
+        data-testid={`goal-card-${goal.id}`}
+        className={`${baseCardClasses} cursor-pointer`}
+      >
+        {cardContent}
+      </div>
+    )
+  }
+
+  return (
+    <Link
+      href={`/goals/${goal.id}`}
+      data-testid={`goal-card-${goal.id}`}
+      className={`${baseCardClasses} block`}
+    >
+      {cardContent}
     </Link>
   )
 }

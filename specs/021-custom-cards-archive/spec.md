@@ -1,4 +1,4 @@
-# Feature Specification: Custom Cards & Archive Settings
+# Feature Specification: Custom Cards & Goal Management
 
 **Feature Branch**: `021-custom-cards-archive`
 **Created**: 2025-12-31
@@ -23,20 +23,41 @@ Users can create their own custom flashcards from scratch within a specific tree
 
 ---
 
-### User Story 2 - Archive Goals from Settings (Priority: P3)
+### User Story 2 - Multi-Select Goal Management (Priority: P2)
 
-Archive functionality moves from goal page to a dedicated settings section where users can bulk-archive goals.
+Users can select multiple goals from the goals page and perform bulk archive or delete operations.
 
-**Why this priority**: Declutters goal page while preserving archive functionality in a more appropriate location.
+**Why this priority**: Enables efficient goal management without navigating to a separate settings page.
 
-**Independent Test**: Can be tested by navigating to settings, selecting multiple goals, archiving them, and verifying confirmation dialog appears.
+**Independent Test**: Can be tested by selecting goals on the goals page, clicking archive/delete, and verifying confirmation dialog and action completion.
 
 **Acceptance Scenarios**:
 
-1. **Given** user navigates to settings/goals section, **When** viewing goals list, **Then** user can select one or more goals
-2. **Given** one or more goals are selected, **When** user clicks "Archive", **Then** a confirmation dialog appears
-3. **Given** user confirms archiving, **When** action completes, **Then** selected goals are archived and removed from active list
-4. **Given** user is on goal page, **When** viewing goal details, **Then** no archive button is visible
+1. **Given** user is on the goals page, **When** user clicks a goal's checkbox, **Then** the goal is selected and action buttons appear
+2. **Given** one or more goals are selected, **When** user clicks "Archive", **Then** a confirmation dialog appears showing count of goals to archive
+3. **Given** user confirms archiving, **When** action completes, **Then** selected goals are archived and removed from the active goals list
+4. **Given** one or more goals are selected, **When** user clicks "Delete", **Then** a confirmation dialog appears with a warning about permanent deletion
+5. **Given** user confirms deletion, **When** action completes, **Then** selected goals are permanently deleted
+6. **Given** user has selected goals, **When** user clicks outside selection or presses Escape, **Then** selection is cleared
+7. **Given** user views archived goals and has fewer than 6 active goals, **When** user clicks "Restore" on an archived goal, **Then** the goal is moved back to active status
+8. **Given** user has 6 active goals, **When** user tries to restore an archived goal, **Then** system shows error "Maximum 6 active goals reached. Archive or delete a goal first."
+
+---
+
+### User Story 3 - Goal Limits Enforcement (Priority: P1)
+
+Users are limited in the number of goals they can have to encourage focus and prevent overwhelm.
+
+**Why this priority**: Critical for system health and user experience - prevents goal sprawl.
+
+**Independent Test**: Can be tested by attempting to create goals beyond limits and verifying appropriate error messages.
+
+**Acceptance Scenarios**:
+
+1. **Given** user has 6 active goals, **When** user tries to create a new goal, **Then** system shows error "Maximum 6 active goals reached. Archive or delete a goal to create a new one."
+2. **Given** user has 6 archived goals, **When** user tries to archive another goal, **Then** system shows error "Maximum 6 archived goals reached. Delete an archived goal first."
+3. **Given** user has 12 total goals, **When** user tries to create or archive a goal, **Then** system shows error "Maximum 12 total goals reached. Delete a goal to continue."
+4. **Given** user is at any limit, **When** viewing the goals page, **Then** a subtle indicator shows current count vs limit (e.g., "4/6 active goals")
 
 ---
 
@@ -44,25 +65,33 @@ Archive functionality moves from goal page to a dedicated settings section where
 
 - What if user tries to create a custom card with empty question/answer? (Form validation prevents submission)
 - What happens when archiving a goal with active study session? (Session ends, goal archived)
-- Can archived goals be restored? (Out of scope for this spec - consider future feature)
+- Can archived goals be restored? (Yes, if user has fewer than 6 active goals)
+- What if user selects goals and then navigates away? (Selection is cleared)
+- What if bulk operation partially fails? (Transaction rollback, show error, no partial changes)
 
 ## Requirements _(mandatory)_
 
 ### Functional Requirements
 
 - **FR-001**: Users MUST be able to create custom flashcards within any tree node
-- **FR-002**: System MUST remove archive button from goal page
-- **FR-003**: System MUST provide bulk archive functionality in settings
-- **FR-004**: System MUST show confirmation dialog before archiving goals
+- **FR-002**: Goals page MUST support multi-select with checkboxes
+- **FR-003**: System MUST provide bulk archive and delete operations on goals page
+- **FR-004**: System MUST show confirmation dialog before archive/delete operations
+- **FR-005**: System MUST enforce maximum 6 active goals per user
+- **FR-006**: System MUST enforce maximum 6 archived goals per user
+- **FR-007**: System MUST enforce maximum 12 total goals per user
+- **FR-008**: System MUST display current goal counts vs limits on goals page
+- **FR-009**: Users MUST be able to restore archived goals to active status when active count < 6
 
 ### Key Entities
 
 - **Custom Flashcard**: User-created question/answer pair within a tree node
-- **Goal Archive**: Mechanism to remove goals from active list without deletion
+- **Goal Limits**: Hard caps on active (6), archived (6), and total (12) goals per user
 
 ## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
 - **SC-001**: Custom card creation completes in under 3 clicks from tree node view
-- **SC-002**: Bulk archive operation handles 50+ goals without performance degradation
+- **SC-002**: Bulk operations complete within 2 seconds for up to 12 goals
+- **SC-003**: Goal limit enforcement prevents exceeding caps with 100% reliability

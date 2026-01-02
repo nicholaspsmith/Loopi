@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { z } from 'zod'
-import { createGoal, getGoalsByUserId, type GoalStatus } from '@/lib/db/operations/goals'
+import {
+  createGoal,
+  getGoalsByUserId,
+  getGoalCounts,
+  type GoalStatus,
+} from '@/lib/db/operations/goals'
+import { GOAL_LIMITS } from '@/lib/constants/goals'
 import { createSkillTree, getSkillTreeByGoalId } from '@/lib/db/operations/skill-trees'
 import { createSkillNodes, buildNodeTree } from '@/lib/db/operations/skill-nodes'
 import { generateSkillTree, flattenGeneratedNodes } from '@/lib/ai/skill-tree-generator'
@@ -114,6 +120,31 @@ export async function POST(request: Request) {
     }
 
     const { title, description, generateTree } = validation.data
+
+    // Check goal limits before creating
+    const counts = await getGoalCounts(userId)
+
+    if (counts.active >= GOAL_LIMITS.ACTIVE) {
+      return NextResponse.json(
+        {
+          error: 'Maximum 6 active goals reached. Archive or delete a goal to create a new one.',
+          code: 'ACTIVE_LIMIT_EXCEEDED',
+          limits: counts,
+        },
+        { status: 422 }
+      )
+    }
+
+    if (counts.total >= GOAL_LIMITS.TOTAL) {
+      return NextResponse.json(
+        {
+          error: 'Maximum 12 total goals reached. Delete a goal to continue.',
+          code: 'TOTAL_LIMIT_EXCEEDED',
+          limits: counts,
+        },
+        { status: 422 }
+      )
+    }
 
     logger.info('Creating learning goal', {
       userId,

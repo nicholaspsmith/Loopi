@@ -5,8 +5,10 @@ import {
   getGoalByIdForUser,
   updateGoal,
   deleteGoal,
+  getGoalCounts,
   type GoalStatus,
 } from '@/lib/db/operations/goals'
+import { GOAL_LIMITS } from '@/lib/constants/goals'
 import { getSkillTreeByGoalIdWithNodes } from '@/lib/db/operations/skill-trees'
 import { buildNodeTree } from '@/lib/db/operations/skill-nodes'
 import { getDb } from '@/lib/db/pg-client'
@@ -159,6 +161,21 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     const { title, description, status } = validation.data
+
+    // Check archive limit if archiving
+    if (status === 'archived' && existingGoal.status !== 'archived') {
+      const counts = await getGoalCounts(userId)
+      if (counts.archived >= GOAL_LIMITS.ARCHIVED) {
+        return NextResponse.json(
+          {
+            error: 'Maximum 6 archived goals reached. Delete an archived goal first.',
+            code: 'ARCHIVE_LIMIT_EXCEEDED',
+            limits: counts,
+          },
+          { status: 422 }
+        )
+      }
+    }
 
     // Update the goal
     const updated = await updateGoal(goalId, {
