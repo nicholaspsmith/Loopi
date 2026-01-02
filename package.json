@@ -22,7 +22,10 @@
     "db:troubleshoot": "tsx scripts/db-troubleshoot.ts",
     "db:check": "tsx scripts/db-check.ts",
     "db:migrate": "tsx scripts/db-migrate.ts",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "cleanup:analyze": "tsx scripts/cleanup/analyze.ts --report-only",
+    "cleanup:report": "tsx scripts/cleanup/analyze.ts --report-only --json",
+    "cleanup:interactive": "tsx scripts/cleanup/analyze.ts --interactive"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
@@ -49,6 +52,7 @@
     "@eslint/compat": "^2.0.0",
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^9.39.2",
+    "@inquirer/prompts": "^8.1.0",
     "@playwright/test": "^1.57.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@testing-library/jest-dom": "^6.9.1",
@@ -72,6 +76,7 @@
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-vitest": "^0.5.4",
     "jsdom": "^27.3.0",
+    "knip": "^5.79.0",
     "lint-staged": "^16.2.7",
     "postcss": "^8.5.6",
     "prettier": "^3.7.4",
