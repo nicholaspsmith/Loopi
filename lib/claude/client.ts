@@ -1,4 +1,3 @@
-import type { Message } from '@/types'
 import Anthropic from '@anthropic-ai/sdk'
 
 /**
@@ -120,16 +119,6 @@ export function classifyClaudeError(error: Error): ClassifiedError {
     shouldInvalidateKey: false,
     originalError: error,
   }
-}
-
-/**
- * Convert our Message type to Claude's format
- */
-export function toClaudeMessages(messages: Message[]): ClaudeMessage[] {
-  return messages.map((msg) => ({
-    role: msg.role,
-    content: msg.content,
-  }))
 }
 
 /**
