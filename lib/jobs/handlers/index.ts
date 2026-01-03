@@ -6,11 +6,9 @@
  */
 
 // Import handlers to trigger registration
-import './flashcard-job'
 import './distractor-job'
 import './skill-tree-job'
 
 // Export handler functions for testing
-export { handleFlashcardGeneration } from './flashcard-job'
 export { handleDistractorGeneration } from './distractor-job'
 export { handleSkillTreeGeneration } from './skill-tree-job'
