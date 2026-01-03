@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import DuplicateWarningModal from '@/components/dedup/DuplicateWarningModal'
+import type { DuplicateCheckResult } from '@/lib/dedup/types'
 
 /**
  * GoalForm Component (T028)
@@ -10,6 +12,7 @@ import { useRouter } from 'next/navigation'
  * - Title input (required)
  * - Description textarea (optional)
  * - Generate tree toggle
+ * - Duplicate detection before creation (T022)
  */
 
 interface GoalFormProps {
@@ -28,12 +31,54 @@ export default function GoalForm({ mode, initialData, onSuccess }: GoalFormProps
   const [description, setDescription] = useState(initialData?.description || '')
   const [generateTree, setGenerateTree] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
+  // Duplicate detection state (only for create mode)
+  const [duplicateResult, setDuplicateResult] = useState<DuplicateCheckResult | null>(null)
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false)
+
+  // Check for duplicates before creating (only for create mode)
+  const checkDuplicate = async (): Promise<boolean> => {
+    if (mode !== 'create') return false
+
+    setIsCheckingDuplicate(true)
+    try {
+      const response = await fetch('/api/goals/check-duplicate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description: description || undefined }),
+      })
+
+      if (!response.ok) {
+        // If dedup check fails, allow creation to proceed
+        console.warn('Duplicate check failed, proceeding with creation')
+        return false
+      }
+
+      const result: DuplicateCheckResult = await response.json()
+
+      // If check was skipped (short content) or no duplicates, proceed
+      if (result.checkSkipped || !result.isDuplicate) {
+        return false
+      }
+
+      // Duplicates found - show warning modal
+      setDuplicateResult(result)
+      setShowDuplicateModal(true)
+      return true
+    } catch (err) {
+      console.warn('Duplicate check error, proceeding with creation:', err)
+      return false
+    } finally {
+      setIsCheckingDuplicate(false)
+    }
+  }
+
+  // Actually create or update the goal
+  const saveGoal = async () => {
     setIsSubmitting(true)
+    setError(null)
 
     try {
       const endpoint = mode === 'create' ? '/api/goals' : `/api/goals/${initialData?.id}`
@@ -55,6 +100,7 @@ export default function GoalForm({ mode, initialData, onSuccess }: GoalFormProps
       }
 
       const data = await response.json()
+      setDuplicateResult(null)
 
       if (onSuccess) {
         onSuccess()
@@ -67,6 +113,32 @@ export default function GoalForm({ mode, initialData, onSuccess }: GoalFormProps
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+
+    // For create mode, check for duplicates first
+    if (mode === 'create') {
+      const hasDuplicate = await checkDuplicate()
+      // If duplicates found, modal will be shown and user must decide
+      if (hasDuplicate) return
+    }
+
+    await saveGoal()
+  }
+
+  // Handle user clicking "Create Anyway" in duplicate modal
+  const handleProceedAnyway = () => {
+    setShowDuplicateModal(false)
+    saveGoal()
+  }
+
+  // Handle user clicking "Cancel" in duplicate modal
+  const handleCancelDuplicate = () => {
+    setShowDuplicateModal(false)
+    setDuplicateResult(null)
   }
 
   return (
@@ -157,10 +229,10 @@ export default function GoalForm({ mode, initialData, onSuccess }: GoalFormProps
         </button>
         <button
           type="submit"
-          disabled={isSubmitting || !title.trim()}
+          disabled={isSubmitting || isCheckingDuplicate || !title.trim()}
           className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
         >
-          {isSubmitting && (
+          {(isSubmitting || isCheckingDuplicate) && (
             <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
               <circle
                 className="opacity-25"
@@ -178,17 +250,30 @@ export default function GoalForm({ mode, initialData, onSuccess }: GoalFormProps
               />
             </svg>
           )}
-          {mode === 'create'
-            ? isSubmitting
-              ? generateTree
-                ? 'Creating Goal & Generating Tree...'
-                : 'Creating Goal...'
-              : 'Create Goal'
-            : isSubmitting
-              ? 'Saving...'
-              : 'Save Changes'}
+          {isCheckingDuplicate
+            ? 'Checking...'
+            : mode === 'create'
+              ? isSubmitting
+                ? generateTree
+                  ? 'Creating Goal & Generating Tree...'
+                  : 'Creating Goal...'
+                : 'Create Goal'
+              : isSubmitting
+                ? 'Saving...'
+                : 'Save Changes'}
         </button>
       </div>
+
+      {/* Duplicate Warning Modal (only for create mode) */}
+      {mode === 'create' && duplicateResult && (
+        <DuplicateWarningModal
+          isOpen={showDuplicateModal}
+          onClose={handleCancelDuplicate}
+          onProceed={handleProceedAnyway}
+          result={duplicateResult}
+          itemType="goal"
+        />
+      )}
     </form>
   )
 }

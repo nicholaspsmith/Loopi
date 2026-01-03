@@ -122,8 +122,10 @@ export default function GeneratePage({ params }: { params: Promise<{ goalId: str
       }
 
       const result = await response.json()
+      const duplicateInfo =
+        result.duplicatesFiltered > 0 ? ` (${result.duplicatesFiltered} duplicates filtered)` : ''
       setSuccess(
-        `Created ${result.created} cards in ${(result.metadata.generationTimeMs / 1000).toFixed(1)}s! Redirecting...`
+        `Created ${result.created} cards${duplicateInfo} in ${(result.metadata.generationTimeMs / 1000).toFixed(1)}s! Redirecting...`
       )
 
       // Redirect to goal page after short delay
@@ -151,6 +153,7 @@ export default function GeneratePage({ params }: { params: Promise<{ goalId: str
 
     const errors: string[] = []
     let totalCreated = 0
+    let totalDuplicatesFiltered = 0
     let completed = 0
 
     // Process in batches of 3 to avoid overwhelming the API
@@ -186,6 +189,7 @@ export default function GeneratePage({ params }: { params: Promise<{ goalId: str
       results.forEach((result, idx) => {
         if (result.status === 'fulfilled') {
           totalCreated += result.value.result.created
+          totalDuplicatesFiltered += result.value.result.duplicatesFiltered || 0
         } else {
           errors.push(`${batch[idx].title}: ${result.reason?.message || 'Unknown error'}`)
         }
@@ -208,8 +212,10 @@ export default function GeneratePage({ params }: { params: Promise<{ goalId: str
     }
 
     if (totalCreated > 0) {
+      const duplicateInfo =
+        totalDuplicatesFiltered > 0 ? ` (${totalDuplicatesFiltered} duplicates filtered)` : ''
       setSuccess(
-        `Created ${totalCreated} cards across ${emptyNodes.length - errors.length} topics! Redirecting...`
+        `Created ${totalCreated} cards${duplicateInfo} across ${emptyNodes.length - errors.length} topics! Redirecting...`
       )
       setTimeout(() => {
         router.push(`/goals/${goalId}`)

@@ -3,11 +3,13 @@ import { getDb } from '@/lib/db/pg-client'
 import { learningGoals, skillTrees } from '@/lib/db/drizzle-schema'
 import { eq, and, desc, inArray } from 'drizzle-orm'
 import type { LearningGoal, NewLearningGoal } from '@/lib/db/drizzle-schema'
+import { syncGoalToLanceDB, deleteGoalFromLanceDB } from './goals-lancedb'
 
 /**
  * Learning Goals Database Operations
  *
  * CRUD operations for learning goals in PostgreSQL.
+ * Embeddings are synced to LanceDB asynchronously for duplicate detection.
  * Goals are the top-level entity for goal-based learning.
  */
 
@@ -50,6 +52,16 @@ export async function createGoal(data: CreateGoalInput): Promise<LearningGoal> {
     .returning()
 
   console.log(`[Goals] Created goal ${row.id} for user ${data.userId}`)
+
+  // Sync to LanceDB for duplicate detection (async, don't wait)
+  syncGoalToLanceDB({
+    id: row.id,
+    userId: row.userId,
+    title: row.title,
+    description: row.description,
+  }).catch((error) => {
+    console.error(`[Goals] Failed to sync goal ${row.id} to LanceDB:`, error)
+  })
 
   return row
 }
@@ -210,6 +222,11 @@ export async function deleteGoal(goalId: string): Promise<void> {
   await db.delete(learningGoals).where(eq(learningGoals.id, goalId))
 
   console.log(`[Goals] Deleted goal ${goalId}`)
+
+  // Remove from LanceDB (async, don't wait)
+  deleteGoalFromLanceDB(goalId).catch((error) => {
+    console.error(`[Goals] Failed to delete goal ${goalId} from LanceDB:`, error)
+  })
 }
 
 /**

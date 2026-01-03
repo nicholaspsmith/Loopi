@@ -115,6 +115,20 @@ export async function getFlashcardById(flashcardId: string): Promise<Flashcard |
 }
 
 /**
+ * Get multiple flashcards by their IDs
+ */
+export async function getFlashcardsByIds(flashcardIds: string[]): Promise<Flashcard[]> {
+  if (flashcardIds.length === 0) {
+    return []
+  }
+
+  const db = getDb()
+  const rows = await db.select().from(flashcards).where(inArray(flashcards.id, flashcardIds))
+
+  return rows.map(rowToFlashcard)
+}
+
+/**
  * Get all flashcards for a user
  */
 export async function getFlashcardsByUserId(userId: string): Promise<Flashcard[]> {

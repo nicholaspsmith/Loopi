@@ -9,6 +9,7 @@ let initializationPromise: Promise<void> | null = null
  * Creates minimal tables for vector search:
  * - messages: id, userId, embedding (1024 dimensions)
  * - flashcards: id, userId, embedding (1024 dimensions)
+ * - goals: id, userId, embedding (1024 dimensions) - for deduplication
  *
  * All other data is stored in PostgreSQL. LanceDB only stores
  * the minimum needed for vector search operations.
@@ -78,6 +79,23 @@ async function performInitialization(db?: Connection) {
       console.log('[LanceDB] Created flashcards table (minimal: id, userId, embedding)')
     }
 
+    // 3. Goals table - minimal schema for vector search (for deduplication)
+    if (!existingTables.includes('goals')) {
+      await db.createTable(
+        'goals',
+        [
+          {
+            id: '00000000-0000-0000-0000-000000000000',
+            userId: '00000000-0000-0000-0000-000000000000',
+            embedding: new Array(1024).fill(0), // jina-embeddings-v3 produces 1024 dimensions
+          },
+        ],
+        { mode: 'create' }
+      )
+      createdTables.push('goals')
+      console.log('[LanceDB] Created goals table (minimal: id, userId, embedding)')
+    }
+
     // Cleanup init rows from newly created tables
     if (createdTables.length > 0) {
       console.log('[LanceDB] Cleaning up init rows...')
@@ -144,9 +162,9 @@ export async function isSchemaInitialized(): Promise<boolean> {
     const { getDbConnection } = await import('./client')
     const db = await getDbConnection()
     const tableNames = await db.tableNames()
-    // Only messages and flashcards tables in LanceDB
+    // Only messages, flashcards, and goals tables in LanceDB
     // Review logs are stored only in PostgreSQL
-    const requiredTables = ['messages', 'flashcards']
+    const requiredTables = ['messages', 'flashcards', 'goals']
 
     return requiredTables.every((table) => tableNames.includes(table))
   } catch (error) {

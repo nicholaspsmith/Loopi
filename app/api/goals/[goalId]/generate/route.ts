@@ -4,15 +4,17 @@ import { z } from 'zod'
 import { getGoalByIdForUser } from '@/lib/db/operations/goals'
 import { getSkillTreeByGoalId } from '@/lib/db/operations/skill-trees'
 import { getSkillNodeById, incrementNodeCardCount } from '@/lib/db/operations/skill-nodes'
-import { generateCards, generateMixedCards } from '@/lib/ai/card-generator'
+import { generateCards, generateMixedCards, GeneratedCard } from '@/lib/ai/card-generator'
 import * as logger from '@/lib/logger'
 import { createFlashcard } from '@/lib/db/operations/flashcards'
+import { filterDuplicatesFromBatch } from '@/lib/dedup/batch-filter'
 
 /**
  * POST /api/goals/[goalId]/generate
  *
  * Generate cards for a skill tree node using AI.
  * Cards are created directly as active (no draft/commit step).
+ * Duplicates are filtered before creation.
  *
  * Per contracts/cards.md
  */
@@ -101,14 +103,35 @@ export async function POST(
       })
     }
 
-    // Create cards directly as active (no draft step)
+    // Filter duplicates before creating cards
+    const filterResult = await filterDuplicatesFromBatch<GeneratedCard>(
+      result.cards,
+      session.user!.id,
+      (card) => {
+        // For scenario cards, combine context and question for duplicate detection
+        if (card.cardType === 'scenario' && 'context' in card) {
+          return `${(card as { context: string }).context}\n\n${card.question}`
+        }
+        return card.question
+      }
+    )
+
+    logger.info('Batch duplicate filtering completed', {
+      goalId,
+      nodeId,
+      total: filterResult.stats.total,
+      unique: filterResult.stats.unique,
+      duplicatesRemoved: filterResult.stats.duplicatesRemoved,
+    })
+
+    // Create unique cards as active (no draft step)
     const createdCardIds: string[] = []
-    for (const card of result.cards) {
+    for (const card of filterResult.uniqueItems) {
       let question = card.question
 
       // For scenario cards, prepend context to question
       if (card.cardType === 'scenario' && 'context' in card) {
-        question = `${card.context}\n\n${card.question}`
+        question = `${(card as { context: string }).context}\n\n${card.question}`
       }
 
       const createdCard = await createFlashcard({
@@ -131,6 +154,7 @@ export async function POST(
       nodeId,
       nodeTitle: node.title,
       cardCount: createdCardIds.length,
+      duplicatesFiltered: filterResult.stats.duplicatesRemoved,
       generationTimeMs,
       model: result.metadata.model,
     })
@@ -138,6 +162,7 @@ export async function POST(
     return NextResponse.json({
       success: true,
       created: createdCardIds.length,
+      duplicatesFiltered: filterResult.stats.duplicatesRemoved,
       nodeId,
       nodeTitle: node.title,
       generatedAt: new Date().toISOString(),

@@ -207,7 +207,7 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 ### Database
 
 - PostgreSQL (via postgres 3.4.7, drizzle-orm 0.45.1) - users, conversations, messages, API keys
-- LanceDB 0.22.3 - vector embeddings for semantic search (flashcards, review logs)
+- LanceDB 0.22.3 - vector embeddings for semantic search (flashcards, goals, review logs)
 
 ### AI/ML
 
@@ -252,8 +252,6 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 - postgres 3.4.7 ([docs](https://www.npmjs.com/package/postgres/v/3.4.7))
 - react 19.2.3 ([docs](https://react.dev))
 - react-dom 19.2.3 ([docs](https://react.dev/reference/react-dom))
-- react-markdown 10.1.0 ([docs](https://www.npmjs.com/package/react-markdown/v/10.1.0))
-- remark-gfm 4.0.1 ([docs](https://www.npmjs.com/package/remark-gfm/v/4.0.1))
 - resend 6.6.0 ([docs](https://www.npmjs.com/package/resend/v/6.6.0))
 - ts-fsrs 5.2.3 ([docs](https://www.npmjs.com/package/ts-fsrs/v/5.2.3))
 - uuid 13.0.0 ([docs](https://www.npmjs.com/package/uuid/v/13.0.0))
@@ -261,6 +259,6 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 
 ## Recent Changes
 
+- 023-dedupe: Duplicate detection for goals and flashcards using Jina embeddings + LanceDB similarity search
 - 010-ui-polish: Added TypeScript 5.7 (strict mode) + Next.js 16.0.10 App Router
 - 009-ollama-model-deployment: Added TypeScript 5.7 / Node.js (Next.js 16), Bash + Next.js
-- 003-flashcard-rating-labels: Added TypeScript 5.x with React 18 (Next.js 16) + React

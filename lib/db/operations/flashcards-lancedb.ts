@@ -81,7 +81,7 @@ export async function searchSimilarFlashcardIds(
 
     const results = await table
       .vectorSearch(queryEmbedding)
-      .where(`userId = '${userId}'`)
+      .where(`"userId" = '${userId}'`)
       .limit(limit)
       .toArray()
 
@@ -116,7 +116,7 @@ export async function searchSimilarFlashcardsWithScores(
 
     const results = await table
       .vectorSearch(queryEmbedding)
-      .where(`userId = '${userId}'`)
+      .where(`"userId" = '${userId}'`)
       .limit(limit)
       .toArray()
 
@@ -128,6 +128,57 @@ export async function searchSimilarFlashcardsWithScores(
     }))
   } catch (error) {
     console.error('[LanceDB] Flashcard semantic search with scores failed:', error)
+    return []
+  }
+}
+
+/**
+ * Find similar flashcards above a similarity threshold
+ *
+ * Used for duplicate detection during flashcard creation.
+ *
+ * @param queryText - The flashcard question to check for duplicates
+ * @param userId - User ID to scope the search
+ * @param threshold - Minimum similarity score (0-1) to include in results
+ * @param limit - Maximum number of results to return
+ * @returns Array of similar flashcards with IDs and similarity scores
+ */
+export async function findSimilarFlashcardsWithThreshold(
+  queryText: string,
+  userId: string,
+  threshold: number = 0.85,
+  limit: number = 3
+): Promise<Array<{ id: string; similarity: number }>> {
+  try {
+    const queryEmbedding = await generateEmbedding(queryText)
+
+    if (!queryEmbedding) {
+      console.warn('[LanceDB] No embedding generated for query, returning empty results')
+      return []
+    }
+
+    const db = await getDbConnection()
+    const table = await db.openTable('flashcards')
+
+    // Get more results than limit to filter by threshold
+    const results = await table
+      .vectorSearch(queryEmbedding)
+      .where(`"userId" = '${userId}'`)
+      .limit(limit * 2) // Fetch extra to account for threshold filtering
+      .toArray()
+
+    // Convert distance to similarity and filter by threshold
+    const similarItems = results
+      .map((r: { id: string; _distance: number }) => ({
+        id: r.id,
+        similarity: 1 / (1 + r._distance),
+      }))
+      .filter((item) => item.similarity >= threshold)
+      .slice(0, limit)
+
+    return similarItems
+  } catch (error) {
+    console.error('[LanceDB] Flashcard threshold search failed:', error)
     return []
   }
 }

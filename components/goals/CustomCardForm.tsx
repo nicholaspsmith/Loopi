@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import DuplicateWarningModal from '@/components/dedup/DuplicateWarningModal'
+import type { DuplicateCheckResult } from '@/lib/dedup/types'
 
 /**
  * CustomCardForm Component (T014)
@@ -14,6 +16,7 @@ import { useState } from 'react'
  * - Character count indicators
  * - Inline validation
  * - API error handling
+ * - Duplicate detection before creation (T015)
  */
 
 interface CustomCardFormProps {
@@ -32,19 +35,59 @@ export default function CustomCardForm({
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<{
     question?: string[]
     answer?: string[]
   }>({})
 
+  // Duplicate detection state
+  const [duplicateResult, setDuplicateResult] = useState<DuplicateCheckResult | null>(null)
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false)
+
   const isValid = question.length >= 5 && answer.length >= 5
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  // Check for duplicates before creating
+  const checkDuplicate = async (): Promise<boolean> => {
+    setIsCheckingDuplicate(true)
+    try {
+      const response = await fetch('/api/flashcards/check-duplicate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question }),
+      })
+
+      if (!response.ok) {
+        // If dedup check fails, allow creation to proceed
+        console.warn('Duplicate check failed, proceeding with creation')
+        return false
+      }
+
+      const result: DuplicateCheckResult = await response.json()
+
+      // If check was skipped (short content) or no duplicates, proceed
+      if (result.checkSkipped || !result.isDuplicate) {
+        return false
+      }
+
+      // Duplicates found - show warning modal
+      setDuplicateResult(result)
+      setShowDuplicateModal(true)
+      return true
+    } catch (err) {
+      console.warn('Duplicate check error, proceeding with creation:', err)
+      return false
+    } finally {
+      setIsCheckingDuplicate(false)
+    }
+  }
+
+  // Actually create the flashcard
+  const createFlashcard = async () => {
+    setIsSubmitting(true)
     setError(null)
     setFieldErrors({})
-    setIsSubmitting(true)
 
     try {
       const response = await fetch('/api/flashcards/custom', {
@@ -69,6 +112,7 @@ export default function CustomCardForm({
       // Success - reset form and notify parent
       setQuestion('')
       setAnswer('')
+      setDuplicateResult(null)
 
       if (onSuccess) {
         onSuccess()
@@ -78,6 +122,33 @@ export default function CustomCardForm({
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setFieldErrors({})
+
+    // Check for duplicates first
+    const hasDuplicate = await checkDuplicate()
+
+    // If duplicates found, modal will be shown and user must decide
+    // If no duplicates, proceed with creation
+    if (!hasDuplicate) {
+      await createFlashcard()
+    }
+  }
+
+  // Handle user clicking "Create Anyway" in duplicate modal
+  const handleProceedAnyway = () => {
+    setShowDuplicateModal(false)
+    createFlashcard()
+  }
+
+  // Handle user clicking "Cancel" in duplicate modal
+  const handleCancelDuplicate = () => {
+    setShowDuplicateModal(false)
+    setDuplicateResult(null)
   }
 
   return (
@@ -189,10 +260,10 @@ export default function CustomCardForm({
         <button
           type="submit"
           data-testid="custom-card-submit"
-          disabled={isSubmitting || !isValid}
+          disabled={isSubmitting || isCheckingDuplicate || !isValid}
           className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
         >
-          {isSubmitting && (
+          {(isSubmitting || isCheckingDuplicate) && (
             <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
               <circle
                 className="opacity-25"
@@ -210,9 +281,20 @@ export default function CustomCardForm({
               />
             </svg>
           )}
-          {isSubmitting ? 'Creating...' : 'Create Card'}
+          {isCheckingDuplicate ? 'Checking...' : isSubmitting ? 'Creating...' : 'Create Card'}
         </button>
       </div>
+
+      {/* Duplicate Warning Modal */}
+      {duplicateResult && (
+        <DuplicateWarningModal
+          isOpen={showDuplicateModal}
+          onClose={handleCancelDuplicate}
+          onProceed={handleProceedAnyway}
+          result={duplicateResult}
+          itemType="flashcard"
+        />
+      )}
     </form>
   )
 }
