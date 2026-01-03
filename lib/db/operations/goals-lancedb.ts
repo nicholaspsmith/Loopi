@@ -57,6 +57,13 @@ export async function syncGoalToLanceDB(goal: {
  * Delete a goal embedding from LanceDB
  */
 export async function deleteGoalFromLanceDB(goalId: string): Promise<void> {
+  // Validate UUID format to prevent SQL injection
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  if (!uuidRegex.test(goalId)) {
+    console.error(`[LanceDB] Invalid goal ID format: ${goalId}`)
+    return
+  }
+
   try {
     const db = await getDbConnection()
     const table = await db.openTable('goals')

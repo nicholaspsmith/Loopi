@@ -47,6 +47,13 @@ export async function syncFlashcardToLanceDB(flashcard: {
  * Delete a flashcard embedding from LanceDB
  */
 export async function deleteFlashcardFromLanceDB(flashcardId: string): Promise<void> {
+  // Validate UUID format to prevent SQL injection
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  if (!uuidRegex.test(flashcardId)) {
+    console.error(`[LanceDB] Invalid flashcard ID format: ${flashcardId}`)
+    return
+  }
+
   try {
     const db = await getDbConnection()
     const table = await db.openTable('flashcards')
