@@ -71,23 +71,23 @@ export default async function GoalsPage() {
   const completedGoals = goals.filter((g) => g.status === 'completed')
 
   return (
-    <div className="flex flex-col h-full p-6 max-w-7xl mx-auto">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="flex flex-col h-full p-4 sm:p-6 max-w-7xl mx-auto">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-4 mb-2">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
               My Learning Goals
             </h1>
             <GoalLimitIndicator counts={counts} />
           </div>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             Track your progress toward mastering new skills
           </p>
         </div>
         {counts.active < GOAL_LIMITS.ACTIVE && (
           <Link
             href="/goals/new"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+            className="w-full sm:w-auto px-4 py-3 sm:py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 min-h-[44px]"
             data-testid="new-goal-button"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,14 +98,14 @@ export default async function GoalsPage() {
                 d="M12 4v16m8-8H4"
               />
             </svg>
-            New Goal
+            <span className="whitespace-nowrap">New Goal</span>
           </Link>
         )}
       </div>
 
       {/* Stats Summary */}
       {goals.length > 0 && (
-        <div className="mb-6 grid grid-cols-3 gap-4">
+        <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             <p className="text-sm text-blue-600 dark:text-blue-400">Active Goals</p>
             <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
@@ -151,12 +151,12 @@ export default async function GoalsPage() {
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
             Start your learning journey
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
+          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md px-4">
             Create a learning goal to generate a personalized skill tree to guide your study
           </p>
           <Link
             href="/goals/new"
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors min-h-[44px] flex items-center justify-center"
           >
             Create Your First Goal
           </Link>

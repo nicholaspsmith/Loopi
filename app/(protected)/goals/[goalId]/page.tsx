@@ -252,7 +252,7 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
   }
 
   return (
-    <div className="flex flex-col h-full p-6 max-w-7xl mx-auto">
+    <div className="flex flex-col h-full p-4 sm:p-6 max-w-7xl mx-auto">
       {/* Back Button */}
       <Link
         href="/goals"
@@ -265,37 +265,39 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
       </Link>
 
       {/* Header */}
-      <div className="mb-6 flex items-start justify-between">
-        <div className="flex items-start gap-6">
+      <div className="mb-6 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
           <GoalProgress masteryPercentage={goal.masteryPercentage} size="lg" />
-          <div className="px-6">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {goal.title}
             </h1>
             {goal.description && (
-              <p className="text-gray-600 dark:text-gray-400 mb-4">{goal.description}</p>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4">
+                {goal.description}
+              </p>
             )}
-            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-              <span>{formatTime(goal.totalTimeSeconds)} studied</span>
-              <span>•</span>
-              <span>{goal.stats.totalCards} cards</span>
-              <span>•</span>
-              <span>{goal.stats.cardsDue} due for review</span>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+              <span className="whitespace-nowrap">{formatTime(goal.totalTimeSeconds)} studied</span>
+              <span className="hidden sm:inline">•</span>
+              <span className="whitespace-nowrap">{goal.stats.totalCards} cards</span>
+              <span className="hidden sm:inline">•</span>
+              <span className="whitespace-nowrap">{goal.stats.cardsDue} due for review</span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
           {goal.skillTree && goal.skillTree.nodeCount > 0 && goal.stats.totalCards > 0 && (
             <StudyNowButton onClick={() => router.push(`/goals/${goal.id}/study?mode=guided`)} />
           )}
           {goal.skillTree && goal.skillTree.nodeCount > 0 && goal.stats.totalCards === 0 && (
-            <div className="px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 rounded-lg flex items-center gap-2 text-sm">
+            <div className="px-4 py-3 sm:py-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 rounded-lg flex items-center gap-2 text-xs sm:text-sm min-h-[44px]">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-600 dark:border-yellow-400"></div>
-              <span>
+              <span className="whitespace-nowrap">
                 Generating flashcards
                 {flashcardJobsStatus && flashcardJobsStatus.total > 0
-                  ? ` (${flashcardJobsStatus.completed}/${flashcardJobsStatus.total} topics)`
+                  ? ` (${flashcardJobsStatus.completed}/${flashcardJobsStatus.total})`
                   : '...'}
               </span>
             </div>
@@ -329,8 +331,8 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
             </div>
           </div>
         ) : (
-          <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+          <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 px-4">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4">
               No skill tree generated for this goal yet.
             </p>
             {createError && (
@@ -339,7 +341,7 @@ export default function GoalDetailPage({ params }: { params: Promise<{ goalId: s
             <button
               onClick={handleCreateSkillTree}
               disabled={isPolling}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
             >
               Generate Skill Tree
             </button>

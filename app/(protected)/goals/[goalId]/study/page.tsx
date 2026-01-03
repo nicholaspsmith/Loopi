@@ -343,7 +343,7 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
   // Render mode selection
   if (phase === 'select') {
     return (
-      <div className="flex flex-col min-h-screen p-6 max-w-4xl mx-auto">
+      <div className="flex flex-col min-h-screen p-4 sm:p-6 max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
           {goalId && (
@@ -362,20 +362,26 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
               Back to Goal
             </Link>
           )}
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Study Session</h1>
-          {goalTitle && <p className="text-gray-600 dark:text-gray-400 mt-1">{goalTitle}</p>}
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+            Study Session
+          </h1>
+          {goalTitle && (
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+              {goalTitle}
+            </p>
+          )}
         </div>
 
         {/* Error */}
         {error && (
-          <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300">
+          <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm sm:text-base text-red-700 dark:text-red-300">
             {error}
           </div>
         )}
 
         {/* Mode Selection */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-6">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Choose Study Mode
           </h2>
           <StudyModeSelector
@@ -389,12 +395,12 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
         <button
           onClick={handleStartSession}
           disabled={loading}
-          className="w-full py-4 bg-blue-600 text-white text-lg font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+          className="w-full py-4 bg-blue-600 text-white text-base sm:text-lg font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 min-h-[56px]"
         >
           {loading ? (
             <>
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-              Starting...
+              <span className="whitespace-nowrap">Starting...</span>
             </>
           ) : (
             <>
@@ -412,7 +418,7 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
                   d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              Start Studying
+              <span className="whitespace-nowrap">Start Studying</span>
             </>
           )}
         </button>
@@ -427,7 +433,7 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
     // Timed mode uses its own component
     if (session.mode === 'timed' && session.timedSettings) {
       return (
-        <div className="flex flex-col min-h-screen p-6 max-w-4xl mx-auto">
+        <div className="flex flex-col min-h-screen p-4 sm:p-6 max-w-4xl mx-auto">
           <TimedChallengeMode
             cards={session.cards}
             durationSeconds={session.timedSettings.durationSeconds}
@@ -442,7 +448,7 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
     // Mixed mode
     if (session.mode === 'mixed') {
       return (
-        <div className="flex flex-col min-h-screen p-6 max-w-4xl mx-auto">
+        <div className="flex flex-col min-h-screen p-4 sm:p-6 max-w-4xl mx-auto">
           <MixedMode cards={session.cards} currentIndex={currentIndex} onRate={handleRate} />
         </div>
       )
@@ -451,7 +457,7 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
     // Flashcard mode
     if (session.mode === 'flashcard' && currentCard) {
       return (
-        <div className="flex flex-col min-h-screen p-6 max-w-4xl mx-auto">
+        <div className="flex flex-col min-h-screen p-4 sm:p-6 max-w-4xl mx-auto">
           <FlashcardMode
             question={currentCard.question}
             answer={currentCard.answer}
@@ -466,7 +472,7 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
     // Multiple choice mode
     if (session.mode === 'multiple_choice' && currentCard) {
       return (
-        <div className="flex flex-col min-h-screen p-6 max-w-4xl mx-auto">
+        <div className="flex flex-col min-h-screen p-4 sm:p-6 max-w-4xl mx-auto">
           <MultipleChoiceModeWrapper
             question={currentCard.question}
             answer={currentCard.answer}
@@ -486,7 +492,7 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
     // Show GuidedStudyFlow for guided mode (T027)
     if (isGuidedMode) {
       return (
-        <div className="flex flex-col min-h-screen p-6 max-w-4xl mx-auto">
+        <div className="flex flex-col min-h-screen p-4 sm:p-6 max-w-4xl mx-auto">
           <GuidedStudyFlow
             currentNode={session?.currentNode || null}
             nodeProgress={session?.nodeProgress || { completedInNode: 0, totalInNode: 0 }}
@@ -501,7 +507,7 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
     // Show StudySummary for node study (T041)
     if (isNodeStudy) {
       return (
-        <div className="flex flex-col min-h-screen p-6 max-w-4xl mx-auto">
+        <div className="flex flex-col min-h-screen p-4 sm:p-6 max-w-4xl mx-auto">
           <StudySummary
             cardsCompleted={responses.length}
             totalSelected={session?.cards.length || 0}
@@ -515,57 +521,59 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
 
     // Regular completion summary
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-6 max-w-2xl mx-auto">
-        <div className="text-6xl mb-4">🎉</div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 max-w-2xl mx-auto">
+        <div className="text-5xl sm:text-6xl mb-4">🎉</div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-center">
           Session Complete!
         </h1>
 
         {summary && (
-          <div className="w-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4">
-                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+          <div className="w-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="text-center p-3 sm:p-4">
+                <p className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">
                   {summary.cardsStudied}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Cards Studied</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Cards Studied</p>
               </div>
-              <div className="text-center p-4">
-                <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+              <div className="text-center p-3 sm:p-4">
+                <p className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">
                   {summary.retentionRate}%
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Retention Rate</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                  Retention Rate
+                </p>
               </div>
-              <div className="text-center p-4">
-                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+              <div className="text-center p-3 sm:p-4">
+                <p className="text-2xl sm:text-3xl font-bold text-purple-600 dark:text-purple-400">
                   {Math.floor(summary.timeSpent / 60)}m {summary.timeSpent % 60}s
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Time Spent</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Time Spent</p>
               </div>
-              <div className="text-center p-4">
-                <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+              <div className="text-center p-3 sm:p-4">
+                <p className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400">
                   {summary.averageRating.toFixed(1)}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Avg Rating</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Avg Rating</p>
               </div>
             </div>
           </div>
         )}
 
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
           <button
             onClick={() => {
               setPhase('select')
               setSession(null)
               setSummary(null)
             }}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors min-h-[44px] whitespace-nowrap"
           >
             Study Again
           </button>
           <Link
             href={`/goals/${goalId}`}
-            className="px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="w-full sm:w-auto px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors min-h-[44px] whitespace-nowrap text-center"
           >
             Back to Goal
           </Link>
