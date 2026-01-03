@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { ANIMATION_DURATIONS } from '@/lib/constants/animations'
 
 /**
  * FlashcardMode Component (T054)
@@ -74,8 +75,8 @@ export default function FlashcardMode({
     setIsFlipped((prev) => {
       if (!prev && !isAnimating) {
         setIsAnimating(true)
-        // Animation completes after 600ms
-        setTimeout(() => setIsAnimating(false), 600)
+        // Animation completes after card flip duration
+        setTimeout(() => setIsAnimating(false), ANIMATION_DURATIONS.CARD_FLIP)
         return true
       }
       return prev
@@ -103,8 +104,13 @@ export default function FlashcardMode({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh]">
+      {/* Screen reader announcement for card navigation */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        Card {cardNumber} of {totalCards}
+      </div>
+
       {/* Progress */}
-      <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+      <div className="text-sm text-gray-500 dark:text-gray-400 mb-4" aria-hidden="true">
         Card {cardNumber} of {totalCards}
       </div>
 
@@ -158,14 +164,14 @@ export default function FlashcardMode({
           <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-4">
             How well did you remember?
           </p>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             {ratingOptions.map((option) => (
               <button
                 key={option.value}
                 onClick={() => handleRate(option.value)}
-                className={`py-3 px-2 rounded-lg text-white font-medium cursor-pointer transition-all active:scale-95 ${option.color}`}
+                className={`py-3 px-2 sm:px-3 min-h-[56px] rounded-lg text-white font-medium cursor-pointer transition-all active:scale-95 ${option.color}`}
               >
-                <span className="block text-lg">{option.label}</span>
+                <span className="block text-base sm:text-lg">{option.label}</span>
                 <span className="block text-xs opacity-80">{option.description}</span>
               </button>
             ))}
