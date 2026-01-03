@@ -25,7 +25,7 @@ export default function StudyNowButton({
       disabled={disabled || loading}
       aria-busy={loading}
       aria-disabled={disabled || loading}
-      className={`px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 ${className}`}
+      className={`w-full sm:w-auto px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 min-h-[44px] whitespace-nowrap ${className}`}
     >
       {loading ? (
         <>
@@ -43,6 +43,7 @@ export default function StudyNowButton({
           >
             <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
           </svg>
+          <span>Study Now</span>
         </>
       )}
     </button>

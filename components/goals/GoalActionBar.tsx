@@ -37,15 +37,15 @@ export default function GoalActionBar({
   return (
     <div
       data-testid="goal-action-bar"
-      className="fixed bottom-0 left-0 right-0 z-50 flex justify-center p-4 pointer-events-none animate-slide-up"
+      className="fixed bottom-0 left-0 right-0 z-50 flex justify-center p-3 sm:p-4 pointer-events-none animate-slide-up"
     >
-      <div className="bg-gray-900 dark:bg-gray-950 text-white rounded-lg shadow-lg px-6 py-3 pointer-events-auto flex items-center gap-4 max-w-2xl w-full">
+      <div className="bg-gray-900 dark:bg-gray-950 text-white rounded-lg shadow-lg px-4 sm:px-6 py-3 pointer-events-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 max-w-2xl w-full">
         {/* Left section: Clear button + count */}
         <div className="flex items-center gap-3 flex-1">
           <button
             data-testid="clear-selection"
             onClick={onClearSelection}
-            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-800 dark:hover:bg-gray-900 transition-colors"
+            className="flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-full hover:bg-gray-800 dark:hover:bg-gray-900 transition-colors flex-shrink-0"
             aria-label="Clear selection"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,7 +57,7 @@ export default function GoalActionBar({
               />
             </svg>
           </button>
-          <span data-testid="selected-count" className="text-sm font-medium">
+          <span data-testid="selected-count" className="text-sm font-medium whitespace-nowrap">
             {selectedCount} selected
           </span>
         </div>
@@ -68,7 +68,7 @@ export default function GoalActionBar({
           <button
             data-testid="archive-selected"
             onClick={onArchive}
-            className="px-4 py-2 text-sm font-medium bg-yellow-600 hover:bg-yellow-700 text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+            className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm font-medium bg-yellow-600 hover:bg-yellow-700 text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:ring-offset-gray-900 min-h-[44px] whitespace-nowrap"
             aria-label={`Archive ${selectedCount} ${selectedCount === 1 ? 'goal' : 'goals'}`}
           >
             Archive
@@ -78,7 +78,7 @@ export default function GoalActionBar({
           <button
             data-testid="delete-selected"
             onClick={onDelete}
-            className="px-4 py-2 text-sm font-medium bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+            className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm font-medium bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900 min-h-[44px] whitespace-nowrap"
             aria-label={`Delete ${selectedCount} ${selectedCount === 1 ? 'goal' : 'goals'}`}
           >
             Delete
