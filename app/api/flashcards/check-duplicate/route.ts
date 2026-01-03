@@ -9,7 +9,7 @@ import * as logger from '@/lib/logger'
  * Based on specs/023-dedupe/contracts/dedupe-api.md
  */
 const checkDuplicateSchema = z.object({
-  question: z.string().min(1, 'Question is required'),
+  question: z.string().trim().min(1, 'Question is required'),
 })
 
 /**
@@ -33,9 +33,12 @@ export async function POST(request: Request) {
     // Validate request body
     const validation = checkDuplicateSchema.safeParse(body)
     if (!validation.success) {
+      // Return user-friendly error message for question validation failures
+      const hasQuestionError = validation.error.flatten().fieldErrors.question?.length
+      const errorMessage = hasQuestionError ? 'Question is required' : 'Invalid request'
       return NextResponse.json(
         {
-          error: validation.error.flatten().fieldErrors.question?.[0] ?? 'Question is required',
+          error: errorMessage,
         },
         { status: 400 }
       )

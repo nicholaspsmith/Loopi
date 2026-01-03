@@ -9,7 +9,7 @@ import * as logger from '@/lib/logger'
  * Based on specs/023-dedupe/contracts/dedupe-api.md
  */
 const checkDuplicateSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  title: z.string().trim().min(1, 'Title is required'),
   description: z.string().optional(),
 })
 
@@ -34,9 +34,12 @@ export async function POST(request: Request) {
     // Validate request body
     const validation = checkDuplicateSchema.safeParse(body)
     if (!validation.success) {
+      // Return user-friendly error message for title validation failures
+      const hasTitleError = validation.error.flatten().fieldErrors.title?.length
+      const errorMessage = hasTitleError ? 'Title is required' : 'Invalid request'
       return NextResponse.json(
         {
-          error: validation.error.flatten().fieldErrors.title?.[0] ?? 'Title is required',
+          error: errorMessage,
         },
         { status: 400 }
       )
