@@ -64,6 +64,20 @@
       "when": 1735536000000,
       "tag": "0008_add_distractors",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1735617600000,
+      "tag": "0009_add_background_jobs",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1735862400000,
+      "tag": "0010_drop_deprecated_tables",
+      "breakpoints": true
     }
   ]
 }
