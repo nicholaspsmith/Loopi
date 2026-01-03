@@ -36,42 +36,6 @@ export const users = pgTable('users', {
 })
 
 // ============================================================================
-// Conversations Table
-// ============================================================================
-
-export const conversations = pgTable('conversations', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  title: varchar('title', { length: 200 }),
-  messageCount: integer('message_count').notNull().default(0),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-})
-
-// ============================================================================
-// Messages Table
-// ============================================================================
-
-export const messages = pgTable('messages', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  conversationId: uuid('conversation_id')
-    .notNull()
-    .references(() => conversations.id, { onDelete: 'cascade' }),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  role: varchar('role', { length: 20 }).notNull(), // 'user' | 'assistant'
-  content: text('content').notNull(),
-  // Note: Embeddings stored in LanceDB for efficient vector search
-  hasFlashcards: boolean('has_flashcards').notNull().default(false),
-  // AI provider tracking
-  aiProvider: varchar('ai_provider', { length: 20 }), // 'claude' | null (legacy field)
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-})
-
-// ============================================================================
 // Flashcards Table (with FSRS state)
 // ============================================================================
 // Primary storage in PostgreSQL. Embeddings synced to LanceDB for vector search.
@@ -81,10 +45,6 @@ export const flashcards = pgTable('flashcards', {
   userId: uuid('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  conversationId: uuid('conversation_id').references(() => conversations.id, {
-    onDelete: 'cascade',
-  }),
-  messageId: uuid('message_id').references(() => messages.id, { onDelete: 'cascade' }),
   question: varchar('question', { length: 1000 }).notNull(),
   answer: text('answer').notNull(),
   // Note: Question embeddings stored in LanceDB for efficient vector search
@@ -230,12 +190,6 @@ export const rateLimits = pgTable('rate_limits', {
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
 
-export type Conversation = typeof conversations.$inferSelect
-export type NewConversation = typeof conversations.$inferInsert
-
-export type Message = typeof messages.$inferSelect
-export type NewMessage = typeof messages.$inferInsert
-
 export type Flashcard = typeof flashcards.$inferSelect
 export type NewFlashcard = typeof flashcards.$inferInsert
 
@@ -259,44 +213,6 @@ export type NewEmailQueueEntry = typeof emailQueue.$inferInsert
 
 export type RateLimit = typeof rateLimits.$inferSelect
 export type NewRateLimit = typeof rateLimits.$inferInsert
-
-// ============================================================================
-// Decks Table
-// ============================================================================
-
-export const decks = pgTable('decks', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  name: varchar('name', { length: 200 }).notNull(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  lastStudiedAt: timestamp('last_studied_at'),
-  archived: boolean('archived').notNull().default(false),
-  newCardsPerDayOverride: integer('new_cards_per_day_override'),
-  cardsPerSessionOverride: integer('cards_per_session_override'),
-})
-
-// ============================================================================
-// Deck Cards (Many-to-Many Relationship)
-// ============================================================================
-
-export const deckCards = pgTable('deck_cards', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  deckId: uuid('deck_id')
-    .notNull()
-    .references(() => decks.id, { onDelete: 'cascade' }),
-  flashcardId: uuid('flashcard_id')
-    .notNull()
-    .references(() => flashcards.id, { onDelete: 'cascade' }),
-  addedAt: timestamp('added_at').notNull().defaultNow(),
-})
-
-export type Deck = typeof decks.$inferSelect
-export type NewDeck = typeof decks.$inferInsert
-
-export type DeckCard = typeof deckCards.$inferSelect
-export type NewDeckCard = typeof deckCards.$inferInsert
 
 // ============================================================================
 // Learning Goals Table (014-goal-based-learning)
