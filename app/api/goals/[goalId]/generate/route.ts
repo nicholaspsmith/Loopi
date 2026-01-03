@@ -113,8 +113,6 @@ export async function POST(
 
       const createdCard = await createFlashcard({
         userId: session.user!.id,
-        conversationId: null,
-        messageId: null,
         skillNodeId: nodeId,
         question,
         answer: card.answer,

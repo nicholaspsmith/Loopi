@@ -3,24 +3,12 @@
  */
 
 // Database entity types
-export type {
-  User,
-  PublicUser,
-  Conversation,
-  Message,
-  MessageRole,
-  Flashcard,
-  FSRSCard,
-  ReviewLog,
-} from './db'
+export type { User, PublicUser, Flashcard, FSRSCard, ReviewLog } from './db'
 
 // Database entity schemas
 export {
   UserSchema,
   PublicUserSchema,
-  ConversationSchema,
-  MessageSchema,
-  MessageRoleSchema,
   FlashcardSchema,
   FSRSCardSchema,
   ReviewLogSchema,

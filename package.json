@@ -22,7 +22,9 @@
     "db:troubleshoot": "tsx scripts/db-troubleshoot.ts",
     "db:check": "tsx scripts/db-check.ts",
     "db:migrate": "tsx scripts/db-migrate.ts",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "cleanup": "knip",
+    "cleanup:fix": "knip --fix"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
@@ -72,6 +74,7 @@
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-vitest": "^0.5.4",
     "jsdom": "^27.3.0",
+    "knip": "^5.79.0",
     "lint-staged": "^16.2.7",
     "postcss": "^8.5.6",
     "prettier": "^3.7.4",

@@ -24,42 +24,6 @@ export const PublicUserSchema = UserSchema.omit({ passwordHash: true })
 export type PublicUser = z.infer<typeof PublicUserSchema>
 
 // ============================================================================
-// Conversation Entity
-// ============================================================================
-
-export const ConversationSchema = z.object({
-  id: z.string().uuid(),
-  userId: z.string().uuid(),
-  title: z.string().min(1).max(200).nullable(),
-  createdAt: z.number().int().positive(),
-  updatedAt: z.number().int().positive(),
-  messageCount: z.number().int().nonnegative().default(0),
-})
-
-export type Conversation = z.infer<typeof ConversationSchema>
-
-// ============================================================================
-// Message Entity
-// ============================================================================
-
-export const MessageRoleSchema = z.enum(['user', 'assistant'])
-export type MessageRole = z.infer<typeof MessageRoleSchema>
-
-export const MessageSchema = z.object({
-  id: z.string().uuid(),
-  conversationId: z.string().uuid(),
-  userId: z.string().uuid(),
-  role: MessageRoleSchema,
-  content: z.string().min(1).max(50000), // Max 50k characters
-  embedding: z.array(z.number()).length(768).nullable(), // Jina embeddings
-  createdAt: z.number().int().positive(),
-  hasFlashcards: z.boolean().default(false),
-  aiProvider: z.enum(['claude']).nullable().optional(), // Legacy field, always 'claude'
-})
-
-export type Message = z.infer<typeof MessageSchema>
-
-// ============================================================================
 // Flashcard Entity (with FSRS state)
 // ============================================================================
 
@@ -83,8 +47,6 @@ export type FSRSCard = z.infer<typeof FSRSCardSchema>
 export const FlashcardSchema = z.object({
   id: z.string().uuid(),
   userId: z.string().uuid(),
-  conversationId: z.string().uuid().nullable(),
-  messageId: z.string().uuid().nullable(),
   question: z.string().min(1).max(1000),
   answer: z.string().min(1).max(5000),
   questionEmbedding: z.array(z.number()).length(768).nullable(),

@@ -2,8 +2,6 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { Rating, State } from 'ts-fsrs'
 import { createReviewLog, getReviewLogsByFlashcardId } from '@/lib/db/operations/review-logs'
 import { createUser } from '@/lib/db/operations/users'
-import { createConversation } from '@/lib/db/operations/conversations'
-import { createMessage } from '@/lib/db/operations/messages'
 import { createFlashcard } from '@/lib/db/operations/flashcards'
 import { hashPassword } from '@/lib/auth/helpers'
 import { closeDbConnection } from '@/lib/db/client'
@@ -29,25 +27,9 @@ describe('Review Logs Database Operations', () => {
     })
     testUserId = user.id
 
-    // Create conversation
-    const conversation = await createConversation({
-      userId: testUserId,
-      title: 'Test Conversation',
-    })
-
-    // Create message
-    const message = await createMessage({
-      conversationId: conversation.id,
-      userId: testUserId,
-      role: 'assistant',
-      content: 'Test content',
-    })
-
     // Create flashcard
     const flashcard = await createFlashcard({
       userId: testUserId,
-      conversationId: conversation.id,
-      messageId: message.id,
       question: 'Test question?',
       answer: 'Test answer',
     })

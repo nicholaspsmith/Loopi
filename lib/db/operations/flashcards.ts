@@ -14,8 +14,6 @@ import { syncFlashcardToLanceDB, deleteFlashcardFromLanceDB } from './flashcards
 
 export interface CreateFlashcardInput {
   userId: string
-  conversationId: string | null
-  messageId: string | null
   question: string
   answer: string
   skillNodeId?: string | null
@@ -24,8 +22,6 @@ export interface CreateFlashcardInput {
 export interface Flashcard {
   id: string
   userId: string
-  conversationId: string | null
-  messageId: string | null
   question: string
   answer: string
   fsrsState: Card
@@ -41,8 +37,6 @@ function rowToFlashcard(row: typeof flashcards.$inferSelect): Flashcard {
   return {
     id: row.id,
     userId: row.userId,
-    conversationId: row.conversationId,
-    messageId: row.messageId,
     question: row.question,
     answer: row.answer,
     createdAt: row.createdAt.getTime(),
@@ -86,8 +80,6 @@ export async function createFlashcard(data: CreateFlashcardInput): Promise<Flash
     .values({
       id: uuidv4(),
       userId: data.userId,
-      conversationId: data.conversationId,
-      messageId: data.messageId,
       question: data.question,
       answer: data.answer,
       skillNodeId: data.skillNodeId ?? null,
@@ -132,36 +124,6 @@ export async function getFlashcardsByUserId(userId: string): Promise<Flashcard[]
     .select()
     .from(flashcards)
     .where(and(eq(flashcards.userId, userId), eq(flashcards.status, 'active')))
-    .orderBy(flashcards.createdAt)
-
-  return rows.map(rowToFlashcard)
-}
-
-/**
- * Get flashcards by message ID
- */
-export async function getFlashcardsByMessageId(messageId: string): Promise<Flashcard[]> {
-  const db = getDb()
-
-  const rows = await db
-    .select()
-    .from(flashcards)
-    .where(eq(flashcards.messageId, messageId))
-    .orderBy(flashcards.createdAt)
-
-  return rows.map(rowToFlashcard)
-}
-
-/**
- * Get flashcards by conversation ID
- */
-export async function getFlashcardsByConversationId(conversationId: string): Promise<Flashcard[]> {
-  const db = getDb()
-
-  const rows = await db
-    .select()
-    .from(flashcards)
-    .where(eq(flashcards.conversationId, conversationId))
     .orderBy(flashcards.createdAt)
 
   return rows.map(rowToFlashcard)
@@ -330,8 +292,6 @@ export async function createGoalFlashcard(data: CreateGoalFlashcardInput): Promi
     .values({
       id: uuidv4(),
       userId: data.userId,
-      conversationId: null,
-      messageId: null,
       question: data.question,
       answer: data.answer,
       fsrsState: cardToJson(fsrsCard),
@@ -379,8 +339,6 @@ export async function createGoalFlashcards(
     return {
       id: uuidv4(),
       userId: data.userId,
-      conversationId: null,
-      messageId: null,
       question: data.question,
       answer: data.answer,
       fsrsState: cardToJson(fsrsCard),
@@ -476,8 +434,6 @@ export async function createDraftFlashcards(
     return {
       id: uuidv4(),
       userId: data.userId,
-      conversationId: null,
-      messageId: null,
       question: data.question,
       answer: data.answer,
       fsrsState: cardToJson(fsrsCard),
