@@ -173,6 +173,11 @@ export default function TimedChallengeMode({
 
   return (
     <div className="flex flex-col items-center">
+      {/* Screen reader announcement for card navigation */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        Card {currentIndex + 1} of {cards.length}
+      </div>
+
       {/* Timer and Score Header */}
       <div className="w-full max-w-2xl flex items-center justify-between mb-6">
         <div
@@ -185,7 +190,7 @@ export default function TimedChallengeMode({
           {formatTime(timeRemaining)}
         </div>
         <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{score} pts</div>
-        <div className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="text-sm text-gray-500 dark:text-gray-400" aria-hidden="true">
           {currentIndex + 1} / {cards.length}
         </div>
       </div>
