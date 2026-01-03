@@ -2,6 +2,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
+import Link from 'next/link'
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams()
@@ -117,12 +118,12 @@ function VerifyEmailContent() {
             </div>
 
             <div className="flex flex-col gap-3">
-              <a
+              <Link
                 href="/goals"
                 className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 Go to dashboard
-              </a>
+              </Link>
               <button
                 onClick={() => router.push('/goals')}
                 className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
