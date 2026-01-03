@@ -151,11 +151,18 @@ export async function searchSimilarGoalIds(
     const db = await getDbConnection()
     const table = await db.openTable('goals')
 
-    const results = await table
+    // Use brute-force search and filter in JavaScript to avoid SQL injection
+    // and ensure recently inserted data is included
+    const allResults = await table
       .vectorSearch(queryEmbedding)
-      .where(`"userId" = '${userId}'`)
-      .limit(limit)
+      .bypassVectorIndex()
+      .limit(100)
       .toArray()
+
+    // Filter by userId in JavaScript
+    const results = allResults
+      .filter((r: { userId: string }) => r.userId === userId)
+      .slice(0, limit)
 
     // LanceDB returns _distance (lower = more similar)
     // Convert to similarity score (0-1, higher = more similar)
