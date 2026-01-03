@@ -71,7 +71,7 @@ export default function GuidedStudyFlow({
 
           <button
             onClick={onReturn}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors min-h-[44px]"
           >
             Return to Goal
           </button>
@@ -111,16 +111,16 @@ export default function GuidedStudyFlow({
           Progress: {nodeProgress.completedInNode} / {nodeProgress.totalInNode} cards
         </p>
 
-        <div className="flex gap-3 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center w-full sm:w-auto">
           <button
             onClick={onContinue}
-            className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+            className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors min-h-[44px] whitespace-nowrap"
           >
             Continue to Next Node
           </button>
           <button
             onClick={onReturn}
-            className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors min-h-[44px] whitespace-nowrap"
           >
             Return to Goal
           </button>

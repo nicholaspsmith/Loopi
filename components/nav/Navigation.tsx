@@ -27,7 +27,11 @@ export default function Navigation() {
   const pathname = usePathname()
 
   return (
-    <nav className="flex space-x-1 -mb-px" role="navigation" aria-label="Main navigation">
+    <nav
+      className="flex space-x-1 -mb-px overflow-x-auto"
+      role="navigation"
+      aria-label="Main navigation"
+    >
       {navLinks.map((link) => {
         const isActive = pathname === link.href || pathname?.startsWith(link.href + '/')
         return (
@@ -36,7 +40,7 @@ export default function Navigation() {
             href={link.href}
             aria-current={isActive ? 'page' : undefined}
             className={`
-              px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5
+              px-3 sm:px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap min-h-[44px]
               ${
                 isActive
                   ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'

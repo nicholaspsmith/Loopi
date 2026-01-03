@@ -122,8 +122,13 @@ export default function MultipleChoiceMode({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh]">
+      {/* Screen reader announcement for card navigation */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        Card {cardNumber} of {totalCards}
+      </div>
+
       {/* Progress */}
-      <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+      <div className="text-sm text-gray-500 dark:text-gray-400 mb-4" aria-hidden="true">
         Card {cardNumber} of {totalCards}
       </div>
 
@@ -177,12 +182,12 @@ export default function MultipleChoiceMode({
 
       {/* T015: Submit button (disabled until selection, hidden after submission) */}
       {!isSubmitted && (
-        <div className="mt-6">
+        <div className="mt-6 w-full sm:w-auto">
           <button
             onClick={handleSubmit}
             disabled={!selectedOption}
             data-testid="mc-submit"
-            className={`px-8 py-3 rounded-lg font-medium transition-all ${
+            className={`w-full sm:w-auto px-8 py-3 rounded-lg font-medium transition-all min-h-[44px] ${
               selectedOption
                 ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer'
                 : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
@@ -196,7 +201,7 @@ export default function MultipleChoiceMode({
       {/* Result feedback */}
       {isSubmitted && (
         <div
-          className={`mt-6 px-6 py-3 rounded-lg ${
+          className={`mt-6 px-4 sm:px-6 py-3 rounded-lg text-sm sm:text-base ${
             selectedOption === answer
               ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
               : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
@@ -210,11 +215,11 @@ export default function MultipleChoiceMode({
 
       {/* T017: Next button (visible after submission) */}
       {isSubmitted && (
-        <div className="mt-4">
+        <div className="mt-4 w-full sm:w-auto">
           <button
             onClick={handleNext}
             data-testid="mc-next"
-            className="px-8 py-3 rounded-lg font-medium bg-blue-600 hover:bg-blue-700 text-white transition-all"
+            className="w-full sm:w-auto px-8 py-3 rounded-lg font-medium bg-blue-600 hover:bg-blue-700 text-white transition-all min-h-[44px]"
           >
             Next
           </button>

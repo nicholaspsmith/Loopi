@@ -102,8 +102,13 @@ export default function MultipleChoiceModeWrapper({
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        {/* Screen reader announcement for card navigation */}
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+          Card {cardNumber} of {totalCards}
+        </div>
+
         {/* Progress */}
-        <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        <div className="text-sm text-gray-500 dark:text-gray-400 mb-4" aria-hidden="true">
           Card {cardNumber} of {totalCards}
         </div>
 

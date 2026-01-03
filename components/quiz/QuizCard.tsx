@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import RatingButtons from './RatingButtons'
+import { ANIMATION_DURATIONS } from '@/lib/constants/animations'
 
 /**
  * QuizCard Component
@@ -77,10 +78,10 @@ export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps)
     setIsFlipAnimating(true)
     setIsAnswerRevealed(true)
 
-    // Re-enable interaction after animation completes (600ms)
+    // Re-enable interaction after animation completes
     flipTimeoutRef.current = setTimeout(() => {
       setIsFlipAnimating(false)
-    }, 600)
+    }, ANIMATION_DURATIONS.CARD_FLIP)
   }
 
   const handleRating = (rating: number) => {

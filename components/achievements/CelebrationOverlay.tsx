@@ -2,6 +2,7 @@
 
 import { useEffect, useCallback, useState } from 'react'
 import confetti from 'canvas-confetti'
+import { ANIMATION_DURATIONS } from '@/lib/constants/animations'
 
 /**
  * CelebrationOverlay Component (T076)
@@ -72,7 +73,7 @@ export default function CelebrationOverlay({
 
   const handleDismiss = () => {
     setIsVisible(false)
-    setTimeout(onDismiss, 300)
+    setTimeout(onDismiss, ANIMATION_DURATIONS.PAGE_TRANSITION)
   }
 
   if (!isVisible) return null

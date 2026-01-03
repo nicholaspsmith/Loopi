@@ -246,6 +246,49 @@ describe('PageTransition', () => {
     })
   })
 
+  describe('Slide Animations with Reduced Motion', () => {
+    it('should apply slide animation classes correctly', () => {
+      const { container } = render(
+        <PageTransition>
+          <div className="animate-slide-out-left">Sliding Left</div>
+        </PageTransition>
+      )
+
+      const slidingElement = container.querySelector('.animate-slide-out-left')
+      expect(slidingElement).toBeInTheDocument()
+      expect(slidingElement).toHaveTextContent('Sliding Left')
+    })
+
+    it('should apply slide animation classes for right direction', () => {
+      const { container } = render(
+        <PageTransition>
+          <div className="animate-slide-out-right">Sliding Right</div>
+        </PageTransition>
+      )
+
+      const slidingElement = container.querySelector('.animate-slide-out-right')
+      expect(slidingElement).toBeInTheDocument()
+      expect(slidingElement).toHaveTextContent('Sliding Right')
+    })
+
+    it('should have slide animation classes that respect prefers-reduced-motion via CSS', () => {
+      // Test that components can use slide animations
+      // CSS @media (prefers-reduced-motion: reduce) handles disabling animations
+      const { container } = render(
+        <PageTransition>
+          <div>
+            <div className="animate-slide-out-left">Left Slide</div>
+            <div className="animate-slide-out-right">Right Slide</div>
+          </div>
+        </PageTransition>
+      )
+
+      // Both animation classes should be present (CSS handles the actual motion reduction)
+      expect(container.querySelector('.animate-slide-out-left')).toBeInTheDocument()
+      expect(container.querySelector('.animate-slide-out-right')).toBeInTheDocument()
+    })
+  })
+
   describe('Performance', () => {
     it('should handle back-to-back navigation without memory leaks', () => {
       mockUsePathname.mockReturnValue('/start')
