@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import GoalStats from '@/components/dashboard/GoalStats'
 import ReviewForecast from '@/components/dashboard/ReviewForecast'
+import TitleBadge from '@/components/achievements/TitleBadge'
 
 /**
  * Progress Dashboard Page (T067)
@@ -37,26 +38,51 @@ interface DashboardData {
   }[]
 }
 
+interface AchievementsData {
+  achievements: unknown[]
+  totalUnlocked: number
+  totalAvailable: number
+  currentTitle: {
+    title: string
+    earnedAt: string
+  }
+  nextTitle: {
+    title: string
+    requirement: string
+    progress: number
+  } | null
+}
+
 export default function ProgressPage() {
   const [data, setData] = useState<DashboardData | null>(null)
+  const [achievementsData, setAchievementsData] = useState<AchievementsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchDashboard = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/analytics/dashboard')
-        if (!response.ok) throw new Error('Failed to load dashboard')
-        const dashboardData = await response.json()
+        const [dashboardResponse, achievementsResponse] = await Promise.all([
+          fetch('/api/analytics/dashboard'),
+          fetch('/api/achievements'),
+        ])
+
+        if (!dashboardResponse.ok) throw new Error('Failed to load dashboard')
+        if (!achievementsResponse.ok) throw new Error('Failed to load achievements')
+
+        const dashboardData = await dashboardResponse.json()
+        const achievementsData = await achievementsResponse.json()
+
         setData(dashboardData)
+        setAchievementsData(achievementsData)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load dashboard')
+        setError(err instanceof Error ? err.message : 'Failed to load data')
       } finally {
         setLoading(false)
       }
     }
 
-    fetchDashboard()
+    fetchData()
   }, [])
 
   if (loading) {
@@ -91,29 +117,47 @@ export default function ProgressPage() {
         </p>
       </div>
 
-      {/* Title Badge */}
-      <div className="mb-8 flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-        <div className="text-4xl">🎓</div>
-        <div className="flex-1">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Current Title</p>
-          <p className="text-xl font-bold text-purple-700 dark:text-purple-300">
-            {data.currentTitle.title}
-          </p>
-        </div>
-        {data.currentTitle.nextTitle && (
-          <div className="text-right">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Next: {data.currentTitle.nextTitle}
-            </p>
-            <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-1">
-              <div
-                className="h-full bg-purple-500"
-                style={{ width: `${data.currentTitle.progressToNext}%` }}
+      {/* Achievements & Title */}
+      {achievementsData && (
+        <div className="mb-8 p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            {/* Left: Title Badge */}
+            <div>
+              <TitleBadge
+                title={achievementsData.currentTitle.title}
+                size="lg"
+                showProgress={false}
               />
             </div>
+
+            {/* Right: Achievement Count and Progress */}
+            <div className="flex-1 md:text-right">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                {achievementsData.totalUnlocked} of {achievementsData.totalAvailable} achievements
+                unlocked
+              </p>
+
+              {achievementsData.nextTitle && (
+                <div className="mt-3">
+                  <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-1">
+                    <span>Next: {achievementsData.nextTitle.title}</span>
+                    <span>{achievementsData.nextTitle.progress}%</span>
+                  </div>
+                  <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
+                      style={{ width: `${achievementsData.nextTitle.progress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {achievementsData.nextTitle.requirement}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="mb-8">

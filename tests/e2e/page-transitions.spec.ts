@@ -36,20 +36,9 @@ test.describe('Page Transitions @smoke', () => {
     await expect(page.locator('body')).toBeVisible()
   })
 
-  test('navigates from progress to settings with smooth transition', async ({ page }) => {
+  test('navigates from progress to goals with smooth transition', async ({ page }) => {
     await page.goto('/progress')
     await expect(page).toHaveURL('/progress')
-
-    const settingsTab = page.getByRole('link', { name: /settings/i })
-    await settingsTab.click()
-
-    await expect(page).toHaveURL('/settings')
-    await expect(page.locator('body')).toBeVisible()
-  })
-
-  test('navigates from settings to goals with smooth transition', async ({ page }) => {
-    await page.goto('/settings')
-    await expect(page).toHaveURL('/settings')
 
     const goalsTab = page.getByRole('link', { name: /goals/i })
     await goalsTab.click()
@@ -62,9 +51,10 @@ test.describe('Page Transitions @smoke', () => {
     // Start on goals
     await page.goto('/goals')
 
-    // Rapidly click through all tabs
+    // Rapidly click through both tabs multiple times
     await page.getByRole('link', { name: /progress/i }).click()
-    await page.getByRole('link', { name: /settings/i }).click()
+    await page.getByRole('link', { name: /goals/i }).click()
+    await page.getByRole('link', { name: /progress/i }).click()
     await page.getByRole('link', { name: /goals/i }).click()
 
     // Should end up on goals page without errors

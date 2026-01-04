@@ -19,8 +19,6 @@ interface NavLink {
 const navLinks: NavLink[] = [
   { href: '/goals', label: 'Goals', icon: '🎯' },
   { href: '/progress', label: 'Progress', icon: '📊' },
-  { href: '/achievements', label: 'Achievements', icon: '🏆' },
-  { href: '/settings', label: 'Settings', icon: '⚙️' },
 ]
 
 export default function Navigation() {
