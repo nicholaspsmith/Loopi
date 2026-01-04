@@ -279,10 +279,10 @@ describe('Feedback API Contract Tests', () => {
     })
 
     it('should return 503 if GITHUB_TOKEN not configured', async () => {
-      // Temporarily remove GitHub token and re-import module
-      vi.unstubAllEnvs()
+      // Stub GITHUB_TOKEN to empty string instead of using unstubAllEnvs
+      vi.stubEnv('GITHUB_TOKEN', '')
 
-      // Re-import the module to pick up the new env
+      // Re-import the module to pick up the stubbed env
       vi.resetModules()
       const feedbackRouteNoToken = await import('@/app/api/feedback/route')
 
@@ -471,7 +471,11 @@ describe('Feedback API Contract Tests', () => {
     })
 
     it('should validate GITHUB_REPO format and return 503 for invalid format', async () => {
+      // Stub GITHUB_REPO to invalid format
       vi.stubEnv('GITHUB_REPO', 'invalid-repo-format')
+
+      // Reset modules AFTER stubbing env to ensure re-import picks up stubbed value
+      vi.resetModules()
 
       // Re-import route with new env
       const { POST: postWithInvalidRepo } = await import('@/app/api/feedback/route')
@@ -486,6 +490,10 @@ describe('Feedback API Contract Tests', () => {
       expect(response.status).toBe(503)
       const data = response.data as { error: string; code: string }
       expect(data.code).toBe('CONFIG_ERROR')
+
+      // Restore for other tests
+      vi.stubEnv('GITHUB_TOKEN', 'test-github-token')
+      vi.resetModules()
     })
   })
 })
