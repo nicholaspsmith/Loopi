@@ -7,7 +7,7 @@
     "dev": "next dev",
     "dev:webpack": "next dev",
     "build": "next build",
-    "start": "drizzle-kit migrate && next start",
+    "start": "drizzle-kit migrate && tsx scripts/post-migrate.ts && next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest",

@@ -1,5 +1,8 @@
 import { getDbConnection } from '@/lib/db/client'
 import { generateEmbedding } from '@/lib/embeddings'
+import { getDb } from '@/lib/db/pg-client'
+import { flashcards } from '@/lib/db/drizzle-schema'
+import { inArray } from 'drizzle-orm'
 
 /**
  * LanceDB Flashcard Operations
@@ -201,5 +204,57 @@ export async function findSimilarFlashcardsWithThreshold(
   } catch (error) {
     console.error('[LanceDB] Flashcard threshold search failed:', error)
     return []
+  }
+}
+
+/**
+ * Clean up orphaned LanceDB embeddings
+ *
+ * Removes embeddings for flashcards that no longer exist in PostgreSQL.
+ * Should be called after migrations that delete flashcards.
+ *
+ * @returns Number of orphaned embeddings deleted
+ */
+export async function cleanupOrphanedFlashcardEmbeddings(): Promise<number> {
+  try {
+    const lanceDb = await getDbConnection()
+    const table = await lanceDb.openTable('flashcards')
+
+    // Get all IDs from LanceDB
+    const lanceResults = await table.query().limit(100000).toArray()
+    const lanceIds = lanceResults.map((r: { id: string }) => r.id)
+
+    if (lanceIds.length === 0) {
+      console.log('[LanceDB] No flashcard embeddings to check')
+      return 0
+    }
+
+    // Check which IDs exist in PostgreSQL
+    const pgDb = getDb()
+    const existingCards = await pgDb
+      .select({ id: flashcards.id })
+      .from(flashcards)
+      .where(inArray(flashcards.id, lanceIds))
+
+    const existingIds = new Set(existingCards.map((c) => c.id))
+
+    // Find orphaned IDs (in LanceDB but not in PostgreSQL)
+    const orphanedIds = lanceIds.filter((id: string) => !existingIds.has(id))
+
+    if (orphanedIds.length === 0) {
+      console.log('[LanceDB] No orphaned flashcard embeddings found')
+      return 0
+    }
+
+    // Delete orphaned embeddings
+    for (const id of orphanedIds) {
+      await deleteFlashcardFromLanceDB(id)
+    }
+
+    console.log(`[LanceDB] Cleaned up ${orphanedIds.length} orphaned flashcard embeddings`)
+    return orphanedIds.length
+  } catch (error) {
+    console.error('[LanceDB] Failed to cleanup orphaned embeddings:', error)
+    return 0
   }
 }
