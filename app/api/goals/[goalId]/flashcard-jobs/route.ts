@@ -15,7 +15,10 @@ import { getDb } from '@/lib/db/pg-client'
 import { backgroundJobs, skillNodes } from '@/lib/db/drizzle-schema'
 import { eq, and, sql } from 'drizzle-orm'
 import { processJob, canProcessJob } from '@/lib/jobs/processor'
-import { resetStaleJobs } from '@/lib/db/operations/background-jobs'
+import {
+  resetStaleJobs,
+  resetFailedJobsForMissingHandler,
+} from '@/lib/db/operations/background-jobs'
 import * as logger from '@/lib/logger'
 
 // Register job handlers (side-effect import)
@@ -58,8 +61,9 @@ export async function GET(_request: Request, context: RouteContext) {
       })
     }
 
-    // Reset stale jobs first
+    // Reset stale jobs and failed jobs from missing handler
     await resetStaleJobs()
+    await resetFailedJobsForMissingHandler('flashcard_generation')
 
     const db = getDb()
 

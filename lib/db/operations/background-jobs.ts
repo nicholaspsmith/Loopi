@@ -13,7 +13,7 @@ import {
   type NewBackgroundJob,
   JobStatus,
 } from '@/lib/db/drizzle-schema'
-import type { JobStatusValue, RateLimitResult } from '@/lib/jobs/types'
+import type { JobStatusValue, JobTypeValue, RateLimitResult } from '@/lib/jobs/types'
 import { eq, and, lt, desc, asc, or, isNull, sql } from 'drizzle-orm'
 
 // ============================================================================
@@ -158,6 +158,38 @@ export async function resetStaleJobs(): Promise<number> {
       and(
         eq(backgroundJobs.status, JobStatus.PROCESSING),
         lt(backgroundJobs.startedAt, fiveMinutesAgo)
+      )
+    )
+    .returning({ id: backgroundJobs.id })
+
+  return result.length
+}
+
+/**
+ * Reset failed jobs that failed due to missing handler
+ *
+ * This handles jobs that were created before a handler was registered.
+ * Resets them to pending with attempts reset so they can be retried.
+ *
+ * @param jobType - Job type to reset (e.g., 'flashcard_generation')
+ * @returns Number of jobs reset
+ */
+export async function resetFailedJobsForMissingHandler(jobType: JobTypeValue): Promise<number> {
+  const db = getDb()
+
+  const result = await db
+    .update(backgroundJobs)
+    .set({
+      status: JobStatus.PENDING,
+      attempts: 0,
+      error: null,
+      nextRetryAt: new Date(), // Ready for immediate retry
+    })
+    .where(
+      and(
+        eq(backgroundJobs.type, jobType),
+        eq(backgroundJobs.status, JobStatus.FAILED),
+        sql`${backgroundJobs.error} LIKE '%Unknown job type%'`
       )
     )
     .returning({ id: backgroundJobs.id })
