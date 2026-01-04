@@ -14,7 +14,7 @@ test.describe('Study Session E2E', () => {
     await page.waitForLoadState('networkidle')
   })
 
-  test('should start a study session from goal page', async ({ page }) => {
+  test('should start a study session from goal page @smoke', async ({ page }) => {
     // Check if any goals exist
     const goalCards = await page.locator('[data-testid="goal-card"]').count()
 
@@ -38,7 +38,7 @@ test.describe('Study Session E2E', () => {
     }
   })
 
-  test('should display study mode selector', async ({ page }) => {
+  test('should display study mode selector @comprehensive', async ({ page }) => {
     // Navigate directly to a study page (assuming a goal exists)
     const goalId = 'test-goal-id' // This would need to be a real goal ID
     await page.goto(`/goals/${goalId}/study`)
@@ -52,7 +52,7 @@ test.describe('Study Session E2E', () => {
     }
   })
 
-  test('should complete a flashcard study session', async ({ page }) => {
+  test('should complete a flashcard study session @comprehensive', async ({ page }) => {
     // This test requires a goal with cards
     await page.goto('/goals')
 
@@ -84,16 +84,11 @@ test.describe('Study Session E2E', () => {
     // Show answer
     await showAnswerButton.click()
 
-    // Wait for answer to appear
-    await page.waitForTimeout(700) // Wait for flip animation
-
     // Rate the card
     const ratingButtons = page.locator('button:has-text("Good")')
+    await expect(ratingButtons).toBeVisible({ timeout: 2000 })
     if ((await ratingButtons.count()) > 0) {
       await ratingButtons.click()
-
-      // Card should advance
-      await page.waitForTimeout(500)
     }
   })
 
@@ -124,7 +119,7 @@ test.describe('Study Session E2E', () => {
     }
   })
 
-  test('should complete session and show summary', async ({ page }) => {
+  test('should complete session and show summary @slow', async ({ page }) => {
     // This test requires completing all cards in a session
     await page.goto('/goals')
 
@@ -151,15 +146,14 @@ test.describe('Study Session E2E', () => {
       }
 
       await showAnswerButton.click()
-      await page.waitForTimeout(700)
 
       const goodButton = page.locator('button:has-text("Good")')
+      await expect(goodButton).toBeVisible({ timeout: 2000 })
       if ((await goodButton.count()) === 0) {
         break
       }
 
       await goodButton.click()
-      await page.waitForTimeout(500)
     }
 
     // Check for session complete message or summary
@@ -193,10 +187,10 @@ test.describe('Study Session E2E', () => {
 
     if ((await mcModeButton.count()) > 0) {
       await mcModeButton.click()
-      await page.waitForTimeout(500)
 
       // Check for multiple choice options (A, B, C, D)
       const optionButtons = page.locator('button').filter({ hasText: /^[A-D]/ })
+      await expect(optionButtons.first()).toBeVisible({ timeout: 3000 })
 
       if ((await optionButtons.count()) > 0) {
         await expect(optionButtons.first()).toBeVisible()
@@ -227,10 +221,10 @@ test.describe('Study Session E2E', () => {
 
     if ((await timedModeButton.count()) > 0) {
       await timedModeButton.click()
-      await page.waitForTimeout(500)
 
       // Check for timer display
       const timer = page.locator('text=/\\d+:\\d+/')
+      await expect(timer).toBeVisible({ timeout: 2000 })
 
       if ((await timer.count()) > 0) {
         await expect(timer).toBeVisible()

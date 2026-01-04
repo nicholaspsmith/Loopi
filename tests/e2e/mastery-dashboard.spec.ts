@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test'
  * SC-007: Dashboard shows accurate mastery percentages
  */
 
-test.describe('Mastery Dashboard', () => {
+test.describe('Mastery Dashboard @comprehensive', () => {
   // Skip in CI - see GitHub issue for comprehensive E2E test implementation
   test.skip(!!process.env.CI, 'Dashboard selectors need to match current UI')
 

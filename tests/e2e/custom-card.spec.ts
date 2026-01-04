@@ -102,7 +102,7 @@ async function mockGoalDetailAPI(page: Page, goalId: string = mockGoalResponse.i
   })
 }
 
-test.describe('Custom Card Creation Flow', () => {
+test.describe('Custom Card Creation Flow @comprehensive', () => {
   // Skip in CI - requires UI implementation to be complete
   test.skip(!!process.env.CI, 'Skipping in CI - UI selectors need to match implementation')
 
@@ -172,9 +172,8 @@ test.describe('Custom Card Creation Flow', () => {
       timeout: 3000,
     })
 
-    // Success feedback should appear (toast, success message, or updated card count)
+    // Success feedback should appear - verify the modal has closed which indicates success
     // This is flexible as UI may vary
-    await page.waitForTimeout(1000)
   })
 
   test('validates minimum character requirements', async ({ page }) => {

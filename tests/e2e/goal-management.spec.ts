@@ -160,7 +160,7 @@ async function mockRestoreAPI(page: Page, canRestore: boolean = true) {
   })
 }
 
-test.describe('T031 - Multi-Select Archive Flow', () => {
+test.describe('T031 - Multi-Select Archive Flow @comprehensive', () => {
   // Skip in CI - requires UI implementation to be complete
   test.skip(!!process.env.CI, 'Skipping in CI - selectors need to match implementation')
 
@@ -358,7 +358,7 @@ test.describe('T031 - Multi-Select Archive Flow', () => {
   })
 })
 
-test.describe('T032 - Multi-Select Delete Flow', () => {
+test.describe('T032 - Multi-Select Delete Flow @comprehensive', () => {
   test.skip(!!process.env.CI, 'Skipping in CI - selectors need to match implementation')
 
   test('delete confirmation dialog appears', async ({ page }) => {
@@ -499,7 +499,7 @@ test.describe('T032 - Multi-Select Delete Flow', () => {
   })
 })
 
-test.describe('T033 - Goal Restore Flow', () => {
+test.describe('T033 - Goal Restore Flow @comprehensive', () => {
   test.skip(!!process.env.CI, 'Skipping in CI - selectors need to match implementation')
 
   test('archived tab shows archived goals', async ({ page }) => {
@@ -691,9 +691,8 @@ test.describe('UI State and Interactions', () => {
     const toast = page.locator('[data-testid="toast-message"]')
     await expect(toast).toBeVisible({ timeout: 5000 })
 
-    // Wait for auto-dismiss (5 seconds)
-    await page.waitForTimeout(5500)
-    await expect(toast).not.toBeVisible()
+    // Wait for auto-dismiss (5 seconds) - verify it disappears
+    await expect(toast).not.toBeVisible({ timeout: 6000 })
   })
 
   test('can manually dismiss toast', async ({ page }) => {

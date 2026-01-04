@@ -97,7 +97,7 @@ test.describe('Goal Creation Flow', () => {
     await page.waitForLoadState('networkidle')
   })
 
-  test('can access goal creation interface', async ({ page }) => {
+  test('can access goal creation interface @smoke', async ({ page }) => {
     // Look for "New Goal" or "Create Goal" button
     const createButton = page.locator('button:has-text("New Goal"), a:has-text("New Goal")')
 
@@ -120,7 +120,7 @@ test.describe('Goal Creation Flow', () => {
     })
   })
 
-  test('can submit a learning goal', async ({ page }) => {
+  test('can submit a learning goal @smoke', async ({ page }) => {
     const createButton = page.locator(
       'button:has-text("New Goal"), a:has-text("New Goal"), button:has-text("Create")'
     )
@@ -154,7 +154,7 @@ test.describe('Goal Creation Flow', () => {
     })
   })
 
-  test('validates goal input', async ({ page }) => {
+  test('validates goal input @comprehensive', async ({ page }) => {
     const createButton = page.locator(
       'button:has-text("New Goal"), a:has-text("New Goal"), button:has-text("Create")'
     )
@@ -194,7 +194,7 @@ test.describe('Goal Creation Performance (SC-001)', () => {
   // Skip in CI - see GitHub issue for comprehensive E2E test implementation
   test.skip(!!process.env.CI, 'Selectors need to be updated to match current UI')
 
-  test('completes goal creation under 30 seconds', async ({ page }) => {
+  test('completes goal creation under 30 seconds @slow', async ({ page }) => {
     // Mock with realistic delay (skill tree generation)
     await page.route('**/api/goals', async (route) => {
       if (route.request().method() === 'POST') {
@@ -251,7 +251,7 @@ test.describe('Goal Creation Performance (SC-001)', () => {
     console.log(`Goal creation completed in ${duration.toFixed(2)} seconds`)
   })
 
-  test('shows loading state during skill tree generation', async ({ page }) => {
+  test('shows loading state during skill tree generation @comprehensive', async ({ page }) => {
     // Mock with delay to show loading state
     await page.route('**/api/goals', async (route) => {
       if (route.request().method() === 'POST') {
@@ -301,7 +301,7 @@ test.describe('Goal Creation Performance (SC-001)', () => {
   })
 })
 
-test.describe('Goal Creation Error Handling', () => {
+test.describe('Goal Creation Error Handling @comprehensive', () => {
   // Skip in CI - see GitHub issue for comprehensive E2E test implementation
   test.skip(!!process.env.CI, 'Selectors need to be updated to match current UI')
 

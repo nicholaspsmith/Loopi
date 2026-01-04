@@ -44,14 +44,11 @@ test.describe('Multi-Choice Study Session (T041)', () => {
     const mcModeButton = page.locator('button:has-text("Multiple Choice")')
     if ((await mcModeButton.count()) > 0) {
       await mcModeButton.click()
-      await page.waitForTimeout(500)
     }
 
-    // Wait for distractor loading to complete
-    await page.waitForTimeout(2000)
-
-    // Check if MC mode is active (4 options labeled A-D)
+    // Wait for MC options to load (distractors may need to be generated)
     const optionButtons = page.locator('button').filter({ hasText: /^[A-D]\./ })
+    await expect(optionButtons.first()).toBeVisible({ timeout: 5000 })
     const optionCount = await optionButtons.count()
 
     // If MC mode is active, verify 4 options exist
@@ -89,19 +86,14 @@ test.describe('Multi-Choice Study Session (T041)', () => {
     const mcModeButton = page.locator('button:has-text("Multiple Choice")')
     if ((await mcModeButton.count()) > 0) {
       await mcModeButton.click()
-      await page.waitForTimeout(500)
     }
 
-    await page.waitForTimeout(2000)
-
     const optionButtons = page.locator('button').filter({ hasText: /^[A-D]\./ })
+    await expect(optionButtons.first()).toBeVisible({ timeout: 5000 })
 
     if ((await optionButtons.count()) === 4) {
       // Select first option (we don't know which is correct, but we'll see feedback)
       await optionButtons.first().click()
-
-      // Wait for feedback display (1.5s as per spec)
-      await page.waitForTimeout(200)
 
       // Check for correct (green) or incorrect (red) feedback
       // Correct answer should have green styling, incorrect should have red
@@ -144,12 +136,10 @@ test.describe('Multi-Choice Study Session (T041)', () => {
     const mcModeButton = page.locator('button:has-text("Multiple Choice")')
     if ((await mcModeButton.count()) > 0) {
       await mcModeButton.click()
-      await page.waitForTimeout(500)
     }
 
-    await page.waitForTimeout(2000)
-
     const optionButtons = page.locator('button').filter({ hasText: /^[A-D]\./ })
+    await expect(optionButtons.first()).toBeVisible({ timeout: 5000 })
 
     if ((await optionButtons.count()) === 4) {
       // Get initial progress indicator
@@ -158,9 +148,6 @@ test.describe('Multi-Choice Study Session (T041)', () => {
 
       // Select an option
       await optionButtons.first().click()
-
-      // Wait for feedback period + navigation (1.5s + buffer)
-      await page.waitForTimeout(2000)
 
       // Check if advanced to next card or session completed
       const newProgress = await progressIndicator.first().textContent()
@@ -190,16 +177,18 @@ test.describe('Multi-Choice Study Session (T041)', () => {
     const mcModeButton = page.locator('button:has-text("Multiple Choice")')
     if ((await mcModeButton.count()) > 0) {
       await mcModeButton.click()
-      await page.waitForTimeout(500)
     }
 
-    await page.waitForTimeout(2000)
-
     const optionButtons = page.locator('button').filter({ hasText: /^[A-D]\./ })
+    await expect(optionButtons.first()).toBeVisible({ timeout: 5000 })
 
     if ((await optionButtons.count()) === 4) {
       // Listen for API calls to /api/study/rate
       const rateRequests: any[] = []
+      const ratePromise = page.waitForRequest(
+        (request) => request.url().includes('/api/study/rate'),
+        { timeout: 5000 }
+      )
       page.on('request', (request) => {
         if (request.url().includes('/api/study/rate')) {
           rateRequests.push({
@@ -214,7 +203,7 @@ test.describe('Multi-Choice Study Session (T041)', () => {
       await optionButtons.first().click()
 
       // Wait for rating API call
-      await page.waitForTimeout(2000)
+      await ratePromise
 
       const responseTime = Date.now() - startTime
 
@@ -269,16 +258,17 @@ test.describe('Fallback Scenario (T042)', () => {
     const mcModeButton = page.locator('button:has-text("Multiple Choice")')
     if ((await mcModeButton.count()) > 0) {
       await mcModeButton.click()
-      await page.waitForTimeout(500)
     }
 
-    // Wait for distractor fetch attempt
-    await page.waitForTimeout(2000)
-
-    // Should fall back to FlashcardMode (flip-reveal)
-    // Look for "Show Answer" button instead of A-D options
+    // Wait for either flashcard mode (fallback) or MC options
     const showAnswerButton = page.locator('button:has-text("Show Answer")')
     const optionButtons = page.locator('button').filter({ hasText: /^[A-D]\./ })
+
+    // Wait for one of them to appear
+    await Promise.race([
+      expect(showAnswerButton).toBeVisible({ timeout: 5000 }),
+      expect(optionButtons.first()).toBeVisible({ timeout: 5000 }),
+    ]).catch(() => {})
 
     const hasFlashcardMode = (await showAnswerButton.count()) > 0
     const hasMCMode = (await optionButtons.count()) === 4
@@ -322,10 +312,11 @@ test.describe('Fallback Scenario (T042)', () => {
     const mcModeButton = page.locator('button:has-text("Multiple Choice")')
     if ((await mcModeButton.count()) > 0) {
       await mcModeButton.click()
-      await page.waitForTimeout(500)
     }
 
-    await page.waitForTimeout(2000)
+    // Wait for fallback to occur
+    const showAnswerButton = page.locator('button:has-text("Show Answer")')
+    await expect(showAnswerButton).toBeVisible({ timeout: 5000 })
 
     // Look for toast notification about fallback
     const toastMessage = page.locator(
@@ -371,28 +362,24 @@ test.describe('Fallback Scenario (T042)', () => {
 
     await studyButton.click()
     await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(2000)
 
     // Should have flashcard mode available
     const showAnswerButton = page.locator('button:has-text("Show Answer")')
+    await expect(showAnswerButton).toBeVisible({ timeout: 5000 })
 
     if ((await showAnswerButton.count()) > 0) {
       // Click to show answer
       await showAnswerButton.click()
-      await page.waitForTimeout(700)
 
       // Rating buttons should appear
       const ratingButtons = page.locator(
         'button:has-text("Good"), button:has-text("Hard"), button:has-text("Again")'
       )
-      await expect(ratingButtons.first()).toBeVisible()
+      await expect(ratingButtons.first()).toBeVisible({ timeout: 2000 })
 
       // Can rate the card
       const goodButton = page.locator('button:has-text("Good")').first()
       await goodButton.click()
-
-      // Should advance
-      await page.waitForTimeout(500)
 
       const hasNextCard = (await page.locator('button:has-text("Show Answer")').count()) > 0
       const hasCompletion = (await page.locator('text=/complete|finished/i').count()) > 0
@@ -425,16 +412,18 @@ test.describe('FSRS Schedule Updates (T043)', () => {
     const mcModeButton = page.locator('button:has-text("Multiple Choice")')
     if ((await mcModeButton.count()) > 0) {
       await mcModeButton.click()
-      await page.waitForTimeout(500)
     }
 
-    await page.waitForTimeout(2000)
-
     const optionButtons = page.locator('button').filter({ hasText: /^[A-D]\./ })
+    await expect(optionButtons.first()).toBeVisible({ timeout: 5000 })
 
     if ((await optionButtons.count()) === 4) {
       // Capture rating API calls
       const rateRequests: any[] = []
+      const ratePromise = page.waitForRequest(
+        (request) => request.url().includes('/api/study/rate'),
+        { timeout: 5000 }
+      )
       page.on('request', (request) => {
         if (request.url().includes('/api/study/rate')) {
           const postData = request.postDataJSON()
@@ -447,7 +436,7 @@ test.describe('FSRS Schedule Updates (T043)', () => {
       await optionButtons.first().click()
 
       // Wait for API call
-      await page.waitForTimeout(2000)
+      await ratePromise
 
       // Verify rating was sent
       if (rateRequests.length > 0) {
@@ -489,15 +478,17 @@ test.describe('FSRS Schedule Updates (T043)', () => {
     const mcModeButton = page.locator('button:has-text("Multiple Choice")')
     if ((await mcModeButton.count()) > 0) {
       await mcModeButton.click()
-      await page.waitForTimeout(500)
     }
 
-    await page.waitForTimeout(2000)
-
     const optionButtons = page.locator('button').filter({ hasText: /^[A-D]\./ })
+    await expect(optionButtons.first()).toBeVisible({ timeout: 5000 })
 
     if ((await optionButtons.count()) === 4) {
       const rateRequests: any[] = []
+      const ratePromise = page.waitForRequest(
+        (request) => request.url().includes('/api/study/rate'),
+        { timeout: 15000 }
+      )
       page.on('request', (request) => {
         if (request.url().includes('/api/study/rate')) {
           rateRequests.push(request.postDataJSON())
@@ -508,7 +499,7 @@ test.describe('FSRS Schedule Updates (T043)', () => {
       await page.waitForTimeout(11000)
       await optionButtons.first().click()
 
-      await page.waitForTimeout(2000)
+      await ratePromise
 
       if (rateRequests.length > 0) {
         const ratingData = rateRequests[0]
@@ -544,15 +535,17 @@ test.describe('FSRS Schedule Updates (T043)', () => {
     const mcModeButton = page.locator('button:has-text("Multiple Choice")')
     if ((await mcModeButton.count()) > 0) {
       await mcModeButton.click()
-      await page.waitForTimeout(500)
     }
 
-    await page.waitForTimeout(2000)
-
     const optionButtons = page.locator('button').filter({ hasText: /^[A-D]\./ })
+    await expect(optionButtons.first()).toBeVisible({ timeout: 5000 })
 
     if ((await optionButtons.count()) === 4) {
       const rateRequests: any[] = []
+      const ratePromise = page.waitForRequest(
+        (request) => request.url().includes('/api/study/rate'),
+        { timeout: 5000 }
+      )
       page.on('request', (request) => {
         if (request.url().includes('/api/study/rate')) {
           rateRequests.push(request.postDataJSON())
@@ -563,7 +556,7 @@ test.describe('FSRS Schedule Updates (T043)', () => {
       await optionButtons.first().click()
 
       // Wait for feedback and rating
-      await page.waitForTimeout(2000)
+      await ratePromise
 
       if (rateRequests.length > 0) {
         const ratingData = rateRequests[0]
@@ -603,16 +596,22 @@ test.describe('FSRS Schedule Updates (T043)', () => {
     const mcModeButton = page.locator('button:has-text("Multiple Choice")')
     if ((await mcModeButton.count()) > 0) {
       await mcModeButton.click()
-      await page.waitForTimeout(500)
     }
 
-    await page.waitForTimeout(2000)
-
     const optionButtons = page.locator('button').filter({ hasText: /^[A-D]\./ })
+    await expect(optionButtons.first()).toBeVisible({ timeout: 5000 })
 
     if ((await optionButtons.count()) === 4) {
       // Monitor both rate request and response
       let rateResponseReceived = false
+
+      const rateResponsePromise = page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/study/rate') &&
+          response.status() >= 200 &&
+          response.status() < 300,
+        { timeout: 5000 }
+      )
 
       page.on('response', async (response) => {
         if (response.url().includes('/api/study/rate')) {
@@ -628,7 +627,7 @@ test.describe('FSRS Schedule Updates (T043)', () => {
       await optionButtons.first().click()
 
       // Wait for rating to complete
-      await page.waitForTimeout(2500)
+      await rateResponsePromise
 
       // Verify rating was successful
       expect(rateResponseReceived).toBe(true)
