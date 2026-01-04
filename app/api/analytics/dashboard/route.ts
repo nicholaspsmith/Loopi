@@ -26,8 +26,19 @@ export async function GET(request: Request) {
 
     // Get month/year from query params, default to current month
     const { searchParams } = new URL(request.url)
-    const month = searchParams.get('month') ? parseInt(searchParams.get('month')!) : now.getMonth()
-    const year = searchParams.get('year') ? parseInt(searchParams.get('year')!) : now.getFullYear()
+    const monthParam = searchParams.get('month')
+    const yearParam = searchParams.get('year')
+
+    // Parse and validate month (0-11) and year (reasonable range)
+    let month = monthParam ? parseInt(monthParam, 10) : now.getMonth()
+    let year = yearParam ? parseInt(yearParam, 10) : now.getFullYear()
+
+    // Validate parsed values are numbers and within valid ranges
+    if (isNaN(month) || isNaN(year)) {
+      return NextResponse.json({ error: 'Invalid month or year parameter' }, { status: 400 })
+    }
+    month = Math.max(0, Math.min(11, month))
+    year = Math.max(2000, Math.min(2100, year))
 
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
