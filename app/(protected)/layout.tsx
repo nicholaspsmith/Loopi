@@ -4,6 +4,7 @@ import LogoutButton from '@/components/auth/LogoutButton'
 import Navigation from '@/components/nav/Navigation'
 import { PageTransition } from '@/components/ui/PageTransition'
 import { EmailVerificationBanner } from '@/components/auth/EmailVerificationBanner'
+import FeedbackButton from '@/components/feedback/FeedbackButton'
 
 /**
  * Protected Layout
@@ -57,6 +58,9 @@ export default async function ProtectedLayout({ children }: { children: React.Re
       <main className="mx-auto">
         <PageTransition>{children}</PageTransition>
       </main>
+
+      {/* Floating Feedback Button */}
+      <FeedbackButton />
     </div>
   )
 }
