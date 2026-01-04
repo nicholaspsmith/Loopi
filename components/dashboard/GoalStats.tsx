@@ -77,14 +77,14 @@ export default function GoalStats({
   ]
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3">
       {stats.map((stat) => (
         <div
           key={stat.label}
-          className={`${stat.bgColor} rounded-lg p-4 text-center transition-transform hover:scale-105`}
+          className={`${stat.bgColor} rounded-lg p-2 sm:p-3 text-center transition-transform hover:scale-105`}
         >
-          <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{stat.label}</p>
+          <p className={`text-base sm:text-xl font-bold ${stat.color}`}>{stat.value}</p>
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 sm:mt-1">{stat.label}</p>
         </div>
       ))}
     </div>

@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import GoalCard from './GoalCard'
 import GoalActionBar from './GoalActionBar'
 import ConfirmDialog from './ConfirmDialog'
+import { GOAL_LIMITS } from '@/lib/constants/goals'
 
 /**
  * GoalsPageContent Component (T030)
@@ -246,9 +248,9 @@ export default function GoalsPageContent({ goals, archivedGoals, counts }: Goals
 
   return (
     <>
-      <div data-testid="goals-content" className="space-y-6">
+      <div data-testid="goals-content" className="space-y-3 sm:space-y-6">
         {/* Tabs */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
           <div className="flex gap-1">
             <button
               data-testid="goals-tab-active"
@@ -270,29 +272,51 @@ export default function GoalsPageContent({ goals, archivedGoals, counts }: Goals
                   : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
             >
-              Archived ({archivedGoals.length})
+              Archived {counts.archived}/6
             </button>
           </div>
 
-          {/* Selection mode toggle */}
-          {currentGoals.length > 0 && (
-            <button
-              data-testid="selection-toggle"
-              onClick={handleToggleSelectionMode}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors min-h-[44px] ${
-                selectionMode
-                  ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
-                  : 'text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
-              }`}
-            >
-              {selectionMode ? 'Cancel' : 'Select'}
-            </button>
-          )}
+          {/* Action buttons - Desktop: Edit + New Goal, Mobile: Edit only */}
+          <div className="flex items-center gap-2">
+            {/* Selection mode toggle */}
+            {currentGoals.length > 0 && (
+              <button
+                data-testid="selection-toggle"
+                onClick={handleToggleSelectionMode}
+                className={`px-2 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors ${
+                  selectionMode
+                    ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                    : 'text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                }`}
+              >
+                {selectionMode ? 'Cancel' : 'Edit'}
+              </button>
+            )}
+
+            {/* Desktop: New Goal button */}
+            {counts.active < GOAL_LIMITS.ACTIVE && (
+              <Link
+                href="/goals/new"
+                className="hidden sm:flex px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-600 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors items-center justify-center gap-2"
+                data-testid="new-goal-button-desktop"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                <span className="whitespace-nowrap">New Goal</span>
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Goals grid */}
         {currentGoals.length === 0 ? (
-          <div className="py-12 text-center">
+          <div className="py-8 sm:py-12 text-center">
             <p className="text-gray-600 dark:text-gray-400">
               {activeTab === 'active'
                 ? 'No active goals yet. Create your first goal to get started!'
@@ -300,7 +324,7 @@ export default function GoalsPageContent({ goals, archivedGoals, counts }: Goals
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {currentGoals.map((goal) => (
               <GoalCard
                 key={goal.id}

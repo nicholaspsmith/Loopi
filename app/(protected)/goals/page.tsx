@@ -4,8 +4,8 @@ import Link from 'next/link'
 import { getGoalsByUserId, getGoalCounts } from '@/lib/db/operations/goals'
 import { GOAL_LIMITS } from '@/lib/constants/goals'
 import { getSkillTreeByGoalId } from '@/lib/db/operations/skill-trees'
-import GoalLimitIndicator from '@/components/goals/GoalLimitIndicator'
 import GoalsPageContent from '@/components/goals/GoalsPageContent'
+import GoalStatsCards from '@/components/goals/GoalStatsCards'
 
 /**
  * Goals Dashboard Page (T033)
@@ -70,64 +70,30 @@ export default async function GoalsPage() {
   const activeGoals = goals.filter((g) => g.status === 'active')
   const completedGoals = goals.filter((g) => g.status === 'completed')
 
+  // Calculate average mastery for non-archived goals
+  const averageMastery =
+    goals.length > 0
+      ? goals.reduce((sum, goal) => sum + (goal.masteryPercentage || 0), 0) / goals.length
+      : 0
+
   return (
     <div className="flex flex-col h-full p-4 sm:p-6 max-w-7xl mx-auto">
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-2">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
-              My Learning Goals
-            </h1>
-            <GoalLimitIndicator counts={counts} />
-          </div>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-            Track your progress toward mastering new skills
-          </p>
-        </div>
-        {counts.active < GOAL_LIMITS.ACTIVE && (
-          <Link
-            href="/goals/new"
-            className="w-full sm:w-auto px-4 py-3 sm:py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 min-h-[44px]"
-            data-testid="new-goal-button"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            <span className="whitespace-nowrap">New Goal</span>
-          </Link>
-        )}
+      <div className="mb-3 sm:mb-6">
+        <h1 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1 sm:mb-2">
+          My Learning Goals
+        </h1>
+        <p className="text-xs sm:text-base text-gray-600 dark:text-gray-400">
+          Track your progress toward mastering new skills
+        </p>
       </div>
 
-      {/* Stats Summary */}
-      {goals.length > 0 && (
-        <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <p className="text-sm text-blue-600 dark:text-blue-400">Active Goals</p>
-            <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
-              {activeGoals.length}
-            </p>
-          </div>
-          <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <p className="text-sm text-green-600 dark:text-green-400">Completed</p>
-            <p className="text-2xl font-bold text-green-700 dark:text-green-300">
-              {completedGoals.length}
-            </p>
-          </div>
-          <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-            <p className="text-sm text-purple-600 dark:text-purple-400">Avg. Mastery</p>
-            <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">
-              {goals.length > 0
-                ? Math.round(goals.reduce((sum, g) => sum + g.masteryPercentage, 0) / goals.length)
-                : 0}
-              %
-            </p>
-          </div>
-        </div>
+      {/* Stats Cards */}
+      {(goals.length > 0 || archivedGoals.length > 0) && (
+        <GoalStatsCards
+          activeCount={activeGoals.length}
+          completedCount={completedGoals.length}
+          averageMastery={averageMastery}
+        />
       )}
 
       {/* Goals List - Client Component with Tabs & Multi-Select */}
@@ -162,7 +128,29 @@ export default async function GoalsPage() {
           </Link>
         </div>
       ) : (
-        <GoalsPageContent goals={goals} archivedGoals={archivedGoals} counts={counts} />
+        <>
+          <GoalsPageContent goals={goals} archivedGoals={archivedGoals} counts={counts} />
+          {/* Mobile: New Goal button at bottom */}
+          {counts.active < GOAL_LIMITS.ACTIVE && (
+            <div className="sm:hidden mt-4">
+              <Link
+                href="/goals/new"
+                className="w-full px-4 py-3 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 min-h-[44px]"
+                data-testid="new-goal-button-mobile"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                <span className="whitespace-nowrap">New Goal</span>
+              </Link>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

@@ -15,6 +15,7 @@ interface TitleBadgeProps {
     requirement: string
     progress: number
   } | null
+  onClick?: () => void
 }
 
 const titleStyles: Record<string, { bg: string; text: string; border: string; glow?: string }> = {
@@ -68,9 +69,9 @@ const titleIcons: Record<string, string> = {
 }
 
 const sizeClasses = {
-  sm: 'px-2 py-1 text-sm',
-  md: 'px-3 py-1.5 text-base',
-  lg: 'px-4 py-2 text-lg',
+  sm: 'px-[15px] py-0 sm:px-2 sm:py-1 text-sm',
+  md: 'px-[15px] py-0 sm:px-3 sm:py-1.5 text-base',
+  lg: 'px-[15px] py-0 sm:px-4 sm:py-2 text-lg',
 }
 
 export default function TitleBadge({
@@ -78,6 +79,7 @@ export default function TitleBadge({
   size = 'md',
   showProgress = false,
   nextTitle,
+  onClick,
 }: TitleBadgeProps) {
   const styles = titleStyles[title] || titleStyles.Novice
   const icon = titleIcons[title] || '🏅'
@@ -89,8 +91,23 @@ export default function TitleBadge({
           inline-flex items-center gap-2 rounded-full border-2
           ${styles.bg} ${styles.border} ${sizeClasses[size]}
           ${styles.glow ? `shadow-md ${styles.glow}` : ''}
+          ${onClick ? 'cursor-pointer hover:scale-105 hover:shadow-lg' : ''}
           transition-all duration-200
         `}
+        onClick={onClick}
+        role={onClick ? 'button' : undefined}
+        tabIndex={onClick ? 0 : undefined}
+        onKeyDown={
+          onClick
+            ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onClick()
+                }
+              }
+            : undefined
+        }
+        aria-label={onClick ? `View achievements for ${title} title` : undefined}
       >
         <span className={size === 'lg' ? 'text-2xl' : size === 'md' ? 'text-xl' : 'text-lg'}>
           {icon}
