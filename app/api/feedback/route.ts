@@ -47,11 +47,17 @@ function checkRateLimit(userId: string): { allowed: boolean; retryAfterMs?: numb
     return { allowed: false, retryAfterMs }
   }
 
-  // Record this attempt
+  // Don't record here - only record after successful submission
+  return { allowed: true }
+}
+
+function recordSuccessfulSubmission(userId: string): void {
+  const now = Date.now()
+  const windowStart = now - RATE_LIMIT_WINDOW_MS
+  const timestamps = rateLimitMap.get(userId) || []
+  const recentTimestamps = timestamps.filter((ts) => ts > windowStart)
   recentTimestamps.push(now)
   rateLimitMap.set(userId, recentTimestamps)
-
-  return { allowed: true }
 }
 
 export async function POST(request: Request) {
@@ -167,6 +173,9 @@ ${feedbackBody}
     }
 
     const issue = await response.json()
+
+    // Record successful submission for rate limiting
+    recordSuccessfulSubmission(session.user.id)
 
     console.log('[Feedback] Issue created:', issue.number)
 
