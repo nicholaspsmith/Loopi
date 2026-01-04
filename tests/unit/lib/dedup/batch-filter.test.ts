@@ -17,11 +17,11 @@ vi.mock('@/lib/db/operations/flashcards-lancedb', () => ({
 }))
 
 vi.mock('@/lib/embeddings', () => ({
-  generateEmbedding: vi.fn(),
+  generateEmbeddings: vi.fn(),
 }))
 
 import { findSimilarFlashcardsWithThreshold } from '@/lib/db/operations/flashcards-lancedb'
-import { generateEmbedding } from '@/lib/embeddings'
+import { generateEmbeddings } from '@/lib/embeddings'
 
 // Import the function to test (will fail until implemented)
 let filterDuplicatesFromBatch: <T>(
@@ -73,10 +73,7 @@ describe('filterDuplicatesFromBatch', () => {
       const emb1 = new Array(1024).fill(0).map((_, i) => (i % 2 === 0 ? 1 : 0))
       const emb2 = new Array(1024).fill(0).map((_, i) => (i % 3 === 0 ? 1 : 0))
       const emb3 = new Array(1024).fill(0).map((_, i) => (i % 5 === 0 ? 1 : 0))
-      ;(generateEmbedding as ReturnType<typeof vi.fn>)
-        .mockResolvedValueOnce(emb1)
-        .mockResolvedValueOnce(emb2)
-        .mockResolvedValueOnce(emb3)
+      ;(generateEmbeddings as ReturnType<typeof vi.fn>).mockResolvedValue([emb1, emb2, emb3])
 
       const result = await filterDuplicatesFromBatch(items, mockUserId, (item) => item.question)
 
@@ -144,9 +141,7 @@ describe('filterDuplicatesFromBatch', () => {
       // Mock embeddings for in-batch comparison - different patterns for unique items
       const emb2 = new Array(1024).fill(0).map((_, i) => (i % 3 === 0 ? 1 : 0))
       const emb3 = new Array(1024).fill(0).map((_, i) => (i % 5 === 0 ? 1 : 0))
-      ;(generateEmbedding as ReturnType<typeof vi.fn>)
-        .mockResolvedValueOnce(emb2)
-        .mockResolvedValueOnce(emb3)
+      ;(generateEmbeddings as ReturnType<typeof vi.fn>).mockResolvedValue([emb2, emb3])
 
       const result = await filterDuplicatesFromBatch(items, mockUserId, (item) => item.question)
 
@@ -184,9 +179,7 @@ describe('filterDuplicatesFromBatch', () => {
       // Mock embeddings for unique items (2 and 4) - different patterns
       const emb2 = new Array(1024).fill(0).map((_, i) => (i % 3 === 0 ? 1 : 0))
       const emb4 = new Array(1024).fill(0).map((_, i) => (i % 5 === 0 ? 1 : 0))
-      ;(generateEmbedding as ReturnType<typeof vi.fn>)
-        .mockResolvedValueOnce(emb2)
-        .mockResolvedValueOnce(emb4)
+      ;(generateEmbeddings as ReturnType<typeof vi.fn>).mockResolvedValue([emb2, emb4])
 
       const result = await filterDuplicatesFromBatch(items, mockUserId, (item) => item.question)
 
@@ -211,10 +204,11 @@ describe('filterDuplicatesFromBatch', () => {
       const embedding1 = new Array(1024).fill(0).map((_, i) => (i % 2 === 0 ? 0.8 : 0.2))
       const embedding2 = new Array(1024).fill(0).map((_, i) => (i % 2 === 0 ? 0.81 : 0.19))
       const embedding3 = new Array(1024).fill(0).map((_, i) => (i % 2 === 0 ? 0.2 : 0.8))
-      ;(generateEmbedding as ReturnType<typeof vi.fn>)
-        .mockResolvedValueOnce(embedding1) // Item 1
-        .mockResolvedValueOnce(embedding2) // Item 2 - very similar pattern
-        .mockResolvedValueOnce(embedding3) // Item 3 - different pattern
+      ;(generateEmbeddings as ReturnType<typeof vi.fn>).mockResolvedValue([
+        embedding1, // Item 1
+        embedding2, // Item 2 - very similar pattern
+        embedding3, // Item 3 - different pattern
+      ])
 
       const result = await filterDuplicatesFromBatch(items, mockUserId, (item) => item.question)
 
@@ -242,10 +236,11 @@ describe('filterDuplicatesFromBatch', () => {
       ;(findSimilarFlashcardsWithThreshold as ReturnType<typeof vi.fn>).mockResolvedValue([])
 
       // All items have very similar embeddings
-      ;(generateEmbedding as ReturnType<typeof vi.fn>)
-        .mockResolvedValueOnce(new Array(1024).fill(0.9))
-        .mockResolvedValueOnce(new Array(1024).fill(0.91))
-        .mockResolvedValueOnce(new Array(1024).fill(0.89))
+      ;(generateEmbeddings as ReturnType<typeof vi.fn>).mockResolvedValue([
+        new Array(1024).fill(0.9),
+        new Array(1024).fill(0.91),
+        new Array(1024).fill(0.89),
+      ])
 
       const result = await filterDuplicatesFromBatch(items, mockUserId, (item) => item.question)
 
@@ -272,9 +267,10 @@ describe('filterDuplicatesFromBatch', () => {
         .mockResolvedValueOnce([{ id: 'existing-4', similarity: 0.87 }])
 
       // Make items 2 and 3 similar
-      ;(generateEmbedding as ReturnType<typeof vi.fn>)
-        .mockResolvedValueOnce(new Array(1024).fill(0.5)) // Item 2
-        .mockResolvedValueOnce(new Array(1024).fill(0.51)) // Item 3 - similar to item 2
+      ;(generateEmbeddings as ReturnType<typeof vi.fn>).mockResolvedValue([
+        new Array(1024).fill(0.5), // Item 2
+        new Array(1024).fill(0.51), // Item 3 - similar to item 2
+      ])
 
       const result = await filterDuplicatesFromBatch(items, mockUserId, (item) => item.question)
 
@@ -309,7 +305,7 @@ describe('filterDuplicatesFromBatch', () => {
       ;(findSimilarFlashcardsWithThreshold as ReturnType<typeof vi.fn>).mockResolvedValue([
         { id: 'existing-dna', similarity: 0.95 },
       ])
-      ;(generateEmbedding as ReturnType<typeof vi.fn>).mockResolvedValue(new Array(1024).fill(0.5))
+      ;(generateEmbeddings as ReturnType<typeof vi.fn>).mockResolvedValue([])
 
       const result = await filterDuplicatesFromBatch(items, mockUserId, (item) => item.question)
 
@@ -333,7 +329,7 @@ describe('filterDuplicatesFromBatch', () => {
       ;(findSimilarFlashcardsWithThreshold as ReturnType<typeof vi.fn>)
         .mockResolvedValueOnce([{ id: 'existing-123', similarity: 0.92 }])
         .mockResolvedValueOnce([{ id: 'existing-456', similarity: 0.88 }])
-      ;(generateEmbedding as ReturnType<typeof vi.fn>).mockResolvedValue(new Array(1024).fill(0.5))
+      ;(generateEmbeddings as ReturnType<typeof vi.fn>).mockResolvedValue([])
 
       const result = await filterDuplicatesFromBatch(items, mockUserId, (item) => item.question)
 
@@ -351,9 +347,10 @@ describe('filterDuplicatesFromBatch', () => {
       ]
 
       ;(findSimilarFlashcardsWithThreshold as ReturnType<typeof vi.fn>).mockResolvedValue([])
-      ;(generateEmbedding as ReturnType<typeof vi.fn>)
-        .mockResolvedValueOnce(new Array(1024).fill(0.9))
-        .mockResolvedValueOnce(new Array(1024).fill(0.91))
+      ;(generateEmbeddings as ReturnType<typeof vi.fn>).mockResolvedValue([
+        new Array(1024).fill(0.9),
+        new Array(1024).fill(0.91),
+      ])
 
       const result = await filterDuplicatesFromBatch(items, mockUserId, (item) => item.question)
 
@@ -378,7 +375,10 @@ describe('filterDuplicatesFromBatch', () => {
       ]
 
       ;(findSimilarFlashcardsWithThreshold as ReturnType<typeof vi.fn>).mockResolvedValue([])
-      ;(generateEmbedding as ReturnType<typeof vi.fn>).mockResolvedValue(new Array(1024).fill(0.5))
+      ;(generateEmbeddings as ReturnType<typeof vi.fn>).mockResolvedValue([
+        new Array(1024).fill(0.5),
+        new Array(1024).fill(0.5),
+      ])
 
       // Custom text extraction combining title and description
       await filterDuplicatesFromBatch(
@@ -424,10 +424,11 @@ describe('filterDuplicatesFromBatch', () => {
       const embeddingQ1 = new Array(1024).fill(0).map((_, i) => (i % 2 === 0 ? 0.8 : 0.2))
       const embeddingQ3 = new Array(1024).fill(0).map((_, i) => (i % 3 === 0 ? 0.9 : 0.1))
       const embeddingQ4 = new Array(1024).fill(0).map((_, i) => (i % 2 === 0 ? 0.81 : 0.19)) // Similar to Q1
-      ;(generateEmbedding as ReturnType<typeof vi.fn>)
-        .mockResolvedValueOnce(embeddingQ1) // Q1
-        .mockResolvedValueOnce(embeddingQ3) // Q3
-        .mockResolvedValueOnce(embeddingQ4) // Q4 - similar to Q1
+      ;(generateEmbeddings as ReturnType<typeof vi.fn>).mockResolvedValue([
+        embeddingQ1, // Q1
+        embeddingQ3, // Q3
+        embeddingQ4, // Q4 - similar to Q1
+      ])
 
       const result = await filterDuplicatesFromBatch(items, mockUserId, (item) => item.question)
 

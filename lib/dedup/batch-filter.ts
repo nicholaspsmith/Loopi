@@ -8,7 +8,7 @@
 import { DEDUP_CONFIG } from './config'
 import { BatchFilterResult, FilteredItem, BatchFilterStats } from './types'
 import { findSimilarFlashcardsWithThreshold } from '@/lib/db/operations/flashcards-lancedb'
-import { generateEmbedding } from '@/lib/embeddings'
+import { generateEmbeddings } from '@/lib/embeddings'
 import * as logger from '@/lib/logger'
 
 /**
@@ -62,44 +62,81 @@ export async function filterDuplicatesFromBatch<T>(
   const uniqueItems: T[] = []
   const filteredItems: FilteredItem<T>[] = []
 
-  // Track embeddings for in-batch duplicate detection
+  // Extract texts and identify items needing dedup
+  const itemsWithText = items.map((item) => ({
+    item,
+    text: getTextForEmbedding(item),
+  }))
+
+  // Separate short content items (skip dedup) from items needing checking
+  const shortContentItems = itemsWithText.filter(
+    ({ text }) => text.length < DEDUP_CONFIG.MIN_CONTENT_LENGTH
+  )
+  const itemsToCheck = itemsWithText.filter(
+    ({ text }) => text.length >= DEDUP_CONFIG.MIN_CONTENT_LENGTH
+  )
+
+  // Add short content items directly to unique (no dedup needed)
+  for (const { item } of shortContentItems) {
+    uniqueItems.push(item)
+  }
+
+  if (itemsToCheck.length === 0) {
+    return {
+      uniqueItems,
+      filteredItems,
+      stats: { total: items.length, unique: uniqueItems.length, duplicatesRemoved: 0 },
+    }
+  }
+
+  // OPTIMIZATION 1: Parallel LanceDB checks for existing duplicates
+  const lanceDbResults = await Promise.all(
+    itemsToCheck.map(async ({ item, text }) => {
+      try {
+        const existingSimilar = await findSimilarFlashcardsWithThreshold(
+          text,
+          userId,
+          DEDUP_CONFIG.SIMILARITY_THRESHOLD,
+          1 // Only need top match
+        )
+        return { item, text, existingSimilar, error: null }
+      } catch (error) {
+        // If LanceDB check fails, allow item through
+        logger.warn('Batch filter: LanceDB check failed, allowing item', { error })
+        return { item, text, existingSimilar: [], error }
+      }
+    })
+  )
+
+  // Filter out items that match existing flashcards
+  const itemsNotMatchingExisting = lanceDbResults.filter(({ existingSimilar, item }) => {
+    if (existingSimilar.length > 0) {
+      filteredItems.push({
+        item,
+        reason: 'duplicate_existing',
+        similarTo: existingSimilar[0].id,
+        score: existingSimilar[0].similarity,
+      })
+      return false
+    }
+    return true
+  })
+
+  // OPTIMIZATION 2: Batch embedding generation for remaining items
+  const textsForEmbedding = itemsNotMatchingExisting.map(({ text }) => text)
+  const embeddings = await generateEmbeddings(textsForEmbedding)
+
+  // Map embeddings back to items
+  const itemsWithEmbeddings = itemsNotMatchingExisting.map((itemData, index) => ({
+    ...itemData,
+    embedding: embeddings[index] || null,
+  }))
+
+  // Track processed embeddings for in-batch duplicate detection
   const processedEmbeddings: Array<{ item: T; embedding: number[]; text: string }> = []
 
-  for (const item of items) {
-    const text = getTextForEmbedding(item)
-
-    // Skip items with very short content
-    if (text.length < DEDUP_CONFIG.MIN_CONTENT_LENGTH) {
-      uniqueItems.push(item)
-      continue
-    }
-
-    // Check against existing flashcards
-    try {
-      const existingSimilar = await findSimilarFlashcardsWithThreshold(
-        text,
-        userId,
-        DEDUP_CONFIG.SIMILARITY_THRESHOLD,
-        1 // Only need top match
-      )
-
-      if (existingSimilar.length > 0) {
-        filteredItems.push({
-          item,
-          reason: 'duplicate_existing',
-          similarTo: existingSimilar[0].id,
-          score: existingSimilar[0].similarity,
-        })
-        continue
-      }
-    } catch (error) {
-      // If LanceDB check fails, allow item through
-      logger.warn('Batch filter: LanceDB check failed, allowing item', { error })
-    }
-
-    // Generate embedding for in-batch comparison
-    const embedding = await generateEmbedding(text)
-
+  // Check for in-batch duplicates
+  for (const { item, text, embedding } of itemsWithEmbeddings) {
     if (!embedding) {
       // If embedding fails, allow item through
       uniqueItems.push(item)
@@ -115,7 +152,7 @@ export async function filterDuplicatesFromBatch<T>(
         filteredItems.push({
           item,
           reason: 'duplicate_in_batch',
-          similarTo: processed.text, // Use text as identifier for in-batch items
+          similarTo: processed.text,
           score: similarity,
         })
         foundInBatchDuplicate = true

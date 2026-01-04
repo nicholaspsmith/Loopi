@@ -124,25 +124,25 @@ export async function POST(
       duplicatesRemoved: filterResult.stats.duplicatesRemoved,
     })
 
-    // Create unique cards as active (no draft step)
-    const createdCardIds: string[] = []
-    for (const card of filterResult.uniqueItems) {
-      let question = card.question
+    // Create unique cards as active (no draft step) - parallelized for performance
+    const createdCards = await Promise.all(
+      filterResult.uniqueItems.map(async (card) => {
+        let question = card.question
 
-      // For scenario cards, prepend context to question
-      if (card.cardType === 'scenario' && 'context' in card) {
-        question = `${(card as { context: string }).context}\n\n${card.question}`
-      }
+        // For scenario cards, prepend context to question
+        if (card.cardType === 'scenario' && 'context' in card) {
+          question = `${(card as { context: string }).context}\n\n${card.question}`
+        }
 
-      const createdCard = await createFlashcard({
-        userId: session.user!.id,
-        skillNodeId: nodeId,
-        question,
-        answer: card.answer,
+        return createFlashcard({
+          userId: session.user!.id,
+          skillNodeId: nodeId,
+          question,
+          answer: card.answer,
+        })
       })
-
-      createdCardIds.push(createdCard.id)
-    }
+    )
+    const createdCardIds = createdCards.map((card) => card.id)
 
     // Update node card count
     await incrementNodeCardCount(nodeId, createdCardIds.length)
