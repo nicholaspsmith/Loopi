@@ -10,6 +10,19 @@ import { users } from '@/lib/db/drizzle-schema'
 import { like } from 'drizzle-orm'
 
 export async function cleanupTestUsers(): Promise<number> {
+  // Production safeguard - prevent accidental data loss
+  const isProduction = process.env.NODE_ENV === 'production'
+  const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true'
+
+  if (isProduction) {
+    console.error('[Test Cleanup] BLOCKED: Cannot run cleanup in production')
+    throw new Error('Test cleanup is not allowed in production environment')
+  }
+
+  if (!isTestEnv) {
+    console.warn('[Test Cleanup] WARNING: Running cleanup outside test environment')
+  }
+
   try {
     const db = getDb()
     const result = await db
