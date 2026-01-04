@@ -170,7 +170,7 @@ test.describe('Card Generation Flow', () => {
     await page.waitForLoadState('networkidle')
   })
 
-  test('can access card generation from skill tree node', async ({ page }) => {
+  test('can access card generation from skill tree node @smoke', async ({ page }) => {
     // Find a skill tree node
     const node = page.locator('text=/Type Basics|Generics/i').first()
 
@@ -190,7 +190,7 @@ test.describe('Card Generation Flow', () => {
     })
   })
 
-  test('can generate cards for a topic', async ({ page }) => {
+  test('can generate cards for a topic @smoke', async ({ page }) => {
     // Find and click a node
     const node = page.locator('text=/Type Basics/i').first()
 
@@ -216,7 +216,7 @@ test.describe('Card Generation Flow', () => {
     })
   })
 
-  test('shows card count selector', async ({ page }) => {
+  test('shows card count selector @comprehensive', async ({ page }) => {
     const node = page.locator('text=/Type Basics/i').first()
 
     if ((await node.count()) === 0) {
@@ -235,7 +235,7 @@ test.describe('Card Generation Flow', () => {
     })
   })
 
-  test('shows card type selector', async ({ page }) => {
+  test('shows card type selector @comprehensive', async ({ page }) => {
     const node = page.locator('text=/Type Basics/i').first()
 
     if ((await node.count()) === 0) {
@@ -251,7 +251,7 @@ test.describe('Card Generation Flow', () => {
   })
 })
 
-test.describe('Card Generation Performance (SC-002)', () => {
+test.describe('Card Generation Performance (SC-002) @slow', () => {
   test('completes card generation under 60 seconds', async ({ page }) => {
     // Mock with realistic delay
     await setupMocks(page, 1000)
@@ -347,7 +347,7 @@ test.describe('Card Generation Performance (SC-002)', () => {
   })
 })
 
-test.describe('Card Preview and Editing', () => {
+test.describe('Card Preview and Editing @comprehensive', () => {
   test.beforeEach(async ({ page }) => {
     await setupMocks(page)
     await page.goto(`/goals/${mockGoalId}`)
@@ -394,7 +394,7 @@ test.describe('Card Preview and Editing', () => {
   })
 })
 
-test.describe('Card Commit Flow', () => {
+test.describe('Card Commit Flow @comprehensive', () => {
   test.beforeEach(async ({ page }) => {
     await setupMocks(page)
     await page.goto(`/goals/${mockGoalId}`)
@@ -444,7 +444,7 @@ test.describe('Card Commit Flow', () => {
   })
 })
 
-test.describe('Card Generation Error Handling', () => {
+test.describe('Card Generation Error Handling @comprehensive', () => {
   test('handles generation errors gracefully', async ({ page }) => {
     // Setup mocks but make generation fail
     await page.route(`**/api/goals/${mockGoalId}`, async (route) => {

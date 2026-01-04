@@ -168,7 +168,7 @@ async function mockGuidedStudyAPI(page: Page, treeComplete = false) {
   })
 }
 
-test.describe('Guided Study Flow - T030', () => {
+test.describe('Guided Study Flow - T030 @slow', () => {
   // Skip in CI - selectors may need updates
   test.skip(!!process.env.CI, 'Selectors need to be updated to match current UI')
 
@@ -222,16 +222,13 @@ test.describe('Guided Study Flow - T030', () => {
 
     await showAnswerButton.click()
 
-    // Wait for answer to appear (flip animation)
-    await page.waitForTimeout(700)
-
-    // Should show rating buttons
+    // Should show rating buttons after flip animation
     const ratingButtons = page.locator(
       'button:has-text("Easy"), button:has-text("Good"), button:has-text("Hard")'
     )
 
     if ((await ratingButtons.count()) > 0) {
-      await expect(ratingButtons.first()).toBeVisible()
+      await expect(ratingButtons.first()).toBeVisible({ timeout: 2000 })
     }
   })
 
@@ -261,7 +258,7 @@ test.describe('Guided Study Flow - T030', () => {
   })
 })
 
-test.describe('Guided Study Completion - T031', () => {
+test.describe('Guided Study Completion - T031 @slow', () => {
   test.skip(!!process.env.CI, 'Selectors need to be updated to match current UI')
 
   test('shows Continue and Return buttons after completing a node', async ({ page }) => {

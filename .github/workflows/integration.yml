@@ -5,13 +5,28 @@ on:
     branches: ['main']
   pull_request:
     branches: ['main']
+  schedule:
+    # Run full test suite nightly at 2am UTC
+    - cron: '0 2 * * *'
   workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Test suite to run'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - comprehensive
+          - full
 
 jobs:
-  e2e-tests:
-    name: E2E Tests (Playwright)
+  # Fast smoke tests for PRs
+  e2e-smoke:
+    name: E2E Smoke Tests
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
 
     services:
       postgres:
@@ -65,10 +80,169 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
 
-      # Note: We use dev server for E2E tests (configured in playwright.config.ts)
-      # No production build needed - dev server compiles on-demand
+      - name: Run smoke tests
+        run: npx playwright test --grep @smoke --project=chromium
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
+          API_KEY_ENCRYPTION_SECRET: test-api-key-encryption-secret-32
+          NEXTAUTH_SECRET: test-secret-key-for-ci-pipeline
+          NEXTAUTH_URL: http://localhost:3000
+          JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
-      - name: Run E2E tests
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-smoke
+          path: playwright-report/
+          retention-days: 7
+
+  # Comprehensive tests for main branch pushes
+  e2e-comprehensive:
+    name: E2E Comprehensive Tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: memoryloop_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Create test environment file
+        run: |
+          cat > .env.local << EOF
+          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/memoryloop_test
+          NEXTAUTH_SECRET=test-secret-key-for-ci-pipeline
+          NEXTAUTH_URL=http://localhost:3000
+          AUTH_TRUST_HOST=true
+          ENCRYPTION_KEY=test-encryption-key-32-chars-long
+          API_KEY_ENCRYPTION_SECRET=test-api-key-encryption-secret-32
+          JINA_API_KEY=${{ secrets.JINA_API_KEY }}
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          EOF
+
+      - name: Install pgcrypto extension
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+
+      - name: Run database migrations
+        run: npm run db:push
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
+
+      - name: Run comprehensive tests (excludes slow)
+        run: npx playwright test --grep-invert @slow --project=chromium
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
+          API_KEY_ENCRYPTION_SECRET: test-api-key-encryption-secret-32
+          NEXTAUTH_SECRET: test-secret-key-for-ci-pipeline
+          NEXTAUTH_URL: http://localhost:3000
+          JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-comprehensive
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-comprehensive
+          path: test-results/
+          retention-days: 7
+
+  # Full test suite for nightly runs and manual triggers
+  e2e-full:
+    name: E2E Full Test Suite
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.test_suite == 'full')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: memoryloop_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Create test environment file
+        run: |
+          cat > .env.local << EOF
+          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/memoryloop_test
+          NEXTAUTH_SECRET=test-secret-key-for-ci-pipeline
+          NEXTAUTH_URL=http://localhost:3000
+          AUTH_TRUST_HOST=true
+          ENCRYPTION_KEY=test-encryption-key-32-chars-long
+          API_KEY_ENCRYPTION_SECRET=test-api-key-encryption-secret-32
+          JINA_API_KEY=${{ secrets.JINA_API_KEY }}
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          EOF
+
+      - name: Install pgcrypto extension
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+
+      - name: Run database migrations
+        run: npm run db:push
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
+
+      - name: Run full test suite
         run: npx playwright test --project=chromium
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
@@ -82,7 +256,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-full
           path: playwright-report/
           retention-days: 30
 
@@ -90,6 +264,88 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results
+          name: test-results-full
           path: test-results/
-          retention-days: 7
+          retention-days: 14
+
+  # Manual dispatch for specific suites
+  e2e-manual:
+    name: E2E Manual Run (${{ inputs.test_suite }})
+    if: github.event_name == 'workflow_dispatch' && inputs.test_suite != 'full'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: memoryloop_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Create test environment file
+        run: |
+          cat > .env.local << EOF
+          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/memoryloop_test
+          NEXTAUTH_SECRET=test-secret-key-for-ci-pipeline
+          NEXTAUTH_URL=http://localhost:3000
+          AUTH_TRUST_HOST=true
+          ENCRYPTION_KEY=test-encryption-key-32-chars-long
+          API_KEY_ENCRYPTION_SECRET=test-api-key-encryption-secret-32
+          JINA_API_KEY=${{ secrets.JINA_API_KEY }}
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          EOF
+
+      - name: Install pgcrypto extension
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+
+      - name: Run database migrations
+        run: npm run db:push
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
+
+      - name: Run selected test suite
+        run: |
+          if [ "${{ inputs.test_suite }}" = "smoke" ]; then
+            npx playwright test --grep @smoke --project=chromium
+          elif [ "${{ inputs.test_suite }}" = "comprehensive" ]; then
+            npx playwright test --grep-invert @slow --project=chromium
+          fi
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
+          API_KEY_ENCRYPTION_SECRET: test-api-key-encryption-secret-32
+          NEXTAUTH_SECRET: test-secret-key-for-ci-pipeline
+          NEXTAUTH_URL: http://localhost:3000
+          JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ inputs.test_suite }}
+          path: playwright-report/
+          retention-days: 14

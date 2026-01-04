@@ -103,7 +103,7 @@ async function mockGoalCreationAPI(
   })
 }
 
-test.describe('Goal Duplicate Detection', () => {
+test.describe('Goal Duplicate Detection @comprehensive', () => {
   // Skip in CI - requires UI implementation to be complete
   test.skip(!!process.env.CI, 'Skipping in CI - requires full app running')
 
@@ -145,10 +145,8 @@ test.describe('Goal Duplicate Detection', () => {
     )
     await submitButton.click()
 
-    await page.waitForTimeout(500)
-
     const duplicateModal = page.locator('[data-testid="duplicate-warning-modal"]')
-    await expect(duplicateModal).not.toBeVisible()
+    await expect(duplicateModal).not.toBeVisible({ timeout: 1000 })
 
     await expect(
       page.locator('text=/Generating|Creating|Loading/i').or(page.locator('h1:has-text("Rust")'))

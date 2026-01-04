@@ -135,7 +135,7 @@ async function mockGoalDetailAPI(page: Page, goalId: string = mockGoalResponse.i
   })
 }
 
-test.describe('Flashcard Duplicate Detection', () => {
+test.describe('Flashcard Duplicate Detection @comprehensive', () => {
   // Skip in CI - requires UI implementation to be complete
   test.skip(!!process.env.CI, 'Skipping in CI - requires full app running')
 
@@ -169,10 +169,8 @@ test.describe('Flashcard Duplicate Detection', () => {
     const submitButton = page.locator('[data-testid="custom-card-submit"]')
     await submitButton.click()
 
-    await page.waitForTimeout(500)
-
     const duplicateModal = page.locator('[data-testid="duplicate-warning-modal"]')
-    await expect(duplicateModal).not.toBeVisible()
+    await expect(duplicateModal).not.toBeVisible({ timeout: 1000 })
 
     await expect(page.locator('[data-testid="custom-card-modal"]')).not.toBeVisible({
       timeout: 3000,

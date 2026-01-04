@@ -140,7 +140,7 @@ async function mockAutoGenerationAPI(page: Page) {
   })
 }
 
-test.describe('Auto-Generation Flow', () => {
+test.describe('Auto-Generation Flow @smoke', () => {
   // Skip in CI - selectors may need updates
   test.skip(!!process.env.CI, 'Selectors need to be updated to match current UI')
 
@@ -303,7 +303,7 @@ test.describe('Auto-Generation Flow', () => {
   })
 })
 
-test.describe('Auto-Generation Error Handling', () => {
+test.describe('Auto-Generation Error Handling @comprehensive', () => {
   test.skip(!!process.env.CI, 'Selectors need to be updated to match current UI')
 
   test('handles API errors during goal creation gracefully', async ({ page }) => {

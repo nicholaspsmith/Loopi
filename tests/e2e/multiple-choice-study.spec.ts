@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test'
  * Feature: 017-multi-choice-distractors
  */
 
-test.describe('Multiple Choice Study Mode E2E', () => {
+test.describe('Multiple Choice Study Mode E2E @comprehensive', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to goals page
     await page.goto('/goals')
@@ -41,10 +41,10 @@ test.describe('Multiple Choice Study Mode E2E', () => {
     }
 
     await mcModeButton.click()
-    await page.waitForTimeout(500)
 
     // Check for 4 option buttons (A, B, C, D)
     const optionButtons = page.locator('button').filter({ hasText: /^[A-D][\s)]/ })
+    await expect(optionButtons.first()).toBeVisible({ timeout: 3000 })
 
     if ((await optionButtons.count()) > 0) {
       // Should have exactly 4 options
@@ -81,7 +81,10 @@ test.describe('Multiple Choice Study Mode E2E', () => {
     }
 
     await mcModeButton.click()
-    await page.waitForTimeout(500)
+
+    // Wait for options to appear
+    const optionButtons = page.locator('button').filter({ hasText: /^[A-D][\s)]/ })
+    await expect(optionButtons.first()).toBeVisible({ timeout: 3000 })
 
     // Check if progress indicator exists
     const progressBefore = await page.locator('text=/\\d+ \\/ \\d+/').textContent()
@@ -91,14 +94,14 @@ test.describe('Multiple Choice Study Mode E2E', () => {
     }
 
     // Select first option (may or may not be correct)
-    const optionButtons = page.locator('button').filter({ hasText: /^[A-D][\s)]/ })
-
     if ((await optionButtons.count()) === 0) {
       test.skip()
     }
 
     await optionButtons.first().click()
-    await page.waitForTimeout(1000) // Wait for feedback and transition
+
+    // Wait for progress to change or session to complete
+    await page.waitForTimeout(500)
 
     // Check if progress changed or next card appeared
     const progressAfter = await page.locator('text=/\\d+ \\/ \\d+/').textContent()
@@ -135,7 +138,14 @@ test.describe('Multiple Choice Study Mode E2E', () => {
     }
 
     await mcModeButton.click()
-    await page.waitForTimeout(500)
+
+    // Wait for options to appear
+    await expect(
+      page
+        .locator('button')
+        .filter({ hasText: /^[A-D][\s)]/ })
+        .first()
+    ).toBeVisible({ timeout: 3000 })
 
     // Answer up to 10 cards or until session ends
     for (let i = 0; i < 10; i++) {
@@ -147,7 +157,7 @@ test.describe('Multiple Choice Study Mode E2E', () => {
 
       // Click first available option
       await optionButtons.first().click()
-      await page.waitForTimeout(1000)
+      await page.waitForTimeout(500)
 
       // Check if session completed
       const completeMessage = await page.locator('text=/Session (Complete|Finished)/').count()
@@ -235,10 +245,14 @@ test.describe('Multiple Choice Study Mode E2E', () => {
     }
 
     await mcModeButton.click()
-    await page.waitForTimeout(1000)
 
-    // Check if we see flashcard mode instead (Show Answer button)
+    // Wait for either flashcard or MC mode
     const showAnswerButton = page.locator('button:has-text("Show Answer")')
+    const mcOptions = page.locator('button').filter({ hasText: /^[A-D][\s)]/ })
+    await Promise.race([
+      expect(showAnswerButton).toBeVisible({ timeout: 3000 }),
+      expect(mcOptions.first()).toBeVisible({ timeout: 3000 }),
+    ]).catch(() => {})
 
     if ((await showAnswerButton.count()) > 0) {
       // We fell back to flashcard mode
@@ -282,7 +296,6 @@ test.describe('Multiple Choice Study Mode E2E', () => {
     }
 
     await mixedModeButton.click()
-    await page.waitForTimeout(500)
 
     // Track which modes we encounter
     let sawMC = false
@@ -297,7 +310,7 @@ test.describe('Multiple Choice Study Mode E2E', () => {
       if (mcCount > 0) {
         sawMC = true
         await optionButtons.first().click()
-        await page.waitForTimeout(1000)
+        await page.waitForTimeout(500)
       } else {
         // Check for flashcard mode
         const showAnswerButton = page.locator('button:has-text("Show Answer")')
@@ -306,13 +319,12 @@ test.describe('Multiple Choice Study Mode E2E', () => {
         if (flashcardCount > 0) {
           sawFlashcard = true
           await showAnswerButton.click()
-          await page.waitForTimeout(700)
 
           // Rate the card
           const goodButton = page.locator('button:has-text("Good")')
+          await expect(goodButton).toBeVisible({ timeout: 2000 })
           if ((await goodButton.count()) > 0) {
             await goodButton.click()
-            await page.waitForTimeout(500)
           }
         } else {
           // No more cards
@@ -355,9 +367,9 @@ test.describe('Multiple Choice Study Mode E2E', () => {
     }
 
     await mcModeButton.click()
-    await page.waitForTimeout(500)
 
     const optionButtons = page.locator('button').filter({ hasText: /^[A-D][\s)]/ })
+    await expect(optionButtons.first()).toBeVisible({ timeout: 3000 })
 
     if ((await optionButtons.count()) === 0) {
       test.skip()
@@ -365,9 +377,6 @@ test.describe('Multiple Choice Study Mode E2E', () => {
 
     // Click an option
     await optionButtons.first().click()
-
-    // Wait briefly for visual feedback
-    await page.waitForTimeout(300)
 
     // Look for visual feedback indicators (green for correct, red for incorrect)
     // These might be background colors, icons, or text
@@ -406,9 +415,9 @@ test.describe('Multiple Choice Study Mode E2E', () => {
     }
 
     await mcModeButton.click()
-    await page.waitForTimeout(500)
 
     const optionButtons = page.locator('button').filter({ hasText: /^[A-D][\s)]/ })
+    await expect(optionButtons.first()).toBeVisible({ timeout: 3000 })
 
     if ((await optionButtons.count()) === 0) {
       test.skip()
@@ -421,8 +430,6 @@ test.describe('Multiple Choice Study Mode E2E', () => {
 
     // Should be fast (under 1 second for clicking)
     expect(responseTime).toBeLessThan(1000)
-
-    await page.waitForTimeout(1000)
 
     // For testing slow answers, we'd need to wait 10+ seconds
     // This is impractical in E2E tests, so we skip that scenario
@@ -453,7 +460,9 @@ test.describe('Multiple Choice Study Mode E2E', () => {
     }
 
     await mcModeButton.click()
-    await page.waitForTimeout(500)
+
+    const optionButtons = page.locator('button').filter({ hasText: /^[A-D][\s)]/ })
+    await expect(optionButtons.first()).toBeVisible({ timeout: 3000 })
 
     // Get initial progress
     const progressIndicator = page.locator('text=/\\d+ \\/ \\d+/')
@@ -473,11 +482,9 @@ test.describe('Multiple Choice Study Mode E2E', () => {
     const [current, total] = matches.map(Number)
 
     // Answer a card
-    const optionButtons = page.locator('button').filter({ hasText: /^[A-D][\s)]/ })
-
     if ((await optionButtons.count()) > 0) {
       await optionButtons.first().click()
-      await page.waitForTimeout(1000)
+      await page.waitForTimeout(500)
 
       // Get new progress
       const newProgress = await progressIndicator.textContent()

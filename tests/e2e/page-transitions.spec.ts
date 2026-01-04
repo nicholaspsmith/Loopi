@@ -10,7 +10,7 @@ import { test, expect } from '@playwright/test'
  * - Respects prefers-reduced-motion
  */
 
-test.describe('Page Transitions', () => {
+test.describe('Page Transitions @smoke', () => {
   // Skip in CI - see GitHub issue for comprehensive E2E test implementation
   test.skip(!!process.env.CI, 'Tests require authentication setup completion')
 

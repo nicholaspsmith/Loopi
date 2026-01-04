@@ -11,7 +11,7 @@ import { test, expect } from '@playwright/test'
  * These tests follow TDD principles and will FAIL initially until features are implemented.
  */
 
-test.describe('User Story 2: Card Flip Interactions', () => {
+test.describe('User Story 2: Card Flip Interactions @comprehensive', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to goals page and start a study session
     await page.goto('/goals')
@@ -57,8 +57,8 @@ test.describe('User Story 2: Card Flip Interactions', () => {
     const startTime = Date.now()
     await page.keyboard.press('Space')
 
-    // Wait for flip animation to complete (should be quick, within 100ms response time)
-    await page.waitForTimeout(700) // Allow time for animation
+    // Wait for back face to become visible (animation should complete quickly)
+    await expect(backFace).toBeVisible({ timeout: 2000 })
 
     const responseTime = Date.now() - startTime
 
@@ -104,7 +104,9 @@ test.describe('User Story 2: Card Flip Interactions', () => {
 
     // Check for 3D transform properties during animation
     // The container should have transform-style: preserve-3d and rotateY transform
-    await page.waitForTimeout(100) // Small delay to catch animation start
+    // Wait for animation to start by checking for back face visibility
+    const backFace = page.locator('[data-testid="flashcard-back"]')
+    await expect(backFace).toBeVisible({ timeout: 1000 })
 
     const transformStyle = await flashcardContainer.evaluate((el) => {
       const computed = window.getComputedStyle(el)
@@ -123,11 +125,7 @@ test.describe('User Story 2: Card Flip Interactions', () => {
         transformStyle.transform.includes('rotate')
     ).toBeTruthy()
 
-    // Wait for animation to complete
-    await page.waitForTimeout(600)
-
-    // Verify back face is visible after flip
-    const backFace = page.locator('[data-testid="flashcard-back"]')
+    // Verify back face is visible after flip (already checked above, animation complete)
     await expect(backFace).toBeVisible()
   })
 
@@ -166,14 +164,13 @@ test.describe('User Story 2: Card Flip Interactions', () => {
 
     // Press spacebar while focused on input
     await page.keyboard.press('Space')
-    await page.waitForTimeout(200)
 
     // Card should NOT flip - front face should still be visible
-    await expect(frontFace).toBeVisible()
+    await expect(frontFace).toBeVisible({ timeout: 1000 })
   })
 })
 
-test.describe('User Story 3: Multiple Choice Submit Button', () => {
+test.describe('User Story 3: Multiple Choice Submit Button @comprehensive', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/goals')
     await page.waitForLoadState('networkidle')
@@ -205,7 +202,8 @@ test.describe('User Story 3: Multiple Choice Submit Button', () => {
     const mcModeButton = page.locator('button:has-text("Multiple Choice")')
     if ((await mcModeButton.count()) > 0) {
       await mcModeButton.click()
-      await page.waitForTimeout(500)
+      // Wait for MC options to appear
+      await expect(page.locator('[data-testid="mc-option"]').first()).toBeVisible({ timeout: 2000 })
     }
 
     // Check for MC options
@@ -217,12 +215,9 @@ test.describe('User Story 3: Multiple Choice Submit Button', () => {
     // Select first option
     await mcOptions.first().click()
 
-    // Wait to ensure no auto-submission occurs
-    await page.waitForTimeout(500)
-
     // Verify Submit button exists and is visible (not Next button)
     const submitButton = page.locator('[data-testid="mc-submit"]')
-    await expect(submitButton).toBeVisible()
+    await expect(submitButton).toBeVisible({ timeout: 1000 })
 
     // Verify Next button is NOT visible yet (no auto-submit happened)
     const nextButton = page.locator('[data-testid="mc-next"]')
@@ -266,7 +261,8 @@ test.describe('User Story 3: Multiple Choice Submit Button', () => {
     const mcModeButton = page.locator('button:has-text("Multiple Choice")')
     if ((await mcModeButton.count()) > 0) {
       await mcModeButton.click()
-      await page.waitForTimeout(500)
+      // Wait for MC options to appear
+      await expect(page.locator('[data-testid="mc-option"]').first()).toBeVisible({ timeout: 2000 })
     }
 
     const mcOptions = page.locator('[data-testid="mc-option"]')
@@ -277,7 +273,7 @@ test.describe('User Story 3: Multiple Choice Submit Button', () => {
     const submitButton = page.locator('[data-testid="mc-submit"]')
 
     // Initially, Submit button should be disabled (no selection yet)
-    await expect(submitButton).toBeDisabled()
+    await expect(submitButton).toBeDisabled({ timeout: 1000 })
 
     // Select an option
     await mcOptions.first().click()
@@ -309,7 +305,8 @@ test.describe('User Story 3: Multiple Choice Submit Button', () => {
     const mcModeButton = page.locator('button:has-text("Multiple Choice")')
     if ((await mcModeButton.count()) > 0) {
       await mcModeButton.click()
-      await page.waitForTimeout(500)
+      // Wait for MC options to appear
+      await expect(page.locator('[data-testid="mc-option"]').first()).toBeVisible({ timeout: 2000 })
     }
 
     const mcOptions = page.locator('[data-testid="mc-option"]')
@@ -327,13 +324,12 @@ test.describe('User Story 3: Multiple Choice Submit Button', () => {
     await expect(submitButton).toBeVisible()
     await expect(nextButton).not.toBeVisible()
 
-    // Click Submit
+    // Click Submit and wait for Next button to appear
     await submitButton.click()
-    await page.waitForTimeout(200)
+    await expect(nextButton).toBeVisible({ timeout: 2000 })
 
     // After submission: Submit button hidden, Next button visible
     await expect(submitButton).not.toBeVisible()
-    await expect(nextButton).toBeVisible()
 
     // Verify feedback is shown (correct/incorrect styling)
     const hasCorrectFeedback = await mcOptions.first().evaluate((el) => {
@@ -368,7 +364,8 @@ test.describe('User Story 3: Multiple Choice Submit Button', () => {
     const mcModeButton = page.locator('button:has-text("Multiple Choice")')
     if ((await mcModeButton.count()) > 0) {
       await mcModeButton.click()
-      await page.waitForTimeout(500)
+      // Wait for MC options to appear
+      await expect(page.locator('[data-testid="mc-option"]').first()).toBeVisible({ timeout: 2000 })
     }
 
     const mcOptions = page.locator('[data-testid="mc-option"]')
@@ -380,7 +377,8 @@ test.describe('User Story 3: Multiple Choice Submit Button', () => {
     await mcOptions.first().click()
     const submitButton = page.locator('[data-testid="mc-submit"]')
     await submitButton.click()
-    await page.waitForTimeout(200)
+    // Wait for feedback to appear
+    await expect(page.locator('[data-testid="mc-next"]')).toBeVisible({ timeout: 2000 })
 
     // Try to select a different option
     const secondOption = mcOptions.nth(1)
@@ -412,7 +410,8 @@ test.describe('User Story 3: Multiple Choice Submit Button', () => {
     const mcModeButton = page.locator('button:has-text("Multiple Choice")')
     if ((await mcModeButton.count()) > 0) {
       await mcModeButton.click()
-      await page.waitForTimeout(500)
+      // Wait for MC options to appear
+      await expect(page.locator('[data-testid="mc-option"]').first()).toBeVisible({ timeout: 2000 })
     }
 
     const mcOptions = page.locator('[data-testid="mc-option"]')
@@ -428,19 +427,16 @@ test.describe('User Story 3: Multiple Choice Submit Button', () => {
     await submitButton.click()
     await submitButton.click()
 
-    // Wait for processing
-    await page.waitForTimeout(300)
+    // Next button should appear only once
+    const nextButton = page.locator('[data-testid="mc-next"]')
+    await expect(nextButton).toBeVisible({ timeout: 2000 })
 
     // Submit button should be hidden (not clickable anymore)
     await expect(submitButton).not.toBeVisible()
-
-    // Next button should appear only once
-    const nextButton = page.locator('[data-testid="mc-next"]')
-    await expect(nextButton).toBeVisible()
   })
 })
 
-test.describe('User Story 1: Study Individual Node with Children', () => {
+test.describe('User Story 1: Study Individual Node with Children @slow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/goals')
     await page.waitForLoadState('networkidle')
@@ -471,7 +467,6 @@ test.describe('User Story 1: Study Individual Node with Children', () => {
     // For this test, we'll click the first node and verify highlighting
     const firstNode = skillNodes.first()
     await firstNode.click()
-    await page.waitForTimeout(200)
 
     // Verify node has highlighted state (via CSS class or style)
     const isHighlighted = await firstNode.evaluate((el) => {
@@ -521,14 +516,13 @@ test.describe('User Story 1: Study Individual Node with Children', () => {
       test.skip()
     }
 
-    // Highlight a node
+    // Highlight a node and wait for study button to appear
     await skillNodes.first().click()
-    await page.waitForTimeout(200)
 
     // Look for study button on the highlighted node
     const studyButton = page.locator('[data-testid="study-button"]')
 
-    await expect(studyButton).toBeVisible()
+    await expect(studyButton).toBeVisible({ timeout: 2000 })
 
     // Verify button shows card count (e.g., "Study 15 cards" or "Study N cards")
     const buttonText = await studyButton.textContent()
@@ -563,11 +557,10 @@ test.describe('User Story 1: Study Individual Node with Children', () => {
 
         // Verify tooltip shows "No cards available"
         await studyButton.hover()
-        await page.waitForTimeout(200)
 
         const tooltip = page.locator('text=/No cards available/')
         if ((await tooltip.count()) > 0) {
-          await expect(tooltip).toBeVisible()
+          await expect(tooltip).toBeVisible({ timeout: 1000 })
         }
       }
     }
@@ -594,7 +587,6 @@ test.describe('User Story 1: Study Individual Node with Children', () => {
 
     // Highlight node
     await skillNodes.first().click()
-    await page.waitForTimeout(200)
 
     const studyButton = page.locator('[data-testid="study-button"]')
     if ((await studyButton.count()) === 0) {
@@ -603,11 +595,10 @@ test.describe('User Story 1: Study Individual Node with Children', () => {
 
     // Click study button to open modal
     await studyButton.click()
-    await page.waitForTimeout(300)
 
     // Verify modal appears
     const modal = page.locator('[data-testid="card-count-modal"]')
-    await expect(modal).toBeVisible()
+    await expect(modal).toBeVisible({ timeout: 2000 })
 
     // Verify slider exists
     const slider = page.locator('[data-testid="card-count-slider"]')
@@ -640,7 +631,6 @@ test.describe('User Story 1: Study Individual Node with Children', () => {
     }
 
     await skillNodes.first().click()
-    await page.waitForTimeout(200)
 
     const studyButton = page.locator('[data-testid="study-button"]')
     if ((await studyButton.count()) === 0) {
@@ -654,18 +644,17 @@ test.describe('User Story 1: Study Individual Node with Children', () => {
     // 2. Start session directly
     if (buttonText?.match(/Study [1-4] card(s)?/)) {
       await studyButton.click()
-      await page.waitForTimeout(300)
 
       const modal = page.locator('[data-testid="card-count-modal"]')
 
       if ((await modal.count()) > 0) {
         // Modal should show only "All (N)" option, no slider
         const allOption = modal.locator('text=/Study all \\d+ card(s)?/')
-        await expect(allOption).toBeVisible()
+        await expect(allOption).toBeVisible({ timeout: 2000 })
       } else {
         // Session started directly - verify we're in study mode
         const flashcard = page.locator('[data-testid="flashcard"]')
-        await expect(flashcard).toBeVisible()
+        await expect(flashcard).toBeVisible({ timeout: 2000 })
       }
     }
   })
@@ -691,7 +680,6 @@ test.describe('User Story 1: Study Individual Node with Children', () => {
 
     // Highlight node and start study
     await skillNodes.first().click()
-    await page.waitForTimeout(200)
 
     const studyButton = page.locator('[data-testid="study-button"]')
     if ((await studyButton.count()) === 0) {
@@ -699,7 +687,6 @@ test.describe('User Story 1: Study Individual Node with Children', () => {
     }
 
     await studyButton.click()
-    await page.waitForTimeout(300)
 
     // In modal, select minimum cards (5 or All if less)
     const modal = page.locator('[data-testid="card-count-modal"]')
@@ -720,7 +707,8 @@ test.describe('User Story 1: Study Individual Node with Children', () => {
       }
 
       await showAnswerButton.click()
-      await page.waitForTimeout(700)
+      // Wait for answer to be revealed
+      await expect(page.locator('button:has-text("Good")')).toBeVisible({ timeout: 2000 })
 
       const goodButton = page.locator('button:has-text("Good")')
       if ((await goodButton.count()) === 0) {
@@ -728,14 +716,11 @@ test.describe('User Story 1: Study Individual Node with Children', () => {
       }
 
       await goodButton.click()
-      await page.waitForTimeout(500)
     }
 
-    // Wait for session to complete
-    await page.waitForTimeout(1000)
-
-    // Verify session summary appears
+    // Wait for session to complete and summary to appear
     const summary = page.locator('[data-testid="session-summary"]')
+    await page.waitForTimeout(500) // Small wait for final card processing
 
     if ((await summary.count()) > 0) {
       await expect(summary).toBeVisible()
@@ -777,7 +762,6 @@ test.describe('User Story 1: Study Individual Node with Children', () => {
     }
 
     await skillNodes.first().click()
-    await page.waitForTimeout(200)
 
     const studyButton = page.locator('[data-testid="study-button"]')
     if ((await studyButton.count()) === 0) {
@@ -785,7 +769,6 @@ test.describe('User Story 1: Study Individual Node with Children', () => {
     }
 
     await studyButton.click()
-    await page.waitForTimeout(300)
 
     // Start session
     const modal = page.locator('[data-testid="card-count-modal"]')
@@ -827,7 +810,6 @@ test.describe('User Story 1: Study Individual Node with Children', () => {
 
     // Highlight second node (to ensure we're not getting all cards)
     await skillNodes.nth(1).click()
-    await page.waitForTimeout(200)
 
     const studyButton = page.locator('[data-testid="study-button"]')
     if ((await studyButton.count()) === 0) {
@@ -840,7 +822,6 @@ test.describe('User Story 1: Study Individual Node with Children', () => {
     const expectedCardCount = cardCountMatch ? parseInt(cardCountMatch[1]) : 0
 
     await studyButton.click()
-    await page.waitForTimeout(300)
 
     const modal = page.locator('[data-testid="card-count-modal"]')
     if ((await modal.count()) > 0) {
