@@ -1,35 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#7C3AED"/>
-      <stop offset="100%" stop-color="#EC4899"/>
-    </linearGradient>
-    <linearGradient id="loopGrad" x1="0%" y1="50%" x2="100%" y2="50%">
-      <stop offset="0%" stop-color="#14B8A6"/>
-      <stop offset="100%" stop-color="#06B6D4"/>
+    <linearGradient id="brainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F472B6"/>
+      <stop offset="100%" stop-color="#DB2777"/>
     </linearGradient>
   </defs>
 
-  <!-- Rounded square background -->
-  <rect x="2" y="2" width="28" height="28" rx="6" fill="url(#bgGrad)"/>
-
   <!-- Simplified brain shape -->
-  <ellipse cx="11" cy="16" rx="5" ry="7" fill="white" opacity="0.9"/>
-  <ellipse cx="21" cy="16" rx="5" ry="7" fill="white" opacity="0.9"/>
-  <ellipse cx="16" cy="16" rx="3" ry="5" fill="white" opacity="0.9"/>
+  <ellipse cx="16" cy="17" rx="11" ry="10" fill="url(#brainGrad)"/>
+  <circle cx="9" cy="11" r="5" fill="url(#brainGrad)"/>
+  <circle cx="16" cy="8" r="4" fill="url(#brainGrad)"/>
+  <circle cx="23" cy="11" r="5" fill="url(#brainGrad)"/>
 
-  <!-- Loop arrow -->
-  <path d="M8 12 C8 8 12 6 16 8 C18 9 19 11 18 13 M24 20 C24 24 20 26 16 24 C14 23 13 21 14 19"
-        stroke="url(#loopGrad)"
-        stroke-width="2"
-        stroke-linecap="round"
-        fill="none"/>
+  <!-- Horn-rimmed glasses - simplified -->
+  <ellipse cx="11" cy="16" rx="4" ry="3.5" fill="white" stroke="#1E1B4B" stroke-width="1.5"/>
+  <ellipse cx="21" cy="16" rx="4" ry="3.5" fill="white" stroke="#1E1B4B" stroke-width="1.5"/>
+  <path d="M15 15.5 L17 15.5" stroke="#1E1B4B" stroke-width="1.5"/>
 
-  <!-- Arrow heads -->
-  <polygon points="18,11 20,13 17,14" fill="#14B8A6"/>
-  <polygon points="14,21 12,19 15,18" fill="#06B6D4"/>
+  <!-- Googly eyes -->
+  <circle cx="11" cy="16" r="2.5" fill="white"/>
+  <circle cx="12" cy="15.5" r="1.5" fill="#1E1B4B"/>
+  <circle cx="21" cy="16" r="2.5" fill="white"/>
+  <circle cx="22" cy="15.5" r="1.5" fill="#1E1B4B"/>
 
-  <!-- Sparkle dots -->
-  <circle cx="10" cy="11" r="1.5" fill="#FBBF24"/>
-  <circle cx="22" cy="21" r="1.5" fill="#FBBF24"/>
+  <!-- Simple smile -->
+  <path d="M13 22 Q16 25 19 22" stroke="#BE185D" stroke-width="1.5" stroke-linecap="round" fill="none"/>
 </svg>

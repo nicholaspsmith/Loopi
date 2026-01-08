@@ -1,106 +1,80 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
   <defs>
-    <!-- Main gradient for the brain shape -->
-    <linearGradient id="brainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#8B5CF6"/>
+    <!-- Brain gradient - pink/coral tones -->
+    <linearGradient id="brainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F472B6"/>
       <stop offset="50%" stop-color="#EC4899"/>
-      <stop offset="100%" stop-color="#F97316"/>
+      <stop offset="100%" stop-color="#DB2777"/>
     </linearGradient>
 
-    <!-- Loop arrow gradient -->
-    <linearGradient id="loopGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#14B8A6"/>
-      <stop offset="100%" stop-color="#06B6D4"/>
-    </linearGradient>
-
-    <!-- Glow effect -->
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-      <feMerge>
-        <feMergeNode in="coloredBlur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
+    <!-- Subtle shadow -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.2"/>
     </filter>
-
-    <!-- Playful dots gradient -->
-    <radialGradient id="dotGradient1" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#FBBF24"/>
-      <stop offset="100%" stop-color="#F97316"/>
-    </radialGradient>
-
-    <radialGradient id="dotGradient2" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#A78BFA"/>
-      <stop offset="100%" stop-color="#8B5CF6"/>
-    </radialGradient>
-
-    <radialGradient id="dotGradient3" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#5EEAD4"/>
-      <stop offset="100%" stop-color="#14B8A6"/>
-    </radialGradient>
   </defs>
 
-  <!-- Background circle (optional, can be removed for transparent) -->
-  <circle cx="60" cy="60" r="56" fill="#1E1B4B" opacity="0"/>
+  <!-- Brain body - cartoon style with bumps -->
+  <g filter="url(#shadow)">
+    <!-- Main brain shape -->
+    <ellipse cx="60" cy="62" rx="38" ry="35" fill="url(#brainGrad)"/>
 
-  <!-- Stylized brain shape - left hemisphere -->
-  <path d="M35 45
-           C25 45 20 55 22 65
-           C24 75 30 82 40 84
-           C45 85 50 83 52 80
-           C48 78 45 72 45 65
-           C45 58 48 52 52 48
-           C50 45 42 43 35 45Z"
-        fill="url(#brainGradient)"
-        filter="url(#glow)"/>
+    <!-- Brain bumps - top -->
+    <circle cx="35" cy="40" r="18" fill="url(#brainGrad)"/>
+    <circle cx="60" cy="32" r="16" fill="url(#brainGrad)"/>
+    <circle cx="85" cy="40" r="18" fill="url(#brainGrad)"/>
 
-  <!-- Stylized brain shape - right hemisphere -->
-  <path d="M85 45
-           C95 45 100 55 98 65
-           C96 75 90 82 80 84
-           C75 85 70 83 68 80
-           C72 78 75 72 75 65
-           C75 58 72 52 68 48
-           C70 45 78 43 85 45Z"
-        fill="url(#brainGradient)"
-        filter="url(#glow)"/>
+    <!-- Brain bumps - sides -->
+    <circle cx="25" cy="58" r="12" fill="url(#brainGrad)"/>
+    <circle cx="95" cy="58" r="12" fill="url(#brainGrad)"/>
 
-  <!-- Brain center connection -->
-  <ellipse cx="60" cy="65" rx="12" ry="18" fill="url(#brainGradient)" filter="url(#glow)"/>
+    <!-- Brain fold line (center) -->
+    <path d="M60 35 Q58 50 60 65 Q62 80 60 92"
+          stroke="#BE185D" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.5"/>
 
-  <!-- The Loop - infinity/feedback loop shape wrapping the brain -->
-  <path d="M20 60
-           C20 40 35 30 50 35
-           C60 38 65 45 60 55
-           C55 65 45 70 35 65
-           C28 62 25 55 30 48
-           C35 42 45 42 55 48
-           L65 52
-           C75 42 85 42 90 48
-           C95 55 92 62 85 65
-           C75 70 65 65 60 55
-           C55 45 60 38 70 35
-           C85 30 100 40 100 60"
-        stroke="url(#loopGradient)"
-        stroke-width="4"
-        stroke-linecap="round"
-        fill="none"
-        filter="url(#glow)"/>
+    <!-- Brain wrinkle lines -->
+    <path d="M35 45 Q40 55 35 65" stroke="#BE185D" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.4"/>
+    <path d="M85 45 Q80 55 85 65" stroke="#BE185D" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.4"/>
+  </g>
 
-  <!-- Arrow head on the loop -->
-  <polygon points="100,54 108,60 100,66" fill="url(#loopGradient)"/>
-  <polygon points="20,54 12,60 20,66" fill="url(#loopGradient)"/>
+  <!-- Horn-rimmed glasses -->
+  <g>
+    <!-- Glasses bridge -->
+    <path d="M52 58 Q60 55 68 58" stroke="#1E1B4B" stroke-width="3" stroke-linecap="round" fill="none"/>
 
-  <!-- Playful neural dots/sparks -->
-  <circle cx="32" cy="52" r="4" fill="url(#dotGradient1)"/>
-  <circle cx="88" cy="52" r="4" fill="url(#dotGradient1)"/>
-  <circle cx="60" cy="38" r="5" fill="url(#dotGradient2)"/>
-  <circle cx="45" cy="72" r="3" fill="url(#dotGradient3)"/>
-  <circle cx="75" cy="72" r="3" fill="url(#dotGradient3)"/>
-  <circle cx="60" cy="82" r="4" fill="url(#dotGradient1)"/>
+    <!-- Left lens frame -->
+    <ellipse cx="40" cy="60" rx="14" ry="12" fill="white" stroke="#1E1B4B" stroke-width="4"/>
 
-  <!-- Small sparkle dots for extra playfulness -->
-  <circle cx="28" cy="70" r="2" fill="#FBBF24" opacity="0.8"/>
-  <circle cx="92" cy="70" r="2" fill="#FBBF24" opacity="0.8"/>
-  <circle cx="50" cy="45" r="2" fill="#5EEAD4" opacity="0.8"/>
-  <circle cx="70" cy="45" r="2" fill="#5EEAD4" opacity="0.8"/>
+    <!-- Right lens frame -->
+    <ellipse cx="80" cy="60" rx="14" ry="12" fill="white" stroke="#1E1B4B" stroke-width="4"/>
+
+    <!-- Left temple arm -->
+    <path d="M26 58 L22 52" stroke="#1E1B4B" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- Right temple arm -->
+    <path d="M94 58 L98 52" stroke="#1E1B4B" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Googly eyes -->
+  <g>
+    <!-- Left eye white -->
+    <circle cx="40" cy="60" r="10" fill="white"/>
+    <!-- Left pupil - slightly offset for personality -->
+    <circle cx="43" cy="58" r="5" fill="#1E1B4B"/>
+    <!-- Left eye shine -->
+    <circle cx="45" cy="56" r="2" fill="white"/>
+
+    <!-- Right eye white -->
+    <circle cx="80" cy="60" r="10" fill="white"/>
+    <!-- Right pupil - matching offset -->
+    <circle cx="83" cy="58" r="5" fill="#1E1B4B"/>
+    <!-- Right eye shine -->
+    <circle cx="85" cy="56" r="2" fill="white"/>
+  </g>
+
+  <!-- Friendly smile -->
+  <path d="M50 78 Q60 86 70 78" stroke="#BE185D" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+  <!-- Rosy cheeks -->
+  <ellipse cx="32" cy="72" rx="6" ry="4" fill="#FBBF24" opacity="0.4"/>
+  <ellipse cx="88" cy="72" rx="6" ry="4" fill="#FBBF24" opacity="0.4"/>
 </svg>
