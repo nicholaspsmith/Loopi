@@ -128,7 +128,11 @@
       "mcp__plugin_context7_context7__resolve-library-id",
       "mcp__plugin_context7_context7__query-docs",
       "Bash(npm run type-check:*)",
-      "Bash(claude task create)"
+      "Bash(claude task create)",
+      "Bash(sentry-cli projects list:*)",
+      "Bash(sentry-cli info:*)",
+      "Bash(sentry-cli send-event:*)",
+      "Bash(SENTRY_DSN=\"https://f04b03b5481c840fabcb0934d519474d@o4510672318955520.ingest.us.sentry.io/4510672320200704\" sentry-cli send-event:*)"
     ]
   },
   "enabledMcpjsonServers": [
