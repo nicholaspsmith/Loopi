@@ -1,5 +1,5 @@
 // This file configures the initialization of Sentry on the client.
-// The config you add here will be used whenever a user loads a page in their browser.
+// The added config here will be used whenever a user loads a page in their browser.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from '@sentry/nextjs'
@@ -10,10 +10,10 @@ Sentry.init({
   // Performance monitoring - sample 10% in production, 100% in development
   tracesSampleRate: process.env.NODE_ENV === 'development' ? 1.0 : 0.1,
 
-  // Session Replay - capture 10% of sessions, 100% of error sessions
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
+  // Enable logs to be sent to Sentry
+  enableLogs: true,
 
+  // Session Replay with privacy-focused settings
   integrations: [
     Sentry.replayIntegration({
       // Mask all text and block all media for privacy
@@ -22,26 +22,29 @@ Sentry.init({
     }),
   ],
 
+  // Replay sampling rates
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
+
+  // IMPORTANT: Do NOT send user PII - we handle privacy ourselves
+  sendDefaultPii: false,
+
   // Filter out noisy errors
   ignoreErrors: [
-    // Browser extensions
     /^chrome-extension:\/\//,
     /^moz-extension:\/\//,
-    // Network errors that aren't actionable
     'Failed to fetch',
     'NetworkError',
     'Load failed',
-    // User-initiated navigation
     'AbortError',
   ],
 
-  // Scrub sensitive data
+  // Scrub sensitive data before sending
   beforeSend(event) {
     // Remove any potential PII from breadcrumbs
     if (event.breadcrumbs) {
       event.breadcrumbs = event.breadcrumbs.map((breadcrumb) => {
         if (breadcrumb.data?.url) {
-          // Scrub query parameters that might contain sensitive data
           try {
             const url = new URL(breadcrumb.data.url)
             const sensitiveParams = ['token', 'key', 'password', 'secret', 'auth']
@@ -75,3 +78,5 @@ Sentry.init({
     return event
   },
 })
+
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart
