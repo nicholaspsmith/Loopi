@@ -7,6 +7,10 @@ import * as Sentry from '@sentry/nextjs'
 Sentry.init({
   dsn: 'https://f04b03b5481c840fabcb0934d519474d@o4510672318955520.ingest.us.sentry.io/4510672320200704',
 
+  // Use tunnel route to bypass ad-blockers
+  // This proxies Sentry requests through our own domain
+  tunnel: '/api/monitoring',
+
   // Performance monitoring - sample 10% in production, 100% in development
   tracesSampleRate: process.env.NODE_ENV === 'development' ? 1.0 : 0.1,
 

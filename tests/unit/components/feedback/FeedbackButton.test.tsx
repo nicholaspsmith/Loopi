@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import FeedbackButton from '@/components/feedback/FeedbackButton'
 
@@ -354,7 +354,10 @@ describe('FeedbackButton', () => {
     })
 
     // Wait for reset timeout to complete (200ms from component)
-    await new Promise((resolve) => setTimeout(resolve, 250))
+    // Wrap in act() to handle the async state update
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 250))
+    })
 
     // Reopen modal
     await user.click(button)
