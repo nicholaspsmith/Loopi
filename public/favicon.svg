@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#EC4899"/>
+    </linearGradient>
+    <linearGradient id="loopGrad" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#14B8A6"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect x="2" y="2" width="28" height="28" rx="6" fill="url(#bgGrad)"/>
+
+  <!-- Simplified brain shape -->
+  <ellipse cx="11" cy="16" rx="5" ry="7" fill="white" opacity="0.9"/>
+  <ellipse cx="21" cy="16" rx="5" ry="7" fill="white" opacity="0.9"/>
+  <ellipse cx="16" cy="16" rx="3" ry="5" fill="white" opacity="0.9"/>
+
+  <!-- Loop arrow -->
+  <path d="M8 12 C8 8 12 6 16 8 C18 9 19 11 18 13 M24 20 C24 24 20 26 16 24 C14 23 13 21 14 19"
+        stroke="url(#loopGrad)"
+        stroke-width="2"
+        stroke-linecap="round"
+        fill="none"/>
+
+  <!-- Arrow heads -->
+  <polygon points="18,11 20,13 17,14" fill="#14B8A6"/>
+  <polygon points="14,21 12,19 15,18" fill="#06B6D4"/>
+
+  <!-- Sparkle dots -->
+  <circle cx="10" cy="11" r="1.5" fill="#FBBF24"/>
+  <circle cx="22" cy="21" r="1.5" fill="#FBBF24"/>
+</svg>

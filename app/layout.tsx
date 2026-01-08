@@ -7,7 +7,15 @@ export const metadata: Metadata = {
     default: 'MemoryLoop',
     template: '%s | MemoryLoop',
   },
-  description: 'Flashcard learning platform with spaced repetition',
+  description: 'Master any skill with AI-powered spaced repetition learning',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/manifest.json',
 }
 
 export const viewport: Viewport = {

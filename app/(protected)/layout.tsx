@@ -5,6 +5,7 @@ import Navigation from '@/components/nav/Navigation'
 import { PageTransition } from '@/components/ui/PageTransition'
 import { EmailVerificationBanner } from '@/components/auth/EmailVerificationBanner'
 import FeedbackButton from '@/components/feedback/FeedbackButton'
+import Logo from '@/components/ui/Logo'
 
 /**
  * Protected Layout
@@ -30,9 +31,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
           <div className="flex flex-col space-y-3 sm:space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  MemoryLoop
-                </h1>
+                <Logo size="md" />
                 {session.user?.name && (
                   <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
                     Welcome, {session.user.name}
