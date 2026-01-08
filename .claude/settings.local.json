@@ -120,7 +120,15 @@
       "Bash(npx tsx:*)",
       "Bash(git push:*)",
       "Bash(gh pr create:*)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "mcp__plugin_serena_serena__find_file",
+      "mcp__plugin_serena_serena__activate_project",
+      "Bash(JINA_API_KEY=$JINA_API_KEY npx lance-context:*)",
+      "mcp__lance-context__index_codebase",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "Bash(npm run type-check:*)",
+      "Bash(claude task create)"
     ]
   },
   "enabledMcpjsonServers": [
