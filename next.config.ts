@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next'
+import { withSentryConfig } from '@sentry/nextjs'
 
 // Validate required environment variables at build time
 import './lib/env'
@@ -22,4 +23,27 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['@lancedb/lancedb'],
 }
 
-export default nextConfig
+// Wrap with Sentry configuration
+export default withSentryConfig(nextConfig, {
+  // Sentry organization and project (required for source maps)
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Upload source maps for readable stack traces
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
+
+  // Suppress Sentry CLI output in CI
+  silent: !process.env.CI,
+
+  // Disable telemetry
+  telemetry: false,
+
+  // Tree-shake Sentry debug logging in production
+  bundleSizeOptimizations: {
+    excludeDebugStatements: true,
+    excludeReplayIframe: true,
+    excludeReplayShadowDom: true,
+  },
+})
