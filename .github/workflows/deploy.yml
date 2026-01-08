@@ -76,26 +76,26 @@ jobs:
       - name: Setup VPS directories
         run: |
           ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
-          mkdir -p /opt/memoryloop/scripts
-          mkdir -p /opt/memoryloop/data/lancedb
-          mkdir -p /opt/memoryloop/data/postgres
-          mkdir -p /opt/memoryloop/backups
-          mkdir -p /opt/memoryloop/nginx
+          mkdir -p /opt/loopi/scripts
+          mkdir -p /opt/loopi/data/lancedb
+          mkdir -p /opt/loopi/data/postgres
+          mkdir -p /opt/loopi/backups
+          mkdir -p /opt/loopi/nginx
           ENDSSH
 
       - name: Copy deployment files
         run: |
-          scp -i ~/.ssh/deploy_key docker-compose.prod.yml ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/memoryloop/
-          scp -i ~/.ssh/deploy_key scripts/deploy.sh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/memoryloop/scripts/
-          scp -i ~/.ssh/deploy_key nginx/nginx.conf ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/memoryloop/nginx/
-          scp -i ~/.ssh/deploy_key nginx/memoryloop.conf ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/memoryloop/nginx/
-          scp -i ~/.ssh/deploy_key nginx/ssl-params.conf ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/memoryloop/nginx/
-          ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "chmod +x /opt/memoryloop/scripts/deploy.sh"
+          scp -i ~/.ssh/deploy_key docker-compose.prod.yml ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/loopi/
+          scp -i ~/.ssh/deploy_key scripts/deploy.sh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/loopi/scripts/
+          scp -i ~/.ssh/deploy_key nginx/nginx.conf ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/loopi/nginx/
+          scp -i ~/.ssh/deploy_key nginx/loopi.conf ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/loopi/nginx/
+          scp -i ~/.ssh/deploy_key nginx/ssl-params.conf ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/loopi/nginx/
+          ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "chmod +x /opt/loopi/scripts/deploy.sh"
 
       - name: Deploy to VPS
         run: |
           ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
-          cd /opt/memoryloop
+          cd /opt/loopi
 
           # Set image name for deploy script
           export IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest

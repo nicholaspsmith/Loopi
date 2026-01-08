@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Database backup script for MemoryLoop
+# Database backup script for Loopi
 # Creates PostgreSQL backups and optionally uploads to B2/S3
 #
 # Usage:
@@ -11,11 +11,11 @@ set -e
 #   ./backup-db.sh --restore <file>   # Restore from backup
 #
 # Cron example (daily at 2am):
-#   0 2 * * * /opt/memoryloop/scripts/backup-db.sh --upload >> /var/log/memoryloop-backup.log 2>&1
+#   0 2 * * * /opt/loopi/scripts/backup-db.sh --upload >> /var/log/loopi-backup.log 2>&1
 
-DEPLOY_DIR="/opt/memoryloop"
+DEPLOY_DIR="/opt/loopi"
 BACKUP_DIR="${DEPLOY_DIR}/backups"
-CONTAINER_NAME="memoryloop-postgres"
+CONTAINER_NAME="loopi-postgres"
 RETENTION_DAYS=7
 
 # Database credentials from environment or defaults
@@ -48,7 +48,7 @@ log_error() {
 # Create backup
 create_backup() {
     local TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-    local BACKUP_FILE="memoryloop-${TIMESTAMP}.sql.gz"
+    local BACKUP_FILE="loopi-${TIMESTAMP}.sql.gz"
     local BACKUP_PATH="${BACKUP_DIR}/${BACKUP_FILE}"
 
     log_info "Creating backup: ${BACKUP_FILE}"
@@ -100,10 +100,10 @@ upload_to_b2() {
 cleanup_old_backups() {
     log_info "Cleaning up backups older than ${RETENTION_DAYS} days..."
 
-    local COUNT=$(find "${BACKUP_DIR}" -name "memoryloop-*.sql.gz" -mtime +${RETENTION_DAYS} | wc -l)
+    local COUNT=$(find "${BACKUP_DIR}" -name "loopi-*.sql.gz" -mtime +${RETENTION_DAYS} | wc -l)
 
     if [ "${COUNT}" -gt 0 ]; then
-        find "${BACKUP_DIR}" -name "memoryloop-*.sql.gz" -mtime +${RETENTION_DAYS} -delete
+        find "${BACKUP_DIR}" -name "loopi-*.sql.gz" -mtime +${RETENTION_DAYS} -delete
         log_info "Deleted ${COUNT} old backup(s)"
     else
         log_info "No old backups to delete"
@@ -116,7 +116,7 @@ list_backups() {
     echo ""
 
     if [ -d "${BACKUP_DIR}" ]; then
-        ls -lh "${BACKUP_DIR}"/memoryloop-*.sql.gz 2>/dev/null || echo "No backups found"
+        ls -lh "${BACKUP_DIR}"/loopi-*.sql.gz 2>/dev/null || echo "No backups found"
     else
         echo "Backup directory does not exist"
     fi

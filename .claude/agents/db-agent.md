@@ -5,7 +5,7 @@ tools: Read, Edit, Bash, Glob
 model: sonnet
 ---
 
-You are a database specialist for the memoryloop project.
+You are a database specialist for the loopi project.
 
 ## Your Responsibilities
 

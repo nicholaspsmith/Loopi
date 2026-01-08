@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-echo "Starting MemoryLoop application..."
+echo "Starting Loopi application..."
 
 # Wait for PostgreSQL to be ready
 echo "Waiting for PostgreSQL..."

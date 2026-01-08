@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
 
-# Deployment script for MemoryLoop
+# Deployment script for Loopi
 # This script is executed on the VPS during deployment
 
-DEPLOY_DIR="/opt/memoryloop"
-IMAGE_NAME="${IMAGE_NAME:-ghcr.io/nicholaspsmith/memoryloop:latest}"
+DEPLOY_DIR="/opt/loopi"
+IMAGE_NAME="${IMAGE_NAME:-ghcr.io/nicholaspsmith/loopi:latest}"
 COMPOSE_FILE="${DEPLOY_DIR}/docker-compose.prod.yml"
 
 echo "=== Deploying ${IMAGE_NAME} ==="
@@ -29,15 +29,15 @@ docker pull "${IMAGE_NAME}"
 
 # Create backup of current state
 BACKUP_TAG="backup-$(date +%Y%m%d-%H%M%S)"
-if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "memoryloop-backup"; then
+if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "loopi-backup"; then
     echo "Removing old backup..."
-    docker rmi memoryloop-backup:latest 2>/dev/null || true
+    docker rmi loopi-backup:latest 2>/dev/null || true
 fi
 
 # Tag current image as backup (if exists)
 if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "${IMAGE_NAME}"; then
     echo "Creating backup of current image..."
-    docker tag "${IMAGE_NAME}" "memoryloop-backup:${BACKUP_TAG}" 2>/dev/null || true
+    docker tag "${IMAGE_NAME}" "loopi-backup:${BACKUP_TAG}" 2>/dev/null || true
 fi
 
 # Stop existing app container
@@ -54,7 +54,7 @@ PG_ATTEMPTS=0
 PG_MAX=30
 while [ $PG_ATTEMPTS -lt $PG_MAX ]; do
     PG_ATTEMPTS=$((PG_ATTEMPTS + 1))
-    if docker exec memoryloop-postgres pg_isready -U memoryloop > /dev/null 2>&1; then
+    if docker exec loopi-postgres pg_isready -U memoryloop > /dev/null 2>&1; then
         echo "PostgreSQL is ready."
         break
     fi
@@ -64,7 +64,7 @@ done
 
 # Install pgcrypto extension (idempotent)
 echo "Ensuring pgcrypto extension is installed..."
-docker exec memoryloop-postgres psql -U memoryloop -d memoryloop -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;" 2>/dev/null || true
+docker exec loopi-postgres psql -U memoryloop -d memoryloop -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;" 2>/dev/null || true
 
 # Wait for app health check
 echo "Waiting for health check..."
@@ -77,7 +77,7 @@ while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
     echo "Attempt ${ATTEMPT}/${MAX_ATTEMPTS}..."
 
     # Check if container is healthy
-    HEALTH=$(docker inspect --format='{{.State.Health.Status}}' memoryloop-app 2>/dev/null || echo "unknown")
+    HEALTH=$(docker inspect --format='{{.State.Health.Status}}' loopi-app 2>/dev/null || echo "unknown")
 
     if [ "$HEALTH" = "healthy" ]; then
         HEALTHY=true
@@ -102,9 +102,9 @@ else
     docker compose -f "${COMPOSE_FILE}" stop app
 
     # Restore backup if available
-    if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "memoryloop-backup:${BACKUP_TAG}"; then
+    if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "loopi-backup:${BACKUP_TAG}"; then
         echo "Restoring backup..."
-        docker tag "memoryloop-backup:${BACKUP_TAG}" "${IMAGE_NAME}"
+        docker tag "loopi-backup:${BACKUP_TAG}" "${IMAGE_NAME}"
         docker compose -f "${COMPOSE_FILE}" up -d app
     fi
 

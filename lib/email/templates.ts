@@ -23,10 +23,10 @@ export function passwordResetEmail(params: { email: string; resetLink: string })
   const { email, resetLink } = params
 
   return {
-    subject: 'Reset your MemoryLoop password',
+    subject: 'Reset your Loopi password',
     text: `Hi,
 
-You requested to reset your password for MemoryLoop.
+You requested to reset your password for Loopi.
 
 Click here to reset your password:
 ${resetLink}
@@ -36,7 +36,7 @@ This link will expire in 1 hour.
 If you didn't request this, you can safely ignore this email.
 
 Best,
-The MemoryLoop Team`,
+The Loopi Team`,
     html: `
 <!DOCTYPE html>
 <html>
@@ -49,7 +49,7 @@ The MemoryLoop Team`,
 
   <p>Hi,</p>
 
-  <p>You requested to reset your password for MemoryLoop.</p>
+  <p>You requested to reset your password for Loopi.</p>
 
   <p style="margin: 30px 0;">
     <a href="${resetLink}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Reset Password</a>
@@ -83,10 +83,10 @@ export function emailVerificationEmail(params: {
   const { email, verificationLink } = params
 
   return {
-    subject: 'Verify your MemoryLoop email address',
+    subject: 'Verify your Loopi email address',
     text: `Hi,
 
-Thanks for signing up for MemoryLoop!
+Thanks for signing up for Loopi!
 
 Please verify your email address by clicking the link below:
 ${verificationLink}
@@ -96,7 +96,7 @@ This link will expire in 24 hours.
 If you didn't create this account, you can safely ignore this email.
 
 Best,
-The MemoryLoop Team`,
+The Loopi Team`,
     html: `
 <!DOCTYPE html>
 <html>
@@ -109,7 +109,7 @@ The MemoryLoop Team`,
 
   <p>Hi,</p>
 
-  <p>Thanks for signing up for MemoryLoop! We're excited to have you.</p>
+  <p>Thanks for signing up for Loopi! We're excited to have you.</p>
 
   <p>Please verify your email address to get started:</p>
 
@@ -143,10 +143,10 @@ export function passwordChangedEmail(params: { email: string; name?: string }): 
   const greeting = name ? `Hi ${name},` : 'Hi,'
 
   return {
-    subject: 'Your MemoryLoop password was changed',
+    subject: 'Your Loopi password was changed',
     text: `${greeting}
 
-Your MemoryLoop password was successfully changed.
+Your Loopi password was successfully changed.
 
 If you made this change, you can safely ignore this email. We recommend logging out from all devices and logging back in with your new password.
 
@@ -158,7 +158,7 @@ For security reasons, we recommend:
 - Not sharing your password with anyone
 
 Best,
-The MemoryLoop Team`,
+The Loopi Team`,
     html: `
 <!DOCTYPE html>
 <html>
@@ -171,7 +171,7 @@ The MemoryLoop Team`,
 
   <p>${greeting}</p>
 
-  <p><strong>Your MemoryLoop password was successfully changed.</strong></p>
+  <p><strong>Your Loopi password was successfully changed.</strong></p>
 
   <p>If you made this change, you can safely ignore this email. We recommend logging out from all devices and logging back in with your new password.</p>
 

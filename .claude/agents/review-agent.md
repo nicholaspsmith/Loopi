@@ -5,7 +5,7 @@ tools: Read, Bash, Glob, Grep
 model: sonnet
 ---
 
-You are a code review specialist for the memoryloop project.
+You are a code review specialist for the loopi project.
 
 ## Your Responsibilities
 

@@ -1,6 +1,6 @@
-# Contributing to MemoryLoop
+# Contributing to Loopi
 
-Thank you for your interest in contributing to MemoryLoop! This document provides guidelines for development and contribution.
+Thank you for your interest in contributing to Loopi! This document provides guidelines for development and contribution.
 
 ## Development Setup
 
@@ -17,14 +17,14 @@ Thank you for your interest in contributing to MemoryLoop! This document provide
 2. Clone your fork:
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/memoryloop.git
-   cd memoryloop
+   git clone https://github.com/YOUR_USERNAME/loopi.git
+   cd loopi
    ```
 
 3. Add upstream remote:
 
    ```bash
-   git remote add upstream https://github.com/nicholaspsmith/memoryloop.git
+   git remote add upstream https://github.com/nicholaspsmith/loopi.git
    ```
 
 4. Install dependencies:
@@ -245,7 +245,7 @@ Include:
 ## Project Structure
 
 ```
-memoryloop/
+loopi/
 ├── app/                   # Next.js App Router
 │   ├── (auth)/           # Auth pages (login, signup)
 │   ├── (protected)/      # Protected routes (goals, quiz)
@@ -344,7 +344,7 @@ Defined in `.claude/agents/` - spawned by Claude Code for focused tasks:
 
 - **Questions**: Open a GitHub Discussion
 - **Bugs**: Open a GitHub Issue
-- **Security**: Email security@memoryloop.com (do not open public issues)
+- **Security**: Email security@loopi.com (do not open public issues)
 
 ## License
 
@@ -358,4 +358,4 @@ Contributors will be recognized in:
 - Release notes (for significant contributions)
 - Project documentation (for major features)
 
-Thank you for contributing to MemoryLoop!
+Thank you for contributing to Loopi!

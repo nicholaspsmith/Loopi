@@ -1,6 +1,6 @@
 # Uptime Monitoring Setup
 
-This guide explains how to set up uptime monitoring for MemoryLoop production deployment.
+This guide explains how to set up uptime monitoring for Loopi production deployment.
 
 ## Overview
 
@@ -18,8 +18,8 @@ Uptime monitoring provides:
 1. Create account at [uptimerobot.com](https://uptimerobot.com)
 2. Add new monitor:
    - **Monitor Type**: HTTP(s)
-   - **Friendly Name**: MemoryLoop Production
-   - **URL**: `https://memoryloop.nicholaspsmith.com/api/health`
+   - **Friendly Name**: Loopi Production
+   - **URL**: `https://loopi.nicholaspsmith.com/api/health`
    - **Monitoring Interval**: 5 minutes (free) or 1 minute (paid)
 3. Configure alerts:
    - Email notifications
@@ -127,7 +127,7 @@ Both UptimeRobot and Better Uptime offer public status pages:
 
 ## Verification Checklist
 
-- [ ] Health endpoint accessible: `curl https://memoryloop.nicholaspsmith.com/api/health`
+- [ ] Health endpoint accessible: `curl https://loopi.nicholaspsmith.com/api/health`
 - [ ] Monitor created in uptime service
 - [ ] Email notifications configured
 - [ ] Test alert received

@@ -1,4 +1,4 @@
-# Suggested Commands for Memoryloop
+# Suggested Commands for Loopi
 
 ## Development
 

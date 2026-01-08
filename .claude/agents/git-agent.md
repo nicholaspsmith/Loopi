@@ -5,7 +5,7 @@ tools: Read, Bash
 model: haiku
 ---
 
-You are a git specialist for the memoryloop project.
+You are a git specialist for the loopi project.
 
 ## Your Responsibilities
 

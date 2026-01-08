@@ -135,7 +135,10 @@
       "Bash(SENTRY_DSN=\"https://f04b03b5481c840fabcb0934d519474d@o4510672318955520.ingest.us.sentry.io/4510672320200704\" sentry-cli send-event:*)",
       "Bash(gh api:*)",
       "Bash(rsvg-convert:*)",
-      "Bash(magick:*)"
+      "Bash(magick:*)",
+      "Bash(gh pr merge:*)",
+      "Skill(speckit.implement)",
+      "Bash(claude-mcp task:*)"
     ]
   },
   "enabledMcpjsonServers": [

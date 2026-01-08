@@ -18,7 +18,7 @@ const feedbackSchema = z.object({
 
 // Validate GitHub repo format (owner/repo pattern)
 const GITHUB_REPO_PATTERN = /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/
-const GITHUB_REPO = process.env.GITHUB_REPO || 'nicholaspsmith/memoryloop'
+const GITHUB_REPO = process.env.GITHUB_REPO || 'nicholaspsmith/loopi'
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN
 
 // Simple in-memory rate limiting: 5 submissions per hour per user
@@ -154,7 +154,7 @@ ${feedbackBody}
         Authorization: `Bearer ${GITHUB_TOKEN}`,
         Accept: 'application/vnd.github.v3+json',
         'Content-Type': 'application/json',
-        'User-Agent': 'memoryloop-feedback',
+        'User-Agent': 'loopi-feedback',
       },
       body: JSON.stringify({
         title: issueTitle,

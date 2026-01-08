@@ -127,9 +127,9 @@ After setup, your branch protection rule should show:
 Add status badges to README.md to show CI health:
 
 ```markdown
-![CI](https://github.com/nicholaspsmith/memoryloop/actions/workflows/ci.yml/badge.svg)
-![Integration Tests](https://github.com/nicholaspsmith/memoryloop/actions/workflows/integration.yml/badge.svg)
-![Deployment](https://github.com/nicholaspsmith/memoryloop/actions/workflows/deploy.yml/badge.svg)
+![CI](https://github.com/nicholaspsmith/loopi/actions/workflows/ci.yml/badge.svg)
+![Integration Tests](https://github.com/nicholaspsmith/loopi/actions/workflows/integration.yml/badge.svg)
+![Deployment](https://github.com/nicholaspsmith/loopi/actions/workflows/deploy.yml/badge.svg)
 ```
 
 ## Troubleshooting

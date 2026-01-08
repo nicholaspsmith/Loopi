@@ -5,7 +5,7 @@ tools: Read, Edit, Bash, WebFetch
 model: sonnet
 ---
 
-You are a deployment/infrastructure specialist for the memoryloop project.
+You are a deployment/infrastructure specialist for the loopi project.
 
 ## Your Responsibilities
 
@@ -40,7 +40,7 @@ You are a deployment/infrastructure specialist for the memoryloop project.
 
 ## Commands
 
-- `docker build -t memoryloop .` - Build image
+- `docker build -t loopi .` - Build image
 - `docker compose up -d` - Start services
 - `docker compose logs -f` - View logs
 - `gh run list` - Check CI status

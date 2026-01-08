@@ -1,5 +1,5 @@
 /**
- * MemoryLoop Brand Colors & Design Tokens
+ * Loopi Brand Colors & Design Tokens
  *
  * A playful, vibrant color palette that represents:
  * - Learning & intelligence (purple)

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# VPS Setup Script for MemoryLoop
+# VPS Setup Script for Loopi
 # Run this on a fresh Ubuntu 22.04+ VPS as root
 #
 # Usage: ./setup-vps.sh [DEPLOY_USER_SSH_PUBLIC_KEY]
@@ -15,7 +15,7 @@ set -e
 
 # Configuration
 DEPLOY_USER="deploy"
-DEPLOY_DIR="/opt/memoryloop"
+DEPLOY_DIR="/opt/loopi"
 DATA_DIR="${DEPLOY_DIR}/data"
 
 # Colors for output

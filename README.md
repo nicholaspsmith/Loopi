@@ -1,25 +1,25 @@
 <p align="center">
-  <img src="public/logo.svg" alt="MemoryLoop Logo" width="120" height="120">
+  <img src="public/logo.svg" alt="Loopi Logo" width="120" height="120">
 </p>
 
-<h1 align="center">MemoryLoop</h1>
+<h1 align="center">Loopi</h1>
 
 <p align="center">
   <strong>Master any skill with AI-powered spaced repetition learning</strong>
 </p>
 
 <p align="center">
-  <a href="https://github.com/nicholaspsmith/memoryloop/actions/workflows/ci.yml">
-    <img src="https://github.com/nicholaspsmith/memoryloop/actions/workflows/ci.yml/badge.svg" alt="CI">
+  <a href="https://github.com/nicholaspsmith/loopi/actions/workflows/ci.yml">
+    <img src="https://github.com/nicholaspsmith/loopi/actions/workflows/ci.yml/badge.svg" alt="CI">
   </a>
-  <a href="https://github.com/nicholaspsmith/memoryloop/actions/workflows/deploy.yml">
-    <img src="https://github.com/nicholaspsmith/memoryloop/actions/workflows/deploy.yml/badge.svg" alt="Deploy">
+  <a href="https://github.com/nicholaspsmith/loopi/actions/workflows/deploy.yml">
+    <img src="https://github.com/nicholaspsmith/loopi/actions/workflows/deploy.yml/badge.svg" alt="Deploy">
   </a>
 </p>
 
 ---
 
-MemoryLoop is a web application that enables you to learn through conversation with Claude and convert those conversations into flashcards for spaced repetition practice.
+Loopi is a web application that enables you to learn through conversation with Claude and convert those conversations into flashcards for spaced repetition practice.
 
 ## Features
 
@@ -55,8 +55,8 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed database design rationale.
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/nicholaspsmith/memoryloop.git
-cd memoryloop
+git clone https://github.com/nicholaspsmith/loopi.git
+cd loopi
 ```
 
 ### 2. Install dependencies
@@ -89,7 +89,7 @@ SMTP_HOST=smtp.ethereal.email
 SMTP_PORT=587
 SMTP_USER=your-ethereal-username
 SMTP_PASS=your-ethereal-password
-SMTP_FROM=noreply@memoryloop.com
+SMTP_FROM=noreply@loopi.com
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
@@ -140,7 +140,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Project Structure
 
 ````
-memoryloop/
+loopi/
 ├── app/                    # Next.js App Router
 │   ├── (auth)/            # Authentication pages
 │   ├── (protected)/       # Protected routes (chat, quiz)
@@ -219,9 +219,9 @@ npm run format
 
 ## Deployment
 
-MemoryLoop uses Docker-based deployment with GitHub Actions CI/CD:
+Loopi uses Docker-based deployment with GitHub Actions CI/CD:
 
-- **Production URL**: [memoryloop.nicholaspsmith.com](https://memoryloop.nicholaspsmith.com)
+- **Production URL**: [loopi.nicholaspsmith.com](https://loopi.nicholaspsmith.com)
 - **CI/CD**: Automated testing and deployment on merge to main
 
 ### Quick Start
@@ -251,4 +251,4 @@ MIT License - see LICENSE file for details
 
 ## Support
 
-For issues or questions, please [open an issue](https://github.com/nicholaspsmith/memoryloop/issues) on GitHub.
+For issues or questions, please [open an issue](https://github.com/nicholaspsmith/loopi/issues) on GitHub.

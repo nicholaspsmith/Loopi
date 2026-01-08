@@ -1,6 +1,6 @@
 {
-  "name": "MemoryLoop",
-  "short_name": "MemoryLoop",
+  "name": "Loopi",
+  "short_name": "Loopi",
   "description": "Master any skill with AI-powered spaced repetition learning",
   "start_url": "/goals",
   "display": "standalone",

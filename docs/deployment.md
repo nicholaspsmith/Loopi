@@ -1,10 +1,10 @@
 # Deployment Guide
 
-This guide covers the complete deployment process for MemoryLoop.
+This guide covers the complete deployment process for Loopi.
 
 ## Overview
 
-MemoryLoop uses a containerized deployment with:
+Loopi uses a containerized deployment with:
 
 - **Docker Compose** for container orchestration
 - **GitHub Actions** for CI/CD pipeline
@@ -23,7 +23,7 @@ MemoryLoop uses a containerized deployment with:
 │  └─────────────────────┬───────────────────────────┘    │
 │                        │                                 │
 │  ┌─────────────────────▼───────────────────────────┐    │
-│  │              memoryloop-app                      │    │
+│  │              loopi-app                      │    │
 │  │              (Next.js :3000)                     │    │
 │  └─────────────────────┬───────────────────────────┘    │
 │                        │                                 │
@@ -74,15 +74,15 @@ See [github-secrets-setup.md](./github-secrets-setup.md) for detailed instructio
 ssh root@your-vps-ip
 
 # Download and run setup script
-curl -fsSL https://raw.githubusercontent.com/nicholaspsmith/memoryloop/main/scripts/setup-vps.sh | bash -s -- "your-ssh-public-key"
+curl -fsSL https://raw.githubusercontent.com/nicholaspsmith/loopi/main/scripts/setup-vps.sh | bash -s -- "your-ssh-public-key"
 ```
 
 Or manually:
 
 ```bash
 # Clone the repo temporarily
-git clone https://github.com/nicholaspsmith/memoryloop.git /tmp/memoryloop
-cd /tmp/memoryloop
+git clone https://github.com/nicholaspsmith/loopi.git /tmp/loopi
+cd /tmp/loopi
 
 # Run setup script with your SSH public key
 ./scripts/setup-vps.sh "ssh-rsa AAAA..."
@@ -94,7 +94,7 @@ The script configures:
 - Docker and Docker Compose
 - Deploy user with sudo access
 - SSH hardening and fail2ban
-- Directory structure at `/opt/memoryloop`
+- Directory structure at `/opt/loopi`
 
 ### 2. Configure Environment
 
@@ -103,18 +103,18 @@ The script configures:
 ssh deploy@your-vps-ip
 
 # Create environment file
-cat > /opt/memoryloop/.env << 'EOF'
-DATABASE_URL=postgresql://memoryloop:your-password@postgres:5432/memoryloop
-POSTGRES_USER=memoryloop
+cat > /opt/loopi/.env << 'EOF'
+DATABASE_URL=postgresql://loopi:your-password@postgres:5432/loopi
+POSTGRES_USER=loopi
 POSTGRES_PASSWORD=your-password
-POSTGRES_DB=memoryloop
+POSTGRES_DB=loopi
 NEXTAUTH_SECRET=your-nextauth-secret
-NEXTAUTH_URL=https://memoryloop.yourdomain.com
+NEXTAUTH_URL=https://loopi.yourdomain.com
 ENCRYPTION_KEY=your-encryption-key
 API_KEY_ENCRYPTION_SECRET=your-api-key-secret
 EOF
 
-chmod 600 /opt/memoryloop/.env
+chmod 600 /opt/loopi/.env
 ```
 
 ### 3. Configure DNS
@@ -122,7 +122,7 @@ chmod 600 /opt/memoryloop/.env
 Create an A record pointing your domain to the VPS IP:
 
 ```
-memoryloop.yourdomain.com -> YOUR_VPS_IP
+loopi.yourdomain.com -> YOUR_VPS_IP
 ```
 
 ### 4. Obtain SSL Certificate
@@ -132,11 +132,11 @@ memoryloop.yourdomain.com -> YOUR_VPS_IP
 sudo apt install certbot python3-certbot-nginx
 
 # Obtain certificate
-sudo certbot certonly --standalone -d memoryloop.yourdomain.com
+sudo certbot certonly --standalone -d loopi.yourdomain.com
 
 # Certificate will be at:
-# /etc/letsencrypt/live/memoryloop.yourdomain.com/fullchain.pem
-# /etc/letsencrypt/live/memoryloop.yourdomain.com/privkey.pem
+# /etc/letsencrypt/live/loopi.yourdomain.com/fullchain.pem
+# /etc/letsencrypt/live/loopi.yourdomain.com/privkey.pem
 ```
 
 ## Deployment Process
@@ -163,10 +163,10 @@ Deployments are triggered automatically when:
 ```bash
 # SSH to VPS
 ssh deploy@your-vps-ip
-cd /opt/memoryloop
+cd /opt/loopi
 
 # Pull latest image
-docker pull ghcr.io/nicholaspsmith/memoryloop:latest
+docker pull ghcr.io/nicholaspsmith/loopi:latest
 
 # Run deploy script
 ./scripts/deploy.sh
@@ -178,14 +178,14 @@ For the initial deployment:
 
 ```bash
 # Copy production compose file
-scp docker-compose.prod.yml deploy@your-vps-ip:/opt/memoryloop/
+scp docker-compose.prod.yml deploy@your-vps-ip:/opt/loopi/
 
 # Copy nginx configuration
-scp nginx/*.conf deploy@your-vps-ip:/opt/memoryloop/nginx/
+scp nginx/*.conf deploy@your-vps-ip:/opt/loopi/nginx/
 
 # SSH and start services
 ssh deploy@your-vps-ip
-cd /opt/memoryloop
+cd /opt/loopi
 docker compose -f docker-compose.prod.yml up -d
 ```
 
@@ -198,9 +198,9 @@ docker compose -f docker-compose.prod.yml up -d
 docker ps
 
 # Check logs
-docker logs memoryloop-app
-docker logs memoryloop-postgres
-docker logs memoryloop-nginx
+docker logs loopi-app
+docker logs loopi-postgres
+docker logs loopi-nginx
 
 # Check health endpoint
 curl http://localhost:3000/api/health
@@ -218,10 +218,10 @@ curl http://localhost:3000/api/health
 
 ```bash
 # Check logs
-docker logs memoryloop-app --tail 100
+docker logs loopi-app --tail 100
 
 # Check environment
-docker exec memoryloop-app env | grep -v PASSWORD
+docker exec loopi-app env | grep -v PASSWORD
 
 # Restart container
 docker compose -f docker-compose.prod.yml restart app
@@ -231,13 +231,13 @@ docker compose -f docker-compose.prod.yml restart app
 
 ```bash
 # Check postgres is running
-docker exec memoryloop-postgres pg_isready -U memoryloop
+docker exec loopi-postgres pg_isready -U loopi
 
 # Check database exists
-docker exec memoryloop-postgres psql -U memoryloop -c "\l"
+docker exec loopi-postgres psql -U loopi -c "\l"
 
 # View postgres logs
-docker logs memoryloop-postgres --tail 50
+docker logs loopi-postgres --tail 50
 ```
 
 ### SSL Certificate Issues

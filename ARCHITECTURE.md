@@ -1,8 +1,8 @@
-# MemoryLoop Architecture
+# Loopi Architecture
 
 ## Database Architecture: Hybrid System
 
-MemoryLoop uses a **hybrid database architecture** with PostgreSQL and LanceDB working together, each optimized for their specific use cases.
+Loopi uses a **hybrid database architecture** with PostgreSQL and LanceDB working together, each optimized for their specific use cases.
 
 ---
 
@@ -157,7 +157,7 @@ User rates flashcard
 - ⚠️ Two databases to maintain
 - ⚠️ More complex architecture
 
-**Decision:** Hybrid is the best fit for MemoryLoop's use case.
+**Decision:** Hybrid is the best fit for Loopi's use case.
 
 ---
 

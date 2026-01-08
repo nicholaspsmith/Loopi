@@ -107,7 +107,7 @@ export async function processQueue(): Promise<number> {
   console.log(`📧 Processing ${pendingEmails.length} pending emails...`)
 
   const emailClient = initializeEmailClient()
-  const from = process.env.SMTP_FROM || 'noreply@memoryloop.com'
+  const from = process.env.SMTP_FROM || 'noreply@loopi.com'
 
   let processed = 0
 

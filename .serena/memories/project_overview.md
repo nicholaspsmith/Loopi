@@ -1,8 +1,8 @@
-# Memoryloop Project Overview
+# Loopi Project Overview
 
 ## Purpose
 
-Memoryloop is a spaced repetition learning application that uses AI to generate flashcards from conversations. Users can:
+Loopi is a spaced repetition learning application that uses AI to generate flashcards from conversations. Users can:
 
 - Chat with Claude AI to learn topics
 - Generate flashcards from chat content

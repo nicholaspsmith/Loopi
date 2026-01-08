@@ -1,13 +1,13 @@
 # Operations Runbook
 
-This runbook covers common operational tasks for MemoryLoop production environment.
+This runbook covers common operational tasks for Loopi production environment.
 
 ## Quick Reference
 
 | Task             | Command                                                 |
 | ---------------- | ------------------------------------------------------- |
 | Check status     | `./scripts/monitor.sh`                                  |
-| View logs        | `docker logs memoryloop-app --tail 100 -f`              |
+| View logs        | `docker logs loopi-app --tail 100 -f`                   |
 | Restart app      | `docker compose -f docker-compose.prod.yml restart app` |
 | Rollback         | `./scripts/rollback.sh <backup-tag>`                    |
 | Backup database  | `./scripts/backup-db.sh`                                |
@@ -18,14 +18,14 @@ This runbook covers common operational tasks for MemoryLoop production environme
 ### Starting Services
 
 ```bash
-cd /opt/memoryloop
+cd /opt/loopi
 docker compose -f docker-compose.prod.yml up -d
 ```
 
 ### Stopping Services
 
 ```bash
-cd /opt/memoryloop
+cd /opt/loopi
 docker compose -f docker-compose.prod.yml down
 ```
 
@@ -49,12 +49,12 @@ docker compose -f docker-compose.prod.yml restart postgres
 docker compose -f docker-compose.prod.yml logs -f
 
 # Specific service
-docker logs memoryloop-app --tail 100 -f
-docker logs memoryloop-postgres --tail 100 -f
-docker logs memoryloop-nginx --tail 100 -f
+docker logs loopi-app --tail 100 -f
+docker logs loopi-postgres --tail 100 -f
+docker logs loopi-nginx --tail 100 -f
 
 # Since specific time
-docker logs memoryloop-app --since 1h
+docker logs loopi-app --since 1h
 ```
 
 ## Rollback Procedures
@@ -86,14 +86,14 @@ The rollback script:
 ./scripts/backup-db.sh --list
 
 # Restore from backup (WARNING: destructive)
-./scripts/backup-db.sh --restore /opt/memoryloop/backups/memoryloop-20251221-020000.sql.gz
+./scripts/backup-db.sh --restore /opt/loopi/backups/loopi-20251221-020000.sql.gz
 ```
 
 ## Backup & Restore
 
 ### Database Backups
 
-Backups are stored in `/opt/memoryloop/backups/` and retained for 7 days.
+Backups are stored in `/opt/loopi/backups/` and retained for 7 days.
 
 ```bash
 # Create manual backup
@@ -115,16 +115,16 @@ Add to crontab for daily backups:
 crontab -e
 
 # Add daily backup at 2 AM
-0 2 * * * /opt/memoryloop/scripts/backup-db.sh --upload >> /var/log/memoryloop-backup.log 2>&1
+0 2 * * * /opt/loopi/scripts/backup-db.sh --upload >> /var/log/loopi-backup.log 2>&1
 ```
 
 ### Data Directories
 
-| Directory                       | Contents          | Backup Priority |
-| ------------------------------- | ----------------- | --------------- |
-| `/opt/memoryloop/data/postgres` | PostgreSQL data   | High            |
-| `/opt/memoryloop/data/lancedb`  | Vector embeddings | Medium          |
-| `/opt/memoryloop/backups`       | Database backups  | High            |
+| Directory                  | Contents          | Backup Priority |
+| -------------------------- | ----------------- | --------------- |
+| `/opt/loopi/data/postgres` | PostgreSQL data   | High            |
+| `/opt/loopi/data/lancedb`  | Vector embeddings | Medium          |
+| `/opt/loopi/backups`       | Database backups  | High            |
 
 ## Troubleshooting
 
@@ -133,7 +133,7 @@ crontab -e
 1. **Check container status**
 
    ```bash
-   docker ps -a | grep memoryloop
+   docker ps -a | grep loopi
    ```
 
 2. **Check health endpoint**
@@ -145,7 +145,7 @@ crontab -e
 3. **Check application logs**
 
    ```bash
-   docker logs memoryloop-app --tail 200
+   docker logs loopi-app --tail 200
    ```
 
 4. **Restart application**
@@ -158,19 +158,19 @@ crontab -e
 1. **Check postgres container**
 
    ```bash
-   docker exec memoryloop-postgres pg_isready -U memoryloop
+   docker exec loopi-postgres pg_isready -U loopi
    ```
 
 2. **Check connection from app container**
 
    ```bash
-   docker exec memoryloop-app nc -zv postgres 5432
+   docker exec loopi-app nc -zv postgres 5432
    ```
 
 3. **Check postgres logs**
 
    ```bash
-   docker logs memoryloop-postgres --tail 100
+   docker logs loopi-postgres --tail 100
    ```
 
 4. **Restart postgres (causes downtime)**
@@ -190,7 +190,7 @@ crontab -e
 2. **Check for memory leaks**
 
    ```bash
-   docker exec memoryloop-app node --expose-gc -e "console.log(process.memoryUsage())"
+   docker exec loopi-app node --expose-gc -e "console.log(process.memoryUsage())"
    ```
 
 3. **Restart application to free memory**
@@ -217,13 +217,13 @@ crontab -e
 3. **Clean old backups**
 
    ```bash
-   find /opt/memoryloop/backups -name "*.sql.gz" -mtime +7 -delete
+   find /opt/loopi/backups -name "*.sql.gz" -mtime +7 -delete
    ```
 
 4. **Clean old logs**
    ```bash
-   docker logs memoryloop-app --since 24h > /tmp/recent-logs.txt
-   truncate -s 0 $(docker inspect --format='{{.LogPath}}' memoryloop-app)
+   docker logs loopi-app --since 24h > /tmp/recent-logs.txt
+   truncate -s 0 $(docker inspect --format='{{.LogPath}}' loopi-app)
    ```
 
 ### SSL Certificate Expiry
@@ -249,7 +249,7 @@ crontab -e
 
 ### PostgreSQL
 
-Edit `/opt/memoryloop/data/postgres/postgresql.conf`:
+Edit `/opt/loopi/data/postgres/postgresql.conf`:
 
 ```ini
 # Memory settings (adjust based on available RAM)

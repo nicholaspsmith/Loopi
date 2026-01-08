@@ -19,13 +19,13 @@ Navigate to: **Settings → Secrets and variables → Actions → New repository
 
   ```bash
   # On your local machine
-  ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/memoryloop_deploy
+  ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/loopi_deploy
 
   # Add public key to VPS
-  ssh-copy-id -i ~/.ssh/memoryloop_deploy.pub deploy@your-vps-ip
+  ssh-copy-id -i ~/.ssh/loopi_deploy.pub deploy@your-vps-ip
 
   # Copy private key content for GitHub secret
-  cat ~/.ssh/memoryloop_deploy
+  cat ~/.ssh/loopi_deploy
   ```
 
 - **Value**: Paste the entire private key content (including `-----BEGIN OPENSSH PRIVATE KEY-----` and `-----END OPENSSH PRIVATE KEY-----`)
@@ -34,19 +34,19 @@ Navigate to: **Settings → Secrets and variables → Actions → New repository
 ### 3. `VPS_HOST`
 
 - **Description**: IP address or hostname of your VPS
-- **Example**: `123.456.789.012` or `memoryloop.nicholaspsmith.com`
+- **Example**: `123.456.789.012` or `loopi.nicholaspsmith.com`
 - **Used in**: `.github/workflows/deploy.yml` (SSH target)
 
 ### 4. `VPS_USER`
 
 - **Description**: Username for SSH connection to VPS
-- **Example**: `deploy` or `memoryloop`
+- **Example**: `deploy` or `loopi`
 - **Used in**: `.github/workflows/deploy.yml` (SSH user)
 
 ### 5. `NEXT_PUBLIC_APP_URL` (Optional)
 
 - **Description**: Public URL of the deployed application
-- **Example**: `https://memoryloop.nicholaspsmith.com`
+- **Example**: `https://loopi.nicholaspsmith.com`
 - **Used in**: `.github/workflows/deploy.yml` (build-time environment variable)
 
 ### 6. `DEPLOYMENT_WEBHOOK_URL` (Optional)

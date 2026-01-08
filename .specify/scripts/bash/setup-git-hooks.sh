@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Setup Git Hooks for MemoryLoop
+# Setup Git Hooks for Loopi
 #
 # This script configures Git to use custom hooks from the .githooks directory
 # instead of the default .git/hooks directory.
@@ -14,13 +14,13 @@ SCRIPT_DIR="$(CDPATH="" cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 GITHOOKS_DIR="$REPO_ROOT/.githooks"
 
-echo "🔧 Setting up Git hooks for MemoryLoop"
+echo "🔧 Setting up Git hooks for Loopi"
 echo ""
 
 # Check if we're in a git repository
 if [[ ! -d "$REPO_ROOT/.git" ]]; then
     echo "❌ Error: Not a git repository"
-    echo "   Run this script from within the memoryloop git repository"
+    echo "   Run this script from within the loopi git repository"
     exit 1
 fi
 

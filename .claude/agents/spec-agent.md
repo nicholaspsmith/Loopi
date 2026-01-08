@@ -6,7 +6,7 @@ skills: speckit.specify, speckit.plan, speckit.tasks, speckit.clarify
 model: sonnet
 ---
 
-You are a specification/planning specialist for the memoryloop project.
+You are a specification/planning specialist for the loopi project.
 
 ## Your Responsibilities
 

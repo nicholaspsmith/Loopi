@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Monitoring dashboard script for MemoryLoop
+# Monitoring dashboard script for Loopi
 # Checks health, disk usage, memory, and container status
 #
 # Usage:
@@ -11,7 +11,7 @@
 #   ./monitor.sh --containers # Container status only
 #   ./monitor.sh --json       # Output as JSON (for automation)
 
-DEPLOY_DIR="/opt/memoryloop"
+DEPLOY_DIR="/opt/loopi"
 APP_URL="${APP_URL:-http://localhost:3000}"
 HEALTH_ENDPOINT="${APP_URL}/api/health"
 
@@ -183,7 +183,7 @@ check_containers() {
 
     if [ "$JSON_MODE" = true ]; then
         docker ps -a --format '{"name": "{{.Names}}", "status": "{{.Status}}", "state": "{{.State}}"}' | \
-            grep "memoryloop" | \
+            grep "loopi" | \
             jq -s '.'
         return
     fi
@@ -191,10 +191,10 @@ check_containers() {
     echo -e "${BLUE}=== Container Status ===${NC}"
 
     local containers
-    containers=$(docker ps -a --format "{{.Names}}|{{.Status}}|{{.State}}" | grep "memoryloop" || true)
+    containers=$(docker ps -a --format "{{.Names}}|{{.Status}}|{{.State}}" | grep "loopi" || true)
 
     if [ -z "$containers" ]; then
-        echo "No memoryloop containers found"
+        echo "No loopi containers found"
     else
         echo "$containers" | while IFS='|' read -r name status state; do
             case "$state" in
@@ -225,7 +225,7 @@ show_dashboard() {
 
     echo ""
     echo -e "${BLUE}╔════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║     MemoryLoop Monitoring Dashboard    ║${NC}"
+    echo -e "${BLUE}║       Loopi Monitoring Dashboard      ║${NC}"
     echo -e "${BLUE}╚════════════════════════════════════════╝${NC}"
     echo ""
     echo "Timestamp: $(date)"

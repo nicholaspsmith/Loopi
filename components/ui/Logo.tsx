@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 /**
- * MemoryLoop Logo Component
+ * Loopi Logo Component
  *
  * Displays the brand logo with optional text.
  * Links to the home/goals page.
@@ -30,14 +30,14 @@ export default function Logo({ showText = true, size = 'md', className = '' }: L
     <Link href="/goals" className={`flex items-center gap-2 ${className}`}>
       <Image
         src="/favicon.svg"
-        alt="MemoryLoop logo"
+        alt="Loopi logo"
         width={logo}
         height={logo}
         className="flex-shrink-0"
         priority
       />
       {showText && (
-        <span className={`font-bold text-gray-900 dark:text-gray-100 ${text}`}>MemoryLoop</span>
+        <span className={`font-bold text-gray-900 dark:text-gray-100 ${text}`}>Loopi</span>
       )}
     </Link>
   )

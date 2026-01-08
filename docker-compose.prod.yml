@@ -1,8 +1,8 @@
 services:
   # Production application
   app:
-    image: ghcr.io/nicholaspsmith/memoryloop:latest
-    container_name: memoryloop-app
+    image: ghcr.io/nicholaspsmith/loopi:latest
+    container_name: loopi-app
     restart: always
     expose:
       - '3000'
@@ -28,9 +28,9 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - memoryloop-network
+      - loopi-network
     volumes:
-      - /opt/memoryloop/data/lancedb:/app/data/lancedb
+      - /opt/loopi/data/lancedb:/app/data/lancedb
     logging:
       driver: 'json-file'
       options:
@@ -40,7 +40,7 @@ services:
   # PostgreSQL database
   postgres:
     image: postgres:15-alpine
-    container_name: memoryloop-postgres
+    container_name: loopi-postgres
     restart: always
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
@@ -49,15 +49,15 @@ services:
     expose:
       - '5432'
     volumes:
-      - /opt/memoryloop/data/postgres:/var/lib/postgresql/data
-      - /opt/memoryloop/backups:/backups
+      - /opt/loopi/data/postgres:/var/lib/postgresql/data
+      - /opt/loopi/backups:/backups
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}']
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - memoryloop-network
+      - loopi-network
     logging:
       driver: 'json-file'
       options:
@@ -67,20 +67,20 @@ services:
   # Nginx reverse proxy with SSL
   nginx:
     image: nginx:alpine
-    container_name: memoryloop-nginx
+    container_name: loopi-nginx
     restart: always
     ports:
       - '80:80'
       - '443:443'
     volumes:
-      - /opt/memoryloop/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - /opt/memoryloop/nginx/memoryloop.conf:/etc/nginx/conf.d/default.conf:ro
+      - /opt/loopi/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /opt/loopi/nginx/loopi.conf:/etc/nginx/conf.d/default.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
-      - /opt/memoryloop/nginx/ssl-params.conf:/etc/nginx/ssl-params.conf:ro
+      - /opt/loopi/nginx/ssl-params.conf:/etc/nginx/ssl-params.conf:ro
     depends_on:
       - app
     networks:
-      - memoryloop-network
+      - loopi-network
     logging:
       driver: 'json-file'
       options:
@@ -88,5 +88,5 @@ services:
         max-file: '3'
 
 networks:
-  memoryloop-network:
+  loopi-network:
     driver: bridge

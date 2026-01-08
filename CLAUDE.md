@@ -1,4 +1,4 @@
-# Claude Code Instructions for memoryloop
+# Claude Code Instructions for loopi
 
 This project uses speckit for feature specification and task tracking.
 
@@ -241,6 +241,7 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 
 - @anthropic-ai/sdk 0.71.2 ([docs](https://docs.anthropic.com/en/api/client-sdks))
 - @lancedb/lancedb 0.22.3 ([docs](https://lancedb.github.io/lancedb))
+- @sentry/nextjs 10.32.1 ([docs](https://www.npmjs.com/package/@sentry/nextjs/v/10.32.1))
 - @types/nodemailer 7.0.4 ([docs](https://www.npmjs.com/package/@types/nodemailer/v/7.0.4))
 - bcryptjs 3.0.3 ([docs](https://www.npmjs.com/package/bcryptjs/v/3.0.3))
 - canvas-confetti 1.9.4 ([docs](https://www.npmjs.com/package/canvas-confetti/v/1.9.4))

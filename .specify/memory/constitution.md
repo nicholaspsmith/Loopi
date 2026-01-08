@@ -29,7 +29,7 @@ Ratification Date: 2025-12-14 (Original adoption - unchanged)
 Last Amendment: 2025-12-16 (New principle addition)
 -->
 
-# memoryloop Constitution
+# loopi Constitution
 
 ## Core Principles
 

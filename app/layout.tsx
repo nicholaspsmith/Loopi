@@ -4,8 +4,8 @@ import SessionProvider from '@/components/auth/SessionProvider'
 
 export const metadata: Metadata = {
   title: {
-    default: 'MemoryLoop',
-    template: '%s | MemoryLoop',
+    default: 'Loopi',
+    template: '%s | Loopi',
   },
   description: 'Master any skill with AI-powered spaced repetition learning',
   icons: {

@@ -108,7 +108,7 @@ export async function sendEmail(params: {
     throw new Error('Email body is required')
   }
 
-  const from = process.env.SMTP_FROM || 'noreply@memoryloop.com'
+  const from = process.env.SMTP_FROM || 'noreply@loopi.com'
 
   try {
     // Prefer Resend HTTP API (no port restrictions)

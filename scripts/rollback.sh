@@ -1,15 +1,15 @@
 #!/bin/bash
 set -e
 
-# Rollback script for MemoryLoop
+# Rollback script for Loopi
 # Reverts to a previous Docker image version
 #
 # Usage:
 #   ./rollback.sh              # List available backup images
 #   ./rollback.sh <tag>        # Rollback to specific backup tag
 
-DEPLOY_DIR="/opt/memoryloop"
-IMAGE_NAME="${IMAGE_NAME:-ghcr.io/nicholaspsmith/memoryloop:latest}"
+DEPLOY_DIR="/opt/loopi"
+IMAGE_NAME="${IMAGE_NAME:-ghcr.io/nicholaspsmith/loopi:latest}"
 COMPOSE_FILE="${DEPLOY_DIR}/docker-compose.prod.yml"
 
 # Colors for output
@@ -34,14 +34,14 @@ log_error() {
 list_backups() {
     log_info "Available backup images:"
     echo ""
-    docker images --format "table {{.Repository}}:{{.Tag}}\t{{.CreatedAt}}\t{{.Size}}" | grep "memoryloop-backup" || echo "No backup images found"
+    docker images --format "table {{.Repository}}:{{.Tag}}\t{{.CreatedAt}}\t{{.Size}}" | grep "loopi-backup" || echo "No backup images found"
     echo ""
 }
 
 # Rollback to specific backup
 rollback_to() {
     local BACKUP_TAG="$1"
-    local BACKUP_IMAGE="memoryloop-backup:${BACKUP_TAG}"
+    local BACKUP_IMAGE="loopi-backup:${BACKUP_TAG}"
 
     # Check if backup exists
     if ! docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "${BACKUP_IMAGE}"; then
@@ -76,7 +76,7 @@ rollback_to() {
     while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
         ATTEMPT=$((ATTEMPT + 1))
 
-        HEALTH=$(docker inspect --format='{{.State.Health.Status}}' memoryloop-app 2>/dev/null || echo "unknown")
+        HEALTH=$(docker inspect --format='{{.State.Health.Status}}' loopi-app 2>/dev/null || echo "unknown")
 
         if [ "$HEALTH" = "healthy" ]; then
             HEALTHY=true
@@ -93,7 +93,7 @@ rollback_to() {
     else
         log_error "Rollback failed - container not healthy"
         log_warn "Manual intervention may be required"
-        docker logs --tail 50 memoryloop-app
+        docker logs --tail 50 loopi-app
         exit 1
     fi
 }
