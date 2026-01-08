@@ -17,6 +17,10 @@ WORKDIR /app
 # Build arguments for Next.js build
 ARG API_KEY_ENCRYPTION_SECRET
 ARG NEXT_PUBLIC_APP_URL
+ARG SENTRY_AUTH_TOKEN
+ARG SENTRY_ORG
+ARG SENTRY_PROJECT
+ARG NEXT_PUBLIC_SENTRY_DSN
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
@@ -34,6 +38,10 @@ ENV NODE_ENV=production
 ENV SKIP_ENV_VALIDATION=true
 ENV API_KEY_ENCRYPTION_SECRET=${API_KEY_ENCRYPTION_SECRET:-placeholder-build-secret-32char}
 ENV DATABASE_URL=postgresql://build:build@localhost:5432/build
+ENV SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
+ENV SENTRY_ORG=${SENTRY_ORG}
+ENV SENTRY_PROJECT=${SENTRY_PROJECT}
+ENV NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
 RUN npm run build
 
 # Stage 3: Runner
