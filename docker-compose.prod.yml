@@ -24,6 +24,8 @@ services:
       - API_KEY_ENCRYPTION_SECRET=${API_KEY_ENCRYPTION_SECRET}
       - RESEND_API_KEY=${RESEND_API_KEY}
       - SMTP_FROM=${SMTP_FROM}
+      - SENTRY_DSN=${SENTRY_DSN}
+      - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
     depends_on:
       postgres:
         condition: service_healthy
