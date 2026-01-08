@@ -1,23 +1,20 @@
-/**
- * Sentry Server Configuration
- *
- * This file configures the Sentry SDK for the Node.js server runtime.
- * Imported by instrumentation.ts when NEXT_RUNTIME === 'nodejs'.
- */
+// This file configures the initialization of Sentry on the server.
+// The config you add here will be used whenever the server handles a request.
+// https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from '@sentry/nextjs'
 
 Sentry.init({
-  dsn: process.env.SENTRY_DSN,
+  dsn: 'https://f04b03b5481c840fabcb0934d519474d@o4510672318955520.ingest.us.sentry.io/4510672320200704',
 
-  // Disable Sentry in development unless explicitly enabled
-  enabled: process.env.NODE_ENV === 'production' || process.env.SENTRY_ENABLED === 'true',
-
-  // Performance monitoring - sample 10% in production
+  // Performance monitoring - sample 10% in production, 100% in development
   tracesSampleRate: process.env.NODE_ENV === 'development' ? 1.0 : 0.1,
 
-  // Enable profiling for performance analysis (sample 10% of traces)
-  profilesSampleRate: 0.1,
+  // Enable logs to be sent to Sentry
+  enableLogs: true,
+
+  // IMPORTANT: Do NOT send user PII - we handle privacy ourselves
+  sendDefaultPii: false,
 
   // Set environment
   environment: process.env.NODE_ENV || 'development',

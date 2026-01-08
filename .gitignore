@@ -51,3 +51,6 @@ lancedb/
 
 # macos directory settings
 .DS_Store
+
+# Sentry Config File
+.env.sentry-build-plugin

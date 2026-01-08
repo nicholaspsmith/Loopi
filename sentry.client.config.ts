@@ -1,19 +1,13 @@
-/**
- * Sentry Client Configuration
- *
- * This file configures the Sentry SDK for the browser/client-side.
- * Initialized automatically by Next.js instrumentation.
- */
+// This file configures the initialization of Sentry on the client.
+// The config you add here will be used whenever a user loads a page in their browser.
+// https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from '@sentry/nextjs'
 
 Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  dsn: 'https://f04b03b5481c840fabcb0934d519474d@o4510672318955520.ingest.us.sentry.io/4510672320200704',
 
-  // Disable Sentry in development unless explicitly enabled
-  enabled: process.env.NODE_ENV === 'production' || process.env.SENTRY_ENABLED === 'true',
-
-  // Performance monitoring - sample 10% in production
+  // Performance monitoring - sample 10% in production, 100% in development
   tracesSampleRate: process.env.NODE_ENV === 'development' ? 1.0 : 0.1,
 
   // Session Replay - capture 10% of sessions, 100% of error sessions
