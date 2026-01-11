@@ -23,29 +23,28 @@ Loopi is a web application that enables you to learn through conversation with C
 
 ## Screenshots
 
-<p align="center">
-  <img src="docs/screenshots/goals-dashboard.png" alt="Goals Dashboard" width="800">
-  <br>
-  <em>Goals Dashboard - Track your learning goals and progress</em>
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/study-session.png" alt="Study Session" width="800">
-  <br>
-  <em>Study Session - Practice with AI-generated flashcards</em>
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/skill-tree.png" alt="Skill Tree" width="800">
-  <br>
-  <em>Skill Tree - Visualize your knowledge structure</em>
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/progress-stats.png" alt="Progress Statistics" width="800">
-  <br>
-  <em>Progress Statistics - Monitor your learning journey</em>
-</p>
+<table>
+  <tr>
+    <td align="center">
+      <img src="docs/screenshots/study-session.png" alt="Study Session" width="400"><br>
+      <em>Study Session</em>
+    </td>
+    <td align="center">
+      <img src="docs/screenshots/goal-dashboard.png" alt="Goals Dashboard" width="400"><br>
+      <em>Goals Dashboard</em>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/screenshots/progress-stats.png" alt="Progress Statistics" width="400"><br>
+      <em>Progress Statistics</em>
+    </td>
+    <td align="center">
+      <img src="docs/screenshots/skill-tree.png" alt="Skill Tree" width="400"><br>
+      <em>Skill Tree</em>
+    </td>
+  </tr>
+</table>
 
 ## Features
 

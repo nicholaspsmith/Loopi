@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import Image from 'next/image'
 import { auth } from '@/auth'
 import LoginForm from '@/components/auth/LoginForm'
 
@@ -25,12 +26,13 @@ export default async function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
-            Sign in
+          <div className="flex justify-center mb-4">
+            <Image src="/logo.svg" alt="Loopi Logo" width={80} height={80} priority />
+          </div>
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-2">
+            Loopi
           </h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Access your MemoryLoop account
-          </p>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Access your Loopi account</p>
         </div>
 
         <LoginForm />

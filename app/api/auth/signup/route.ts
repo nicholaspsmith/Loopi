@@ -86,12 +86,17 @@ export async function POST(request: NextRequest) {
       metadata: { verificationEmailSent: true },
     })
 
-    // Automatically sign in the user after signup
-    await signIn('credentials', {
-      email: data.email,
-      password: data.password,
-      redirect: false,
-    })
+    // Automatically sign in the user after signup (non-blocking)
+    try {
+      await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      })
+    } catch (signInError) {
+      // Auto-signin failed, but account was created - user can login manually
+      console.warn('Auto-signin after signup failed:', signInError)
+    }
 
     // Return public user data
     const publicUser = toPublicUser(user)
