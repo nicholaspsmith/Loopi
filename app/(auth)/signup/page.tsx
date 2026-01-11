@@ -32,9 +32,6 @@ export default async function SignupPage() {
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-2">
             Loopi
           </h1>
-          <h2 className="text-2xl font-semibold tracking-tight text-gray-700 dark:text-gray-300">
-            Sign up
-          </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Create your Loopi account</p>
         </div>
 

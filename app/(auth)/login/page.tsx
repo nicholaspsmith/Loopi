@@ -32,9 +32,6 @@ export default async function LoginPage() {
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-2">
             Loopi
           </h1>
-          <h2 className="text-2xl font-semibold tracking-tight text-gray-700 dark:text-gray-300">
-            Sign in
-          </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Access your Loopi account</p>
         </div>
 
