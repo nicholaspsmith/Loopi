@@ -30,6 +30,7 @@ export function getDb() {
       max: 10, // Maximum connections in pool
       idle_timeout: 60, // Close idle connections after 60 seconds (increased from 20 to handle long AI operations)
       connect_timeout: 10, // Timeout connection attempts after 10 seconds
+      prepare: false, // Required for Supabase pooler (PgBouncer in transaction mode)
       connection: {
         timezone: 'UTC', // Use UTC to avoid timezone conversion issues
       },

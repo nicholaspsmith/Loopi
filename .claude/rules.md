@@ -51,6 +51,13 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 
 (Bad because: Multiple responsibilities in one commit)
 
+## Branch Workflow
+
+1. **Never commit directly to main**: All changes must go through pull requests
+2. **Feature branches**: Create feature branches for all work (e.g., `025-readme-update`)
+3. **PR workflow**: Push to feature branch → Create PR → Review → Merge via GitHub
+4. **No force push to main**: Never use `FORCE_PUSH_MAIN=1` or similar bypasses
+
 ## Remember
 
 - Each commit must have exactly ONE responsibility
