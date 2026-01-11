@@ -138,7 +138,11 @@
       "Bash(magick:*)",
       "Bash(gh pr merge:*)",
       "Skill(speckit.implement)",
-      "Bash(claude-mcp task:*)"
+      "Bash(claude-mcp task:*)",
+      "Skill(2.1.clarify)",
+      "mcp__plugin_serena_serena__list_dir",
+      "mcp__plugin_serena_serena__read_file",
+      "mcp__plugin_serena_serena__get_symbols_overview"
     ]
   },
   "enabledMcpjsonServers": [
