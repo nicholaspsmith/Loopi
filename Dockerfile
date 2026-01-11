@@ -14,10 +14,8 @@ RUN npm ci --only=production
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Build arguments for Next.js build
-ARG API_KEY_ENCRYPTION_SECRET
+# Build arguments for Next.js build (non-sensitive only)
 ARG NEXT_PUBLIC_APP_URL
-ARG SENTRY_AUTH_TOKEN
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
@@ -30,20 +28,25 @@ RUN npm ci
 # Note: DATABASE_URL is a placeholder for build-time only (not used for actual DB connections)
 # The real DATABASE_URL is provided at runtime via docker-compose or environment
 # SKIP_ENV_VALIDATION=true skips API key validation (JINA_API_KEY, ANTHROPIC_API_KEY) during build
+# API_KEY_ENCRYPTION_SECRET uses a placeholder at build time - real value is injected at runtime
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV SKIP_ENV_VALIDATION=true
-ENV API_KEY_ENCRYPTION_SECRET=${API_KEY_ENCRYPTION_SECRET:-placeholder-build-secret-32char}
+ENV API_KEY_ENCRYPTION_SECRET=placeholder-build-secret-32char
 ENV DATABASE_URL=postgresql://build:build@localhost:5432/build
-ENV SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
-RUN npm run build
+
+# Build with Sentry auth token passed as a BuildKit secret (not baked into image)
+# The secret is mounted at /run/secrets/sentry_auth_token during build only
+RUN --mount=type=secret,id=sentry_auth_token \
+    SENTRY_AUTH_TOKEN=$(cat /run/secrets/sentry_auth_token 2>/dev/null || echo "") \
+    npm run build
 
 # Stage 3: Runner
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Install postgresql-client for health checks
 RUN apk add --no-cache postgresql-client
