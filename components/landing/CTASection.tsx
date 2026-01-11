@@ -20,6 +20,7 @@ export default function CTASection() {
         {/* CTA Button */}
         <Link
           href="/signup"
+          aria-label="Create a free Loopi account"
           className="landing-cta-button inline-block px-8 py-3 bg-white text-blue-600 hover:bg-gray-100 font-semibold rounded-lg transition-colors duration-200"
         >
           Create Free Account

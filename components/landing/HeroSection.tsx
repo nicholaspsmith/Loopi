@@ -16,7 +16,7 @@ export default function HeroSection() {
         <div className="landing-hero-logo flex justify-center mb-8">
           <Image
             src="/favicon.svg"
-            alt="Loopi Logo"
+            alt="Loopi - AI-powered skill tree learning platform"
             width={80}
             height={80}
             priority
@@ -39,12 +39,14 @@ export default function HeroSection() {
         <div className="landing-hero-ctas flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Link
             href="/signup"
+            aria-label="Create a free Loopi account"
             className="landing-hero-cta-primary w-full sm:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200 text-center"
           >
             Get Started Free
           </Link>
           <Link
             href="/login"
+            aria-label="Sign in to your existing Loopi account"
             className="landing-hero-cta-secondary w-full sm:w-auto px-8 py-3 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-semibold transition-colors duration-200 text-center"
           >
             Sign In
