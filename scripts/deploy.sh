@@ -27,6 +27,15 @@ fi
 echo "Pulling image..."
 docker pull "${IMAGE_NAME}"
 
+# Ensure data directories exist with correct permissions
+echo "Ensuring data directories have correct permissions..."
+mkdir -p "${DEPLOY_DIR}/data/postgres"
+mkdir -p "${DEPLOY_DIR}/data/lancedb"
+# PostgreSQL runs as uid 70 in alpine image
+chown -R 70:70 "${DEPLOY_DIR}/data/postgres"
+# Next.js app runs as uid 1001 (nextjs user)
+chown -R 1001:1001 "${DEPLOY_DIR}/data/lancedb"
+
 # Create backup of current state
 BACKUP_TAG="backup-$(date +%Y%m%d-%H%M%S)"
 if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "loopi-backup"; then
