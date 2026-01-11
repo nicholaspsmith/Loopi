@@ -89,7 +89,7 @@ export default function BenefitsSection() {
           {benefits.map((benefit) => (
             <div
               key={benefit.id}
-              className={`landing-benefit landing-benefit-${benefit.id} flex flex-col items-center text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 transition-all hover:shadow-lg hover:border-blue-500 dark:hover:border-blue-400`}
+              className={`landing-benefit landing-benefit-${benefit.id} flex flex-col items-center text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700`}
             >
               <div className="landing-benefit-icon-wrapper mb-4">{benefit.icon}</div>
               <h3 className="landing-benefit-title text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">
