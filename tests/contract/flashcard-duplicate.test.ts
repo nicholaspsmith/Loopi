@@ -23,6 +23,79 @@ vi.mock('@/auth', () => ({
   auth: vi.fn(),
 }))
 
+// Mock the embeddings module - use keyword-based approach for high similarity
+// Texts containing common keywords get similar embeddings
+// This prevents real API calls to Jina that cause timeouts in CI
+vi.mock('@/lib/embeddings', () => {
+  function createMockEmbedding(text: string): number[] {
+    const DIMS = 1024
+    const embedding = new Array(DIMS).fill(0)
+    const normalized = text.toLowerCase()
+
+    // Check for key topics and use fixed embeddings for each
+    if (normalized.includes('python')) {
+      for (let i = 0; i < 100; i++) {
+        embedding[i] = 1.0
+      }
+    }
+    if (normalized.includes('typescript')) {
+      for (let i = 100; i < 200; i++) {
+        embedding[i] = 1.0
+      }
+    }
+    if (
+      normalized.includes('javascript') ||
+      normalized.includes('react') ||
+      normalized.includes('next')
+    ) {
+      for (let i = 200; i < 300; i++) {
+        embedding[i] = 1.0
+      }
+    }
+    if (
+      normalized.includes('web') ||
+      normalized.includes('frontend') ||
+      normalized.includes('backend')
+    ) {
+      for (let i = 300; i < 400; i++) {
+        embedding[i] = 1.0
+      }
+    }
+    if (
+      normalized.includes('machine') ||
+      normalized.includes('learning') ||
+      normalized.includes('ai') ||
+      normalized.includes('neural')
+    ) {
+      for (let i = 400; i < 500; i++) {
+        embedding[i] = 1.0
+      }
+    }
+
+    // Default fallback dimensions
+    for (let i = 500; i < 520; i++) {
+      embedding[i] = 0.1
+    }
+
+    // Normalize
+    let norm = 0
+    for (const val of embedding) norm += val * val
+    norm = Math.sqrt(norm)
+    if (norm > 0) {
+      for (let i = 0; i < DIMS; i++) embedding[i] /= norm
+    }
+
+    return embedding
+  }
+
+  return {
+    generateEmbedding: (text: string) => Promise.resolve(createMockEmbedding(text)),
+    generateEmbeddings: (texts: string[]) =>
+      Promise.resolve(texts.map((t) => createMockEmbedding(t))),
+    EMBEDDING_DIMENSIONS: 1024,
+  }
+})
+
 // Import route handler (will fail until implemented)
 let checkDuplicateRoute: {
   POST: (request: Request) => Promise<Response>

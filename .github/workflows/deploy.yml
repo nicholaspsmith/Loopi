@@ -76,11 +76,12 @@ jobs:
       - name: Setup VPS directories
         run: |
           ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
-          mkdir -p /opt/loopi/scripts
-          mkdir -p /opt/loopi/data/lancedb
-          mkdir -p /opt/loopi/data/postgres
-          mkdir -p /opt/loopi/backups
-          mkdir -p /opt/loopi/nginx
+          sudo mkdir -p /opt/loopi/scripts
+          sudo mkdir -p /opt/loopi/data/lancedb
+          sudo mkdir -p /opt/loopi/data/postgres
+          sudo mkdir -p /opt/loopi/backups
+          sudo mkdir -p /opt/loopi/nginx
+          sudo chown -R $USER:$USER /opt/loopi
           ENDSSH
 
       - name: Copy deployment files
