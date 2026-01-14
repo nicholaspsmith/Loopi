@@ -117,7 +117,7 @@ export default function FlashcardMode({
       {/* Card - T005: Perspective wrapper with key to reset on card change */}
       <div
         key={cardNumber}
-        className="w-full max-w-2xl h-[300px] [perspective:1000px]"
+        className="w-full max-w-2xl min-h-[250px] sm:min-h-[300px] max-h-[70vh] [perspective:1000px]"
         data-testid="flashcard"
       >
         {/* T006: 3D flip animation with transform-style and rotateY */}
@@ -129,12 +129,12 @@ export default function FlashcardMode({
         >
           {/* T007: Front face */}
           <div
-            className="absolute inset-0 rounded-xl shadow-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 [backface-visibility:hidden] [-webkit-backface-visibility:hidden]"
+            className="absolute inset-0 rounded-xl shadow-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] overflow-hidden"
             data-testid="flashcard-front"
           >
-            <div className="flex flex-col items-center justify-center h-full p-8">
+            <div className="flex flex-col items-center justify-center h-full p-8 overflow-y-auto">
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Question</p>
-              <p className="text-xl text-center text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
+              <p className="text-xl text-center text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words">
                 {question}
               </p>
               <p className="text-sm text-blue-600 dark:text-blue-400 mt-8">
@@ -145,12 +145,12 @@ export default function FlashcardMode({
 
           {/* T007: Back face - pre-rotated 180deg, solid background required for backface-visibility */}
           <div
-            className="absolute inset-0 rounded-xl shadow-lg bg-green-50 dark:bg-green-900 border-2 border-green-200 dark:border-green-800 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)]"
+            className="absolute inset-0 rounded-xl shadow-lg bg-green-50 dark:bg-green-900 border-2 border-green-200 dark:border-green-800 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] overflow-hidden [transform:rotateY(180deg)]"
             data-testid="flashcard-back"
           >
-            <div className="flex flex-col h-full p-8">
+            <div className="flex flex-col h-full p-8 overflow-y-auto">
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Answer</p>
-              <p className="text-lg text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
+              <p className="text-lg text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words">
                 {answer}
               </p>
             </div>
