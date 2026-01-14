@@ -110,9 +110,9 @@ export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps)
       <div className={`flip-card-inner ${isAnswerRevealed ? 'flipped' : ''}`}>
         {/* Front Face - Question Only */}
         <div className="flip-card-front">
-          <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] max-h-[70vh] p-4 sm:p-6 md:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-y-auto">
+          <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] p-4 sm:p-6 md:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-y-auto">
             {/* Question Section */}
-            <div className="w-full max-w-2xl mb-6 sm:mb-8 flex-1 min-h-0 overflow-y-auto">
+            <div className="w-full max-w-2xl mb-6 sm:mb-8">
               <h2
                 id="flashcard-question-label"
                 className="text-xs sm:text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2"
@@ -143,9 +143,9 @@ export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps)
 
         {/* Back Face - Question + Answer + Rating */}
         <div className="flip-card-back">
-          <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] max-h-[70vh] p-4 sm:p-6 md:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-y-auto">
+          <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] p-4 sm:p-6 md:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-y-auto">
             {/* Question (for context) */}
-            <div className="w-full max-w-2xl mb-6 sm:mb-8 flex-1 min-h-0 overflow-y-auto">
+            <div className="w-full max-w-2xl mb-6 sm:mb-8">
               <h2 className="text-xs sm:text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                 Question
               </h2>
@@ -156,7 +156,7 @@ export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps)
 
             {/* Answer Section */}
             <div
-              className="w-full max-w-2xl mb-6 sm:mb-8 pt-6 sm:pt-8 border-t border-gray-200 dark:border-gray-700 flex-1 min-h-0 overflow-y-auto"
+              className="w-full max-w-2xl mb-6 sm:mb-8 pt-6 sm:pt-8 border-t border-gray-200 dark:border-gray-700"
               role="region"
               aria-live="polite"
             >

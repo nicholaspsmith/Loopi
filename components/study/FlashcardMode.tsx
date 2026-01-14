@@ -117,7 +117,7 @@ export default function FlashcardMode({
       {/* Card - T005: Perspective wrapper with key to reset on card change */}
       <div
         key={cardNumber}
-        className="w-full max-w-2xl min-h-[250px] sm:min-h-[300px] max-h-[70vh] [perspective:1000px]"
+        className="w-full max-w-2xl h-[250px] sm:h-[300px] [perspective:1000px]"
         data-testid="flashcard"
       >
         {/* T006: 3D flip animation with transform-style and rotateY */}
