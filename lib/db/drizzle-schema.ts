@@ -434,6 +434,51 @@ export type JobRateLimit = typeof jobRateLimits.$inferSelect
 export type NewJobRateLimit = typeof jobRateLimits.$inferInsert
 
 // ============================================================================
+// Study Sessions Table (quiz progress persistence)
+// ============================================================================
+
+export const studySessions = pgTable(
+  'study_sessions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    goalId: uuid('goal_id')
+      .notNull()
+      .references(() => learningGoals.id, { onDelete: 'cascade' }),
+    mode: varchar('mode', { length: 20 }).notNull(),
+    // 'flashcard' | 'multiple_choice' | 'timed' | 'mixed'
+    status: varchar('status', { length: 20 }).notNull().default('active'),
+    // 'active' | 'completed' | 'abandoned'
+    cardIds: jsonb('card_ids').notNull(), // string[] - card IDs for this session
+    currentIndex: integer('current_index').notNull().default(0),
+    responses: jsonb('responses').notNull().default([]),
+    // Array of { cardId: string, rating: number, timeMs: number }
+    startedAt: timestamp('started_at').notNull().defaultNow(),
+    lastActivityAt: timestamp('last_activity_at').notNull().defaultNow(),
+    expiresAt: timestamp('expires_at').notNull(),
+    completedAt: timestamp('completed_at'),
+    // Timed mode specific
+    timedSettings: jsonb('timed_settings'),
+    // { durationSeconds: number, pointsPerCard: number }
+    timeRemainingMs: integer('time_remaining_ms'),
+    score: integer('score'),
+    // Guided mode specific
+    isGuided: boolean('is_guided').notNull().default(false),
+    currentNodeId: uuid('current_node_id'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('study_sessions_user_goal_status_idx').on(table.userId, table.goalId, table.status),
+    index('study_sessions_expires_at_idx').on(table.expiresAt),
+  ]
+)
+
+export type StudySession = typeof studySessions.$inferSelect
+export type NewStudySession = typeof studySessions.$inferInsert
+
+// ============================================================================
 // Drizzle Relations (014-goal-based-learning)
 // ============================================================================
 
@@ -488,5 +533,16 @@ export const userTitlesRelations = relations(userTitles, ({ one }) => ({
   user: one(users, {
     fields: [userTitles.userId],
     references: [users.id],
+  }),
+}))
+
+export const studySessionsRelations = relations(studySessions, ({ one }) => ({
+  user: one(users, {
+    fields: [studySessions.userId],
+    references: [users.id],
+  }),
+  goal: one(learningGoals, {
+    fields: [studySessions.goalId],
+    references: [learningGoals.id],
   }),
 }))
