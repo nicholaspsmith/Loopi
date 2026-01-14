@@ -10,6 +10,7 @@ import TimedChallengeMode from '@/components/study/TimedChallengeMode'
 import MixedMode from '@/components/study/MixedMode'
 import GuidedStudyFlow from '@/components/study/GuidedStudyFlow'
 import StudySummary from '@/components/study/StudySummary'
+import ResumeSessionDialog from '@/components/study/ResumeSessionDialog'
 
 /**
  * Study Session Page (T059)
@@ -85,6 +86,24 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
   // Node study state (T040-T041)
   const [correctCount, setCorrectCount] = useState(0)
 
+  // Resume session state
+  const [activeSession, setActiveSession] = useState<{
+    sessionId: string
+    goalTitle: string
+    mode: string
+    progress: {
+      currentIndex: number
+      totalCards: number
+      responsesCount: number
+      percentComplete: number
+    }
+    startedAt: string
+    lastActivityAt: string
+    timeRemainingMs?: number
+    score?: number
+  } | null>(null)
+  const [showResumeDialog, setShowResumeDialog] = useState(false)
+
   // UI state
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -103,6 +122,33 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
       setSelectedMode('flashcard') // Guided mode uses flashcard presentation
     }
   }, [searchParams])
+
+  // Save progress on visibility change or page unload
+  useEffect(() => {
+    if (!session?.sessionId || phase !== 'study') return
+
+    const saveProgress = () => {
+      const data = JSON.stringify({
+        sessionId: session.sessionId,
+        currentIndex,
+      })
+      navigator.sendBeacon('/api/study/session/progress', data)
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) saveProgress()
+    }
+
+    const handleBeforeUnload = () => saveProgress()
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [session?.sessionId, currentIndex, phase])
 
   // Unwrap params
   useEffect(() => {
@@ -127,6 +173,95 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
 
     fetchGoal()
   }, [goalId])
+
+  // Check for active session on mount
+  useEffect(() => {
+    if (!goalId) return
+
+    const checkActiveSession = async () => {
+      try {
+        const response = await fetch(`/api/study/session/active?goalId=${goalId}`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.hasActiveSession && data.session) {
+            setActiveSession(data.session)
+            setShowResumeDialog(true)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to check for active session:', error)
+      }
+    }
+
+    checkActiveSession()
+  }, [goalId])
+
+  // Resume session handler
+  const handleResumeSession = async () => {
+    if (!activeSession) return
+    setLoading(true)
+    setShowResumeDialog(false)
+
+    try {
+      const response = await fetch('/api/study/session/resume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: activeSession.sessionId }),
+      })
+
+      if (!response.ok) throw new Error('Failed to resume session')
+
+      const data = await response.json()
+
+      // Restore session state
+      setSession({
+        sessionId: data.sessionId,
+        mode: data.mode,
+        isGuided: data.isGuided,
+        cards: data.cards,
+        timedSettings: data.timedSettings,
+        currentNode: data.currentNodeId
+          ? { id: data.currentNodeId, title: '', path: '' }
+          : undefined,
+      })
+      setCurrentIndex(data.currentIndex)
+      setResponses(
+        data.responses.map((r: { cardId: string; rating: number }) => ({
+          cardId: r.cardId,
+          rating: r.rating,
+        }))
+      )
+      setStartTime(new Date(data.startedAt))
+      setSelectedMode(data.mode as StudyMode)
+      if (data.isGuided) setIsGuidedMode(true)
+      setPhase('study')
+    } catch (error) {
+      console.error('Failed to resume session:', error)
+      setError('Failed to resume session. Please start a new one.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Abandon and start new handler
+  const handleAbandonAndStartNew = async () => {
+    if (!activeSession) return
+    setShowResumeDialog(false)
+
+    // Abandon in background
+    fetch('/api/study/session/abandon', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: activeSession.sessionId }),
+    }).catch(console.error)
+
+    setActiveSession(null)
+  }
+
+  // Close resume dialog
+  const handleCloseResumeDialog = () => {
+    setShowResumeDialog(false)
+  }
 
   // Start study session
   const handleStartSession = useCallback(async () => {
@@ -269,6 +404,23 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
         }),
       }).catch((err) => console.error('Failed to rate card:', err))
 
+      // Save progress to persistent session (fire-and-forget)
+      if (session?.sessionId) {
+        fetch('/api/study/session/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: session.sessionId,
+            currentIndex: currentIndex + 1,
+            response: {
+              cardId: currentCard.id,
+              rating,
+              timeMs: Date.now() - (startTime?.getTime() || Date.now()),
+            },
+          }),
+        }).catch((err) => console.error('Failed to save progress:', err))
+      }
+
       // Update local state immediately
       setResponses((prev) => [...prev, { cardId: currentCard.id, rating }])
 
@@ -377,6 +529,17 @@ export default function StudyPage({ params }: { params: Promise<{ goalId: string
           <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm sm:text-base text-red-700 dark:text-red-300">
             {error}
           </div>
+        )}
+
+        {/* Resume Session Dialog */}
+        {activeSession && (
+          <ResumeSessionDialog
+            open={showResumeDialog}
+            session={activeSession}
+            onResume={handleResumeSession}
+            onStartNew={handleAbandonAndStartNew}
+            onClose={handleCloseResumeDialog}
+          />
         )}
 
         {/* Mode Selection */}
