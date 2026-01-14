@@ -103,21 +103,24 @@ export default function FlashcardMode({
   }, [isFlipped, isAnimating, handleFlip])
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh]">
+    <div className="flex flex-col items-center h-[calc(100dvh-8rem)] sm:h-auto sm:min-h-[60vh] sm:justify-center px-4 sm:px-0">
       {/* Screen reader announcement for card navigation */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         Card {cardNumber} of {totalCards}
       </div>
 
       {/* Progress */}
-      <div className="text-sm text-gray-500 dark:text-gray-400 mb-4" aria-hidden="true">
+      <div
+        className="text-sm text-gray-500 dark:text-gray-400 mb-4 pt-2 sm:pt-0"
+        aria-hidden="true"
+      >
         Card {cardNumber} of {totalCards}
       </div>
 
       {/* Card - T005: Perspective wrapper with key to reset on card change */}
       <div
         key={cardNumber}
-        className="w-full max-w-2xl h-[250px] sm:h-[300px] [perspective:1000px]"
+        className="w-full max-w-2xl flex-1 sm:flex-none sm:h-[300px] [perspective:1000px]"
         data-testid="flashcard"
       >
         {/* T006: 3D flip animation with transform-style and rotateY */}
@@ -160,19 +163,19 @@ export default function FlashcardMode({
 
       {/* Rating Buttons */}
       {isFlipped && (
-        <div className="mt-6 w-full max-w-2xl">
-          <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-4">
+        <div className="mt-4 sm:mt-6 w-full max-w-2xl pb-2 sm:pb-0">
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-3 sm:mb-4">
             How well did you remember?
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+          <div className="grid grid-cols-4 gap-2 sm:gap-3">
             {ratingOptions.map((option) => (
               <button
                 key={option.value}
                 onClick={() => handleRate(option.value)}
-                className={`py-3 px-2 sm:px-3 min-h-[56px] rounded-lg text-white font-medium cursor-pointer transition-all active:scale-95 ${option.color}`}
+                className={`py-2 sm:py-3 px-1 sm:px-3 min-h-[48px] sm:min-h-[56px] rounded-lg text-white font-medium cursor-pointer transition-all active:scale-95 ${option.color}`}
               >
-                <span className="block text-base sm:text-lg">{option.label}</span>
-                <span className="block text-xs opacity-80">{option.description}</span>
+                <span className="block text-sm sm:text-lg">{option.label}</span>
+                <span className="hidden sm:block text-xs opacity-80">{option.description}</span>
               </button>
             ))}
           </div>
@@ -181,7 +184,9 @@ export default function FlashcardMode({
 
       {/* Keyboard hint */}
       {!isFlipped && (
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">Press Space to flip</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-4 pb-2 sm:pb-0">
+          Press Space to flip
+        </p>
       )}
     </div>
   )

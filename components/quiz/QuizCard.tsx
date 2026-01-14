@@ -106,11 +106,15 @@ export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps)
   }
 
   return (
-    <div className="flip-card" role="region" aria-label="Flashcard">
+    <div
+      className="flip-card h-[calc(100dvh-10rem)] sm:h-auto"
+      role="region"
+      aria-label="Flashcard"
+    >
       <div className={`flip-card-inner ${isAnswerRevealed ? 'flipped' : ''}`}>
         {/* Front Face - Question Only */}
-        <div className="flip-card-front">
-          <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] p-4 sm:p-6 md:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-y-auto">
+        <div className="flip-card-front h-full">
+          <div className="flex flex-col items-center justify-center h-full sm:h-auto sm:min-h-[400px] p-4 sm:p-6 md:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-y-auto">
             {/* Question Section */}
             <div className="w-full max-w-2xl mb-6 sm:mb-8">
               <h2
@@ -142,8 +146,8 @@ export default function QuizCard({ flashcard, onRate, onDelete }: QuizCardProps)
         </div>
 
         {/* Back Face - Question + Answer + Rating */}
-        <div className="flip-card-back">
-          <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] p-4 sm:p-6 md:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-y-auto">
+        <div className="flip-card-back h-full">
+          <div className="flex flex-col items-center justify-between h-full sm:h-auto sm:min-h-[400px] p-4 sm:p-6 md:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-y-auto">
             {/* Question (for context) */}
             <div className="w-full max-w-2xl mb-6 sm:mb-8">
               <h2 className="text-xs sm:text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
