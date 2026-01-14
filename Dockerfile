@@ -60,6 +60,13 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
+# Copy migration files and scripts needed for startup
+COPY --from=builder /app/drizzle ./drizzle
+COPY --from=builder /app/scripts/db-migrate.ts ./scripts/
+COPY --from=builder /app/scripts/post-migrate.ts ./scripts/
+COPY --from=builder /app/drizzle.config.ts ./
+COPY --from=builder /app/lib ./lib
+
 # Copy entrypoint script and database init SQL
 COPY scripts/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
