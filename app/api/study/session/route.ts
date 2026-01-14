@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { z } from 'zod'
-import { v4 as uuidv4 } from 'uuid'
 import { getGoalByIdForUser } from '@/lib/db/operations/goals'
 import { getSkillTreeByGoalId } from '@/lib/db/operations/skill-trees'
 import { getNodesByTreeId, getSkillNodeById } from '@/lib/db/operations/skill-nodes'
@@ -13,6 +12,7 @@ import { getDistractorsForFlashcard } from '@/lib/db/operations/distractors'
 import { createJob } from '@/lib/db/operations/background-jobs'
 import { JobType } from '@/lib/db/drizzle-schema'
 import { getNextIncompleteNode, getNodeProgress } from '@/lib/study/guided-flow'
+import { createStudySession, abandonConflictingSessions } from '@/lib/db/operations/study-sessions'
 
 /**
  * POST /api/study/session
@@ -306,7 +306,39 @@ export async function POST(request: NextRequest) {
     // Shuffle cards for variety
     const shuffledCards = shuffleArray(studyCards)
 
-    const sessionId = uuidv4()
+    // Persist session to database for resume functionality
+    // First abandon any conflicting sessions for this goal (handles multiple tabs)
+    const abandonedCount = await abandonConflictingSessions(session.user.id, goalId)
+    if (abandonedCount > 0) {
+      logger.info('Abandoned conflicting sessions', { goalId, count: abandonedCount })
+    }
+
+    // Create the persistent session record
+    const persistedSession = await createStudySession({
+      userId: session.user.id,
+      goalId,
+      mode,
+      status: 'active',
+      cardIds: shuffledCards.map((c) => c.id),
+      currentIndex: 0,
+      responses: [],
+      startedAt: now,
+      lastActivityAt: now,
+      // Timed mode settings
+      ...(mode === 'timed' && {
+        timedSettings: {
+          durationSeconds: 300,
+          pointsPerCard: 10,
+        },
+        timeRemainingMs: 300 * 1000,
+        score: 0,
+      }),
+      // Guided mode settings
+      isGuided: isGuided,
+      currentNodeId: isGuided && currentNode ? currentNode.id : undefined,
+    })
+
+    const sessionId = persistedSession.id
 
     logger.info('Study session started', {
       sessionId,

@@ -9,6 +9,7 @@ import { getDb } from '@/lib/db/pg-client'
 import { flashcards, skillNodes } from '@/lib/db/drizzle-schema'
 import { eq, inArray } from 'drizzle-orm'
 import * as logger from '@/lib/logger'
+import { completeSession } from '@/lib/db/operations/study-sessions'
 
 /**
  * POST /api/study/session/complete
@@ -165,6 +166,9 @@ export async function POST(request: NextRequest) {
       ratings: ratingValues,
       timedScore: timedScorePercent,
     })
+
+    // Mark the persistent session as completed
+    await completeSession(sessionId)
 
     logger.info('Study session completed', {
       sessionId,
