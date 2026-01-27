@@ -59,20 +59,6 @@ const config: KnipConfig = {
     '*.d.ts',
   ],
 
-  // Dependencies to ignore (peer deps, optional deps)
-  ignoreDependencies: [
-    // Peer dependencies that are used transitively
-    '@types/node',
-    '@types/react',
-    '@types/react-dom',
-
-    // Optional/peer dependencies for next-auth
-    'nodemailer',
-  ],
-
-  // Binaries to ignore (used in npm scripts)
-  ignoreBinaries: ['drizzle-kit', 'playwright', 'vitest'],
-
   // Workspaces (if applicable)
   workspaces: {
     '.': {
