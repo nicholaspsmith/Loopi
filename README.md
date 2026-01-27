@@ -77,8 +77,6 @@ No more forgotten tutorials. No more abandoned courses. Just steady, measurable 
 - **Styling**: Tailwind CSS 4
 - **Testing**: Vitest, Playwright, React Testing Library
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed database design rationale.
-
 ## Prerequisites
 
 - Node.js 20 or higher
