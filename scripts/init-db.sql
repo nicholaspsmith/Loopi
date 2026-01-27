@@ -356,6 +356,35 @@ CREATE INDEX IF NOT EXISTS idx_background_jobs_status ON background_jobs(status)
 CREATE INDEX IF NOT EXISTS idx_job_rate_limits_lookup 
   ON job_rate_limits(user_id, job_type, window_start);
 
+
+-- Study Sessions table
+CREATE TABLE IF NOT EXISTS study_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  goal_id UUID NOT NULL REFERENCES learning_goals(id) ON DELETE CASCADE,
+  mode VARCHAR(20) NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'active',
+  card_ids JSONB NOT NULL,
+  current_index INTEGER NOT NULL DEFAULT 0,
+  responses JSONB NOT NULL DEFAULT '[]'::jsonb,
+  started_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  last_activity_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  expires_at TIMESTAMP NOT NULL,
+  completed_at TIMESTAMP,
+  timed_settings JSONB,
+  time_remaining_ms INTEGER,
+  score INTEGER,
+  is_guided BOOLEAN NOT NULL DEFAULT false,
+  current_node_id UUID,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Indexes for study sessions
+CREATE INDEX IF NOT EXISTS study_sessions_user_goal_status_idx
+  ON study_sessions(user_id, goal_id, status);
+CREATE INDEX IF NOT EXISTS study_sessions_expires_at_idx
+  ON study_sessions(expires_at);
+
 -- Make conversation_id and message_id nullable for goal-based flashcards
 DO $$
 BEGIN
