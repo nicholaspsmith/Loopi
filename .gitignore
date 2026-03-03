@@ -3,6 +3,10 @@
 .claude/mcp_settings.json
 .mcp.json
 
+# Claude memory plugin auto-generated files
+**/CLAUDE.md
+.claude/plans/
+
 # External MCP servers (separate repos)
 lance-context/
 
@@ -44,10 +48,15 @@ test-results/
 playwright-report/
 tests/e2e/.auth/
 
-# LanceDB data
+# LanceDB data (legacy, now using pgvector)
 data/
 lancedb/
 .lance-context/
+
+# Auto-generated/temporary directories
+api/
+migrations/
+*.backup
 
 # macos directory settings
 .DS_Store
