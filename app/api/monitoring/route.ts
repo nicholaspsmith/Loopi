@@ -20,7 +20,7 @@ import { NextRequest, NextResponse } from 'next/server'
 const SENTRY_HOST = 'o4510672318955520.ingest.us.sentry.io'
 
 // Our project ID from the DSN
-const SENTRY_PROJECT_ID = '4510672320200704'
+const SENTRY_PROJECT_ID = '4510977967718400'
 
 // Maximum envelope size (1MB) to prevent DoS via memory exhaustion
 const MAX_ENVELOPE_SIZE = 1024 * 1024

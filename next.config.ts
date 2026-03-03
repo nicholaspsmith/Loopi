@@ -28,7 +28,7 @@ export default withSentryConfig(nextConfig, {
 
   org: 'nicksmithsoftware',
 
-  project: 'javascript-nextjs',
+  project: 'loopi-next',
 
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
