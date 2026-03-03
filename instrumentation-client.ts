@@ -5,7 +5,7 @@
 import * as Sentry from '@sentry/nextjs'
 
 Sentry.init({
-  dsn: 'https://f04b03b5481c840fabcb0934d519474d@o4510672318955520.ingest.us.sentry.io/4510672320200704',
+  dsn: 'https://d5a1cb8f9f82793055f668f699938d32@o4510672318955520.ingest.us.sentry.io/4510977967718400',
 
   // Use tunnel route to bypass ad-blockers
   // This proxies Sentry requests through our own domain
