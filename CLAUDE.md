@@ -207,7 +207,7 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 ### Database
 
 - PostgreSQL (via postgres 3.4.7, drizzle-orm 0.45.1) - users, conversations, messages, API keys
-- LanceDB 0.22.3 - vector embeddings for semantic search (flashcards, goals, review logs)
+- PostgreSQL pgvector extension - vector embeddings for semantic search (flashcards, goals)
 
 ### AI/ML
 
@@ -240,7 +240,6 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 ## Active Technologies
 
 - @anthropic-ai/sdk 0.71.2 ([docs](https://docs.anthropic.com/en/api/client-sdks))
-- @lancedb/lancedb 0.22.3 ([docs](https://lancedb.github.io/lancedb))
 - @sentry/nextjs 10.32.1 ([docs](https://www.npmjs.com/package/@sentry/nextjs/v/10.32.1))
 - @types/nodemailer 7.0.4 ([docs](https://www.npmjs.com/package/@types/nodemailer/v/7.0.4))
 - bcryptjs 3.0.3 ([docs](https://www.npmjs.com/package/bcryptjs/v/3.0.3))
@@ -260,6 +259,6 @@ Follow the project principles defined in `.specify/memory/constitution.md`:
 
 ## Recent Changes
 
-- 023-dedupe: Duplicate detection for goals and flashcards using Jina embeddings + LanceDB similarity search
+- 023-dedupe: Duplicate detection for goals and flashcards using Jina embeddings + pgvector similarity search
 - 010-ui-polish: Added TypeScript 5.7 (strict mode) + Next.js 16.0.10 App Router
 - 009-ollama-model-deployment: Added TypeScript 5.7 / Node.js (Next.js 16), Bash + Next.js
