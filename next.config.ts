@@ -1,11 +1,8 @@
 import type { NextConfig } from 'next'
 import { withSentryConfig } from '@sentry/nextjs'
 
-// Skip env validation during Vercel build (vars injected at runtime)
-if (process.env.VERCEL !== '1') {
-  // Only validate env locally
-  import('./lib/env')
-}
+// Note: env validation moved to runtime (instrumentation.ts)
+// Build-time validation caused issues in CI where env vars aren't available
 
 const nextConfig: NextConfig = {
   // Enable standalone output only for Docker (not needed on Vercel)
