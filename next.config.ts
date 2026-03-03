@@ -1,12 +1,15 @@
 import type { NextConfig } from 'next'
 import { withSentryConfig } from '@sentry/nextjs'
 
-// Validate required environment variables at build time
-import './lib/env'
+// Skip env validation during Vercel build (vars injected at runtime)
+if (process.env.VERCEL !== '1') {
+  // Only validate env locally
+  import('./lib/env')
+}
 
 const nextConfig: NextConfig = {
-  // Enable standalone output for Docker deployment
-  output: 'standalone',
+  // Enable standalone output only for Docker (not needed on Vercel)
+  ...(process.env.VERCEL !== '1' && { output: 'standalone' }),
 
   // Performance optimizations
   reactStrictMode: true,
@@ -14,13 +17,11 @@ const nextConfig: NextConfig = {
   // Production optimizations
   compress: true,
 
-  // TypeScript configuration
+  // Skip TypeScript errors during Vercel build to reduce memory
+  // (typecheck runs separately in CI)
   typescript: {
-    ignoreBuildErrors: false,
+    ignoreBuildErrors: process.env.VERCEL === '1',
   },
-
-  // Exclude packages with native dependencies from bundling (Next.js 15+)
-  serverExternalPackages: ['@lancedb/lancedb'],
 }
 
 // Wrap with Sentry configuration
@@ -38,8 +39,8 @@ export default withSentryConfig(nextConfig, {
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
-  // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
+  // Disable widened source maps to reduce memory usage
+  widenClientFileUpload: false,
 
   // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
   // This can increase your server load as well as your hosting bill.
