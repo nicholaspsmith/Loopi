@@ -16,7 +16,7 @@ vi.mock('@/lib/embeddings', () => ({
   generateEmbedding: vi.fn(),
 }))
 
-vi.mock('@/lib/db/operations/flashcards-lancedb', () => ({
+vi.mock('@/lib/db/operations/flashcards-pgvector', () => ({
   findSimilarFlashcardsWithThreshold: vi.fn(),
 }))
 
@@ -25,7 +25,7 @@ vi.mock('@/lib/db/operations/flashcards', () => ({
 }))
 
 import { generateEmbedding } from '@/lib/embeddings'
-import { findSimilarFlashcardsWithThreshold } from '@/lib/db/operations/flashcards-lancedb'
+import { findSimilarFlashcardsWithThreshold } from '@/lib/db/operations/flashcards-pgvector'
 import { getFlashcardsByIds } from '@/lib/db/operations/flashcards'
 
 // Import the function to test (will fail until implemented)

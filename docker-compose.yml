@@ -23,12 +23,10 @@ services:
         condition: service_healthy
     networks:
       - loopi-network
-    volumes:
-      - ./data/lancedb:/app/data/lancedb
 
-  # PostgreSQL database
+  # PostgreSQL database (includes pgvector for vector embeddings)
   postgres:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg15
     container_name: loopi-postgres
     restart: unless-stopped
     environment:

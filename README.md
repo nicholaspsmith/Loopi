@@ -70,9 +70,9 @@ No more forgotten tutorials. No more abandoned courses. Just steady, measurable 
 - **Framework**: Next.js 16.0.10 with React 19 and App Router
 - **Language**: TypeScript 5.7
 - **Authentication**: NextAuth.js 5
-- **Database**: Hybrid architecture
-  - PostgreSQL (users, conversations, messages, API keys)
-  - LanceDB (flashcards, review logs, vector embeddings)
+- **Database**: PostgreSQL with pgvector extension
+  - Relational data: users, conversations, messages, flashcards, goals
+  - Vector embeddings: pgvector for semantic search and duplicate detection
 - **AI**: Anthropic Claude API, Jina Embeddings API
 - **Styling**: Tailwind CSS 4
 - **Testing**: Vitest, Playwright, React Testing Library
@@ -107,11 +107,8 @@ Create a `.env.local` file in the root directory:
 NEXTAUTH_SECRET=your-secret-key-here
 NEXTAUTH_URL=http://localhost:3000
 
-# PostgreSQL Database (Supabase or local)
+# PostgreSQL Database with pgvector (Supabase or local)
 DATABASE_URL=postgresql://user:pass@host:5432/database
-
-# LanceDB (local file-based)
-DATABASE_PATH=./data/lancedb
 
 # AI Services
 ANTHROPIC_API_KEY=your-anthropic-api-key

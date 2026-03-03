@@ -1,6 +1,5 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
-import { closeDbConnection } from '@/lib/db/client'
 import { createUser } from '@/lib/db/operations/users'
 import { createGoal } from '@/lib/db/operations/goals'
 import { createSkillTree } from '@/lib/db/operations/skill-trees'
@@ -88,9 +87,7 @@ describe('Multiple Choice Time-Based Rating Integration', () => {
     testCardId = card.id
   })
 
-  afterAll(async () => {
-    await closeDbConnection()
-  })
+  afterAll(async () => {})
 
   /**
    * T010: Integration test for time-based rating calculation

@@ -2,7 +2,6 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { hashPassword } from '@/lib/auth/helpers'
 import { createUser } from '@/lib/db/operations/users'
 import { createGoal, getGoalCounts, archiveGoal } from '@/lib/db/operations/goals'
-import { closeDbConnection } from '@/lib/db/client'
 import { GOAL_LIMITS } from '@/lib/constants/goals'
 
 /**
@@ -39,9 +38,7 @@ describe('Goal Limits Contract Tests', () => {
     testGoalIds = []
   })
 
-  afterAll(async () => {
-    await closeDbConnection()
-  })
+  afterAll(async () => {})
 
   describe('getGoalCounts()', () => {
     it('should return zero counts for new user', async () => {

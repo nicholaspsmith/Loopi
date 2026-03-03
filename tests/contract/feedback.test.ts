@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
 import { hashPassword } from '@/lib/auth/helpers'
 import { createUser } from '@/lib/db/operations/users'
-import { closeDbConnection } from '@/lib/db/client'
 import { testPOST, type MockSession } from '@/tests/helpers/route-test-helper'
 import { auth } from '@/auth'
 
@@ -86,7 +85,6 @@ describe('Feedback API Contract Tests', () => {
   })
 
   afterAll(async () => {
-    await closeDbConnection()
     global.fetch = originalFetch
     vi.unstubAllEnvs()
     vi.clearAllMocks()

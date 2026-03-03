@@ -1,48 +1,16 @@
-import { beforeAll, afterAll } from 'vitest'
-import fs from 'fs'
-import path from 'path'
-
 /**
  * Database Test Setup
  *
- * Creates isolated database instances per test worker to prevent
- * table conflicts when tests run in parallel.
+ * Vector embeddings are now stored in PostgreSQL using pgvector,
+ * so no separate database setup is required.
+ *
+ * Tests that need embeddings should mock the embedding functions
+ * in @/lib/embeddings rather than using a real vector database.
+ *
+ * PostgreSQL test database setup is handled by:
+ * - vitest.config.ts (globalSetup if needed)
+ * - Individual test files mocking the database as needed
  */
 
-// Generate unique database path per worker
-const workerId = process.env.VITEST_POOL_ID || process.env.VITEST_WORKER_ID || '0'
-const testDbPath = path.join(process.cwd(), 'data', 'lancedb-test', `worker-${workerId}`)
-
-// Set the database path before any imports that might use it
-process.env.LANCEDB_PATH = testDbPath
-
-beforeAll(async () => {
-  // Create test database directory
-  if (!fs.existsSync(testDbPath)) {
-    fs.mkdirSync(testDbPath, { recursive: true })
-  }
-
-  // Reset connection to use new path
-  const { resetDbConnection } = await import('@/lib/db/client')
-  await resetDbConnection()
-
-  // Initialize schema for this worker's database
-  // getDbConnection() will auto-initialize schema on first connection
-  const { getDbConnection } = await import('@/lib/db/client')
-  await getDbConnection()
-}, 30000)
-
-afterAll(async () => {
-  // Clean up test database after all tests in this worker complete
-  const { closeDbConnection } = await import('@/lib/db/client')
-  await closeDbConnection()
-
-  // Remove test database directory
-  try {
-    if (fs.existsSync(testDbPath)) {
-      fs.rmSync(testDbPath, { recursive: true, force: true })
-    }
-  } catch {
-    // Ignore cleanup errors
-  }
-})
+// No setup needed - pgvector embeddings are stored in PostgreSQL
+// and tests mock embedding operations at the function level

@@ -2,7 +2,6 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vites
 import { hashPassword } from '@/lib/auth/helpers'
 import { createUser } from '@/lib/db/operations/users'
 import { createGoal, getGoalCounts, archiveGoal, getGoalById } from '@/lib/db/operations/goals'
-import { closeDbConnection } from '@/lib/db/client'
 import { testDELETE, type MockSession } from '@/tests/helpers/route-test-helper'
 import { auth } from '@/auth'
 
@@ -84,7 +83,6 @@ describe('Bulk Delete Goals API Contract Tests', () => {
   })
 
   afterAll(async () => {
-    await closeDbConnection()
     vi.clearAllMocks()
   })
 

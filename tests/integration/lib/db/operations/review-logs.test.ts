@@ -7,7 +7,6 @@ import { createGoal } from '@/lib/db/operations/goals'
 import { createSkillTree } from '@/lib/db/operations/skill-trees'
 import { createSkillNode } from '@/lib/db/operations/skill-nodes'
 import { hashPassword } from '@/lib/auth/helpers'
-import { closeDbConnection } from '@/lib/db/client'
 
 /**
  * Unit tests for review_logs database operations
@@ -62,9 +61,7 @@ describe('Review Logs Database Operations', () => {
     testFlashcardId = flashcard.id
   })
 
-  afterAll(async () => {
-    await closeDbConnection()
-  })
+  afterAll(async () => {})
 
   describe('FSRS Decimal Values', () => {
     it('should store and retrieve decimal stability values', async () => {

@@ -12,7 +12,7 @@ import type { BatchFilterResult } from '@/lib/dedup/types'
  */
 
 // Mock dependencies
-vi.mock('@/lib/db/operations/flashcards-lancedb', () => ({
+vi.mock('@/lib/db/operations/flashcards-pgvector', () => ({
   findSimilarFlashcardsWithThreshold: vi.fn(),
 }))
 
@@ -20,7 +20,7 @@ vi.mock('@/lib/embeddings', () => ({
   generateEmbeddings: vi.fn(),
 }))
 
-import { findSimilarFlashcardsWithThreshold } from '@/lib/db/operations/flashcards-lancedb'
+import { findSimilarFlashcardsWithThreshold } from '@/lib/db/operations/flashcards-pgvector'
 import { generateEmbeddings } from '@/lib/embeddings'
 
 // Import the function to test (will fail until implemented)

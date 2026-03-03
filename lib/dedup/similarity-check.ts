@@ -2,7 +2,7 @@
  * Duplicate Detection - Similarity Check Module
  *
  * Core functions for checking duplicate flashcards and goals
- * using semantic similarity via LanceDB embeddings.
+ * using semantic similarity via pgvector embeddings.
  */
 
 import { DEDUP_CONFIG } from './config'
@@ -12,8 +12,8 @@ import {
   FlashcardDuplicateCheckInput,
   GoalDuplicateCheckInput,
 } from './types'
-import { findSimilarFlashcardsWithThreshold } from '@/lib/db/operations/flashcards-lancedb'
-import { findSimilarGoals } from '@/lib/db/operations/goals-lancedb'
+import { findSimilarFlashcardsWithThreshold } from '@/lib/db/operations/flashcards-pgvector'
+import { findSimilarGoals } from '@/lib/db/operations/goals-pgvector'
 import { getFlashcardsByIds } from '@/lib/db/operations/flashcards'
 import { getGoalsByIds } from '@/lib/db/operations/goals'
 import * as logger from '@/lib/logger'
@@ -41,7 +41,7 @@ export async function checkFlashcardDuplicate(
   }
 
   try {
-    // Search for similar flashcards in LanceDB
+    // Search for similar flashcards in pgvector
     const similarResults = await findSimilarFlashcardsWithThreshold(
       question,
       userId,
@@ -135,7 +135,7 @@ export async function checkGoalDuplicate(
   }
 
   try {
-    // Search for similar goals in LanceDB
+    // Search for similar goals in pgvector
     const similarResults = await findSimilarGoals(
       textToCheck,
       userId,

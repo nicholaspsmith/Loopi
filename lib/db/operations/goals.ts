@@ -3,13 +3,13 @@ import { getDb } from '@/lib/db/pg-client'
 import { learningGoals, skillTrees } from '@/lib/db/drizzle-schema'
 import { eq, and, desc, inArray } from 'drizzle-orm'
 import type { LearningGoal, NewLearningGoal } from '@/lib/db/drizzle-schema'
-import { syncGoalToLanceDB, deleteGoalFromLanceDB } from './goals-lancedb'
+import { syncGoalToLanceDB, deleteGoalFromLanceDB } from './goals-pgvector'
 
 /**
  * Learning Goals Database Operations
  *
  * CRUD operations for learning goals in PostgreSQL.
- * Embeddings are synced to LanceDB asynchronously for duplicate detection.
+ * Embeddings are synced to PostgreSQL pgvector asynchronously for duplicate detection.
  * Goals are the top-level entity for goal-based learning.
  */
 

@@ -12,8 +12,6 @@ import {
   archiveGoal,
   completeGoal,
 } from '@/lib/db/operations/goals'
-import { initializeSchema, isSchemaInitialized } from '@/lib/db/schema'
-import { closeDbConnection } from '@/lib/db/client'
 
 /**
  * Integration Tests for Goal Creation Flow
@@ -28,12 +26,6 @@ describe('Goal Creation Flow', () => {
   let testGoalId: string
 
   beforeAll(async () => {
-    // Initialize database schema if needed
-    const initialized = await isSchemaInitialized()
-    if (!initialized) {
-      await initializeSchema()
-    }
-
     // Create test user
     const testUser = await createUser({
       email: `goal-test-${timestamp}@example.com`,
@@ -43,9 +35,7 @@ describe('Goal Creation Flow', () => {
     testUserId = testUser.id
   })
 
-  afterAll(async () => {
-    await closeDbConnection()
-  })
+  afterAll(async () => {})
 
   describe('Goal Creation', () => {
     it('should create a new learning goal', async () => {

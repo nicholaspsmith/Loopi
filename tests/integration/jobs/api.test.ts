@@ -1,6 +1,5 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
-import { closeDb as closeDbConnection } from '@/lib/db/pg-client'
 import { createUser } from '@/lib/db/operations/users'
 import { hashPassword } from '@/lib/auth/helpers'
 import { JobType, JobStatus } from '@/lib/db/drizzle-schema'
@@ -62,9 +61,7 @@ describe.sequential('Job API Integration', () => {
     testUser2Id = user2.id
   })
 
-  afterAll(async () => {
-    await closeDbConnection()
-  })
+  afterAll(async () => {})
 
   beforeEach(() => {
     vi.clearAllMocks()
