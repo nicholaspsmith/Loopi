@@ -52,7 +52,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: pgvector/pgvector:pg15
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -87,9 +87,10 @@ jobs:
           API_KEY_ENCRYPTION_SECRET=test-api-key-encryption-secret-32
           EOF
 
-      - name: Install pgcrypto extension
+      - name: Install database extensions
         run: |
           PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+          PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
       # Migration Strategy:
       # 1. db:push creates schema from Drizzle definitions (uses 'real' types from drizzle-schema.ts)
@@ -103,6 +104,8 @@ jobs:
           PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -f drizzle/0002_fix_review_logs_types.sql
           # Apply session invalidation migration (adds password_changed_at column)
           PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -f drizzle/0005_add_password_changed_at.sql
+          # Apply pgvector embeddings migration
+          PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -f drizzle/0013_add_pgvector_embeddings.sql
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
 

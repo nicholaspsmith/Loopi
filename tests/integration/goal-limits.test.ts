@@ -3,8 +3,6 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vites
 import { hashPassword } from '@/lib/auth/helpers'
 import { createUser } from '@/lib/db/operations/users'
 import { createGoal, getGoalCounts } from '@/lib/db/operations/goals'
-import { closeDbConnection } from '@/lib/db/client'
-import { initializeSchema, isSchemaInitialized } from '@/lib/db/schema'
 import { GOAL_LIMITS } from '@/lib/constants/goals'
 import * as goalRoutes from '@/app/api/goals/route'
 import * as goalIdRoutes from '@/app/api/goals/[goalId]/route'
@@ -34,12 +32,6 @@ describe('Goal Limits Enforcement', () => {
   let mockSession: MockSession
 
   beforeAll(async () => {
-    // Initialize database schema if needed
-    const initialized = await isSchemaInitialized()
-    if (!initialized) {
-      await initializeSchema()
-    }
-
     // Create test user
     const passwordHash = await hashPassword('TestPass123!')
     const testUser = await createUser({
@@ -65,7 +57,6 @@ describe('Goal Limits Enforcement', () => {
   })
 
   afterAll(async () => {
-    await closeDbConnection()
     vi.clearAllMocks()
   })
 

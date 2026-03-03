@@ -10,8 +10,6 @@ import {
   ACHIEVEMENT_DEFINITIONS,
 } from '@/lib/db/operations/achievements'
 import { createGoal } from '@/lib/db/operations/goals'
-import { initializeSchema, isSchemaInitialized } from '@/lib/db/schema'
-import { closeDbConnection } from '@/lib/db/client'
 
 /**
  * Integration Tests for Achievement Unlock Flow
@@ -25,12 +23,6 @@ describe('Achievement Unlock Flow', () => {
   let testUserId: string
 
   beforeAll(async () => {
-    // Initialize database schema if needed
-    const initialized = await isSchemaInitialized()
-    if (!initialized) {
-      await initializeSchema()
-    }
-
     // Create test user
     const testUser = await createUser({
       email: `achievement-test-${timestamp}@example.com`,
@@ -41,7 +33,7 @@ describe('Achievement Unlock Flow', () => {
   })
 
   afterAll(async () => {
-    await closeDbConnection()
+    // PostgreSQL pool cleanup is handled automatically
   })
 
   describe('Achievement Definitions', () => {

@@ -4,7 +4,9 @@
  * This file runs once when the Next.js server starts.
  * Used to initialize:
  * - Sentry error tracking
- * - LanceDB tables
+ *
+ * Note: Vector embeddings are now stored in PostgreSQL using pgvector.
+ * Database schema is managed via Drizzle migrations.
  */
 
 import * as Sentry from '@sentry/nextjs'
@@ -19,24 +21,8 @@ export async function register() {
     await import('./sentry.edge.config')
   }
 
-  // Initialize LanceDB (Node.js only)
-  if (process.env.NEXT_RUNTIME === 'nodejs') {
-    const { initializeSchema, isSchemaInitialized } = await import('@/lib/db/schema')
-
-    try {
-      const initialized = await isSchemaInitialized()
-      if (!initialized) {
-        console.log('[Instrumentation] Initializing LanceDB schema...')
-        await initializeSchema()
-        console.log('[Instrumentation] LanceDB schema initialized')
-      } else {
-        console.log('[Instrumentation] LanceDB schema already initialized')
-      }
-    } catch (error) {
-      console.error('[Instrumentation] Failed to initialize LanceDB schema:', error)
-      // Don't throw - let the app start anyway, tables can be created on first use
-    }
-  }
+  // Database initialization is handled by migrations (npm run db:migrate)
+  // pgvector embeddings are created via the flashcard_embeddings and goal_embeddings tables
 }
 
 // Capture errors from Server Components, middleware, and API routes

@@ -1,14 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createUser, getUserByEmail, getUserById, emailExists } from '@/lib/db/operations/users'
-import { initializeSchema, isSchemaInitialized } from '@/lib/db/schema'
-import { closeDbConnection } from '@/lib/db/client'
-import fs from 'fs'
-import path from 'path'
 
 /**
  * User Database Operations Tests
  *
- * Tests the user CRUD operations with LanceDB.
+ * Tests the user CRUD operations with PostgreSQL.
  */
 
 describe('User Database Operations', () => {
@@ -16,23 +12,11 @@ describe('User Database Operations', () => {
   const timestamp = Date.now()
 
   beforeAll(async () => {
-    // Ensure test database directory exists
-    const dbPath = path.join(process.cwd(), 'data', 'lancedb')
-    if (!fs.existsSync(dbPath)) {
-      fs.mkdirSync(dbPath, { recursive: true })
-    }
-
-    // Initialize database schema if not already initialized
-    const initialized = await isSchemaInitialized()
-    if (!initialized) {
-      console.log('Initializing test database schema...')
-      await initializeSchema()
-    }
+    // PostgreSQL setup is handled automatically
   })
 
   afterAll(async () => {
-    // Clean up database connection
-    await closeDbConnection()
+    // PostgreSQL pool cleanup is handled automatically
   })
 
   it('should successfully create a user', async () => {

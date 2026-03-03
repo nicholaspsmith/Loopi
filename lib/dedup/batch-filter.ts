@@ -7,7 +7,7 @@
 
 import { DEDUP_CONFIG } from './config'
 import { BatchFilterResult, FilteredItem, BatchFilterStats } from './types'
-import { findSimilarFlashcardsWithThreshold } from '@/lib/db/operations/flashcards-lancedb'
+import { findSimilarFlashcardsWithThreshold } from '@/lib/db/operations/flashcards-pgvector'
 import { generateEmbeddings } from '@/lib/embeddings'
 import * as logger from '@/lib/logger'
 
@@ -37,7 +37,7 @@ function cosineSimilarity(a: number[], b: number[]): number {
  * Filter duplicates from a batch of items
  *
  * Checks each item against:
- * 1. Existing flashcards for the user (using LanceDB similarity search)
+ * 1. Existing flashcards for the user (using pgvector similarity search)
  * 2. Previous items in the same batch (in-batch duplicate detection)
  *
  * @param items - Array of items to filter
@@ -89,7 +89,7 @@ export async function filterDuplicatesFromBatch<T>(
     }
   }
 
-  // OPTIMIZATION 1: Parallel LanceDB checks for existing duplicates
+  // OPTIMIZATION 1: Parallel pgvector checks for existing duplicates
   const lanceDbResults = await Promise.all(
     itemsToCheck.map(async ({ item, text }) => {
       try {
@@ -101,8 +101,8 @@ export async function filterDuplicatesFromBatch<T>(
         )
         return { item, text, existingSimilar, error: null }
       } catch (error) {
-        // If LanceDB check fails, allow item through
-        logger.warn('Batch filter: LanceDB check failed, allowing item', { error })
+        // If pgvector check fails, allow item through
+        logger.warn('Batch filter: pgvector check failed, allowing item', { error })
         return { item, text, existingSimilar: [], error }
       }
     })

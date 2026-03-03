@@ -8,8 +8,6 @@ import { getDb } from '@/lib/db/pg-client'
 import { flashcards } from '@/lib/db/drizzle-schema'
 import { eq } from 'drizzle-orm'
 import type { Card } from 'ts-fsrs'
-import { initializeSchema, isSchemaInitialized } from '@/lib/db/schema'
-import { closeDbConnection } from '@/lib/db/client'
 import { createGoalFlashcard } from '@/lib/db/operations/flashcards'
 import { createDistractors, getDistractorsForFlashcard } from '@/lib/db/operations/distractors'
 
@@ -39,12 +37,6 @@ describe('Study Session Flow', () => {
   const testCardIds: string[] = []
 
   beforeAll(async () => {
-    // Initialize database schema if needed
-    const initialized = await isSchemaInitialized()
-    if (!initialized) {
-      await initializeSchema()
-    }
-
     // Create test user
     const testUser = await createUser({
       email: `study-session-test-${timestamp}@example.com`,
@@ -92,9 +84,7 @@ describe('Study Session Flow', () => {
     }
   })
 
-  afterAll(async () => {
-    await closeDbConnection()
-  })
+  afterAll(async () => {})
 
   describe('Card Retrieval', () => {
     it('should retrieve cards for a goal', async () => {
@@ -328,12 +318,6 @@ describe('Study Session with Distractors (T12)', () => {
   let cardWithoutDistractors: string
 
   beforeAll(async () => {
-    // Initialize database schema if needed
-    const initialized = await isSchemaInitialized()
-    if (!initialized) {
-      await initializeSchema()
-    }
-
     // Create test user
     const testUser = await createUser({
       email: `distractor-session-test-${timestamp}@example.com`,
@@ -406,9 +390,7 @@ describe('Study Session with Distractors (T12)', () => {
     cardWithoutDistractors = card3.id
   })
 
-  afterAll(async () => {
-    await closeDbConnection()
-  })
+  afterAll(async () => {})
 
   beforeEach(() => {
     vi.clearAllMocks()

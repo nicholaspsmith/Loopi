@@ -6,13 +6,13 @@
  * Called from: npm run start (drizzle-kit migrate && npx tsx scripts/post-migrate.ts && next start)
  */
 
-import { cleanupOrphanedFlashcardEmbeddings } from '../lib/db/operations/flashcards-lancedb'
+import { cleanupOrphanedFlashcardEmbeddings } from '../lib/db/operations/flashcards-pgvector'
 
 async function main() {
   console.log('[Post-Migrate] Starting cleanup...')
 
   try {
-    // Clean up orphaned LanceDB embeddings
+    // Clean up orphaned pgvector embeddings
     const deletedCount = await cleanupOrphanedFlashcardEmbeddings()
     console.log(`[Post-Migrate] Cleanup complete. Deleted ${deletedCount} orphaned embeddings.`)
   } catch (error) {

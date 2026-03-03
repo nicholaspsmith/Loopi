@@ -6,7 +6,7 @@ import * as schema from './drizzle-schema'
  * PostgreSQL Database Client for MemoryLoop
  *
  * Uses Drizzle ORM for users, learning goals, skill trees, and flashcards.
- * Vector embeddings are stored in LanceDB (see lib/db/client.ts).
+ * Vector embeddings are stored in PostgreSQL using pgvector extension.
  */
 
 let client: postgres.Sql | null = null

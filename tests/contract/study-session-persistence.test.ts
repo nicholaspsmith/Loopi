@@ -12,8 +12,6 @@ import { createSkillTree } from '@/lib/db/operations/skill-trees'
 import { createSkillNode } from '@/lib/db/operations/skill-nodes'
 import { createGoalFlashcard } from '@/lib/db/operations/flashcards'
 import { getSessionById } from '@/lib/db/operations/study-sessions'
-import { initializeSchema, isSchemaInitialized } from '@/lib/db/schema'
-import { closeDbConnection } from '@/lib/db/client'
 import { NextRequest } from 'next/server'
 
 /**
@@ -44,12 +42,6 @@ describe('Study Session Persistence API', () => {
   let testCardIds: string[] = []
 
   beforeAll(async () => {
-    // Initialize database schema if needed
-    const initialized = await isSchemaInitialized()
-    if (!initialized) {
-      await initializeSchema()
-    }
-
     // Create test user
     const testUser = await createUser({
       email: `session-api-test-${timestamp}@example.com`,
@@ -102,9 +94,7 @@ describe('Study Session Persistence API', () => {
     })
   })
 
-  afterAll(async () => {
-    await closeDbConnection()
-  })
+  afterAll(async () => {})
 
   describe('POST /api/study/session', () => {
     it('should create and persist a new study session', async () => {

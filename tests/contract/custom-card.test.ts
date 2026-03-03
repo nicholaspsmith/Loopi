@@ -5,7 +5,6 @@ import { createGoal } from '@/lib/db/operations/goals'
 import { createSkillTree } from '@/lib/db/operations/skill-trees'
 import { createSkillNode } from '@/lib/db/operations/skill-nodes'
 import { getSkillNodeById } from '@/lib/db/operations/skill-nodes'
-import { closeDbConnection } from '@/lib/db/client'
 import * as customCardRoute from '@/app/api/flashcards/custom/route'
 import { testPOST, type MockSession } from '@/tests/helpers/route-test-helper'
 import { auth } from '@/auth'
@@ -125,7 +124,6 @@ describe('Custom Card Creation API Contract Tests', () => {
   })
 
   afterAll(async () => {
-    await closeDbConnection()
     vi.clearAllMocks()
   })
 

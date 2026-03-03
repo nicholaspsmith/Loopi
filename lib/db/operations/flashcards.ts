@@ -3,13 +3,13 @@ import { getDb } from '@/lib/db/pg-client'
 import { flashcards } from '@/lib/db/drizzle-schema'
 import { eq, and, inArray } from 'drizzle-orm'
 import { createEmptyCard, State, type Card } from 'ts-fsrs'
-import { syncFlashcardToLanceDB, deleteFlashcardFromLanceDB } from './flashcards-lancedb'
+import { syncFlashcardToLanceDB, deleteFlashcardFromLanceDB } from './flashcards-pgvector'
 
 /**
  * Flashcard Database Operations
  *
  * CRUD operations for flashcards in PostgreSQL with FSRS state.
- * Embeddings are synced to LanceDB asynchronously for vector search.
+ * Embeddings are synced to PostgreSQL pgvector asynchronously for vector search.
  */
 
 export interface CreateFlashcardInput {

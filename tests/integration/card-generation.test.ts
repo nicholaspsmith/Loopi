@@ -4,8 +4,6 @@ import { createUser } from '@/lib/db/operations/users'
 import { createGoal } from '@/lib/db/operations/goals'
 import { createSkillTree } from '@/lib/db/operations/skill-trees'
 import { generateCards } from '@/lib/ai/card-generator'
-import { initializeSchema, isSchemaInitialized } from '@/lib/db/schema'
-import { closeDbConnection } from '@/lib/db/client'
 
 /**
  * Integration Tests for Card Generation Flow
@@ -34,12 +32,6 @@ describe('Card Generation Flow', () => {
   let testGoalId: string
 
   beforeAll(async () => {
-    // Initialize database schema if needed
-    const initialized = await isSchemaInitialized()
-    if (!initialized) {
-      await initializeSchema()
-    }
-
     // Create test user
     const testUser = await createUser({
       email: `card-gen-test-${timestamp}@example.com`,
@@ -70,9 +62,7 @@ describe('Card Generation Flow', () => {
     vi.restoreAllMocks()
   })
 
-  afterAll(async () => {
-    await closeDbConnection()
-  })
+  afterAll(async () => {})
 
   describe('Flashcard Generation', () => {
     it('should generate flashcards for a skill node', async () => {

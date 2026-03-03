@@ -30,17 +30,15 @@ services:
         condition: service_healthy
     networks:
       - loopi-network
-    volumes:
-      - /opt/loopi/data/lancedb:/app/data/lancedb
     logging:
       driver: 'json-file'
       options:
         max-size: '10m'
         max-file: '3'
 
-  # PostgreSQL database
+  # PostgreSQL database (with pgvector for vector embeddings)
   postgres:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg15
     container_name: loopi-postgres
     restart: always
     environment:

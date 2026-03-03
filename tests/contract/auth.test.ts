@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeAll } from 'vitest'
-import { initializeSchema } from '@/lib/db/schema'
 import { isServerAvailable } from '@/tests/helpers/server-check'
 
 /**
@@ -15,11 +14,6 @@ import { isServerAvailable } from '@/tests/helpers/server-check'
 const serverRunning = await isServerAvailable()
 
 describe.skipIf(!serverRunning)('POST /api/auth/signup', () => {
-  beforeAll(async () => {
-    // Initialize test database
-    await initializeSchema()
-  })
-
   it('should return 201 and user data for valid signup', async () => {
     const response = await fetch('http://localhost:3000/api/auth/signup', {
       method: 'POST',

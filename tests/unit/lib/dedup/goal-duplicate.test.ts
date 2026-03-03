@@ -11,7 +11,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
  */
 
 // Mock dependencies
-vi.mock('@/lib/db/operations/goals-lancedb', () => ({
+vi.mock('@/lib/db/operations/goals-pgvector', () => ({
   findSimilarGoals: vi.fn(),
 }))
 
@@ -19,7 +19,7 @@ vi.mock('@/lib/db/operations/goals', () => ({
   getGoalsByIds: vi.fn(),
 }))
 
-import { findSimilarGoals } from '@/lib/db/operations/goals-lancedb'
+import { findSimilarGoals } from '@/lib/db/operations/goals-pgvector'
 import { getGoalsByIds } from '@/lib/db/operations/goals'
 import { checkGoalDuplicate } from '@/lib/dedup/similarity-check'
 

@@ -10,13 +10,28 @@ import {
   real,
   index,
   uniqueIndex,
+  customType,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
+
+// Custom vector type for pgvector
+const vector = customType<{ data: number[]; driverData: string }>({
+  dataType() {
+    return 'vector(1024)'
+  },
+  toDriver(value: number[]): string {
+    return `[${value.join(',')}]`
+  },
+  fromDriver(value: string): number[] {
+    // Parse "[1,2,3,...]" format
+    return value.slice(1, -1).split(',').map(Number)
+  },
+})
 
 /**
  * Drizzle ORM Schema for MemoryLoop with PostgreSQL
  *
- * Note: Vector embeddings are stored in LanceDB for efficient semantic search
+ * Note: Vector embeddings are stored in PostgreSQL using pgvector
  */
 
 // ============================================================================
@@ -477,6 +492,48 @@ export const studySessions = pgTable(
 
 export type StudySession = typeof studySessions.$inferSelect
 export type NewStudySession = typeof studySessions.$inferInsert
+
+// ============================================================================
+// Embedding Tables (pgvector)
+// ============================================================================
+
+export const flashcardEmbeddings = pgTable(
+  'flashcard_embeddings',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .references(() => flashcards.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    embedding: vector('embedding').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [index('flashcard_embeddings_user_idx').on(table.userId)]
+)
+
+export const goalEmbeddings = pgTable(
+  'goal_embeddings',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .references(() => learningGoals.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    embedding: vector('embedding').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [index('goal_embeddings_user_idx').on(table.userId)]
+)
+
+export type FlashcardEmbedding = typeof flashcardEmbeddings.$inferSelect
+export type NewFlashcardEmbedding = typeof flashcardEmbeddings.$inferInsert
+
+export type GoalEmbedding = typeof goalEmbeddings.$inferSelect
+export type NewGoalEmbedding = typeof goalEmbeddings.$inferInsert
 
 // ============================================================================
 // Drizzle Relations (014-goal-based-learning)

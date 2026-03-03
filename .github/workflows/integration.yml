@@ -30,7 +30,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: pgvector/pgvector:pg15
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -71,12 +71,15 @@ jobs:
           ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
           EOF
 
-      - name: Install pgcrypto extension
+      - name: Install database extensions
         run: |
           PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+          PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
       - name: Run database migrations
-        run: npm run db:push
+        run: |
+          npm run db:push
+          PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -f drizzle/0013_add_pgvector_embeddings.sql
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
 
@@ -107,7 +110,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: pgvector/pgvector:pg15
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -148,12 +151,15 @@ jobs:
           ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
           EOF
 
-      - name: Install pgcrypto extension
+      - name: Install database extensions
         run: |
           PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+          PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
       - name: Run database migrations
-        run: npm run db:push
+        run: |
+          npm run db:push
+          PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -f drizzle/0013_add_pgvector_embeddings.sql
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
 
@@ -192,7 +198,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: pgvector/pgvector:pg15
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -233,12 +239,15 @@ jobs:
           ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
           EOF
 
-      - name: Install pgcrypto extension
+      - name: Install database extensions
         run: |
           PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+          PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
       - name: Run database migrations
-        run: npm run db:push
+        run: |
+          npm run db:push
+          PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -f drizzle/0013_add_pgvector_embeddings.sql
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
 
@@ -277,7 +286,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: pgvector/pgvector:pg15
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -318,12 +327,15 @@ jobs:
           ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
           EOF
 
-      - name: Install pgcrypto extension
+      - name: Install database extensions
         run: |
           PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+          PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
       - name: Run database migrations
-        run: npm run db:push
+        run: |
+          npm run db:push
+          PGPASSWORD=postgres psql -h localhost -U postgres -d memoryloop_test -f drizzle/0013_add_pgvector_embeddings.sql
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memoryloop_test
 

@@ -2,7 +2,6 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vites
 import { hashPassword } from '@/lib/auth/helpers'
 import { createUser } from '@/lib/db/operations/users'
 import { createGoal, archiveGoal, getGoalCounts } from '@/lib/db/operations/goals'
-import { closeDbConnection } from '@/lib/db/client'
 import { GOAL_LIMITS } from '@/lib/constants/goals'
 import { testPOST, type MockSession } from '@/tests/helpers/route-test-helper'
 import { auth } from '@/auth'
@@ -114,7 +113,6 @@ describe('Goal Restore API Contract Tests', () => {
   })
 
   afterAll(async () => {
-    await closeDbConnection()
     vi.clearAllMocks()
   })
 

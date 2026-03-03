@@ -14,8 +14,6 @@ import {
 } from '@/lib/db/operations/study-sessions'
 import { createUser } from '@/lib/db/operations/users'
 import { createGoal } from '@/lib/db/operations/goals'
-import { initializeSchema, isSchemaInitialized } from '@/lib/db/schema'
-import { closeDbConnection } from '@/lib/db/client'
 // StudySession type used for return type validation in tests
 
 /**
@@ -32,12 +30,6 @@ describe('Study Sessions Database Operations', () => {
   let testGoalId2: string
 
   beforeAll(async () => {
-    // Initialize database schema if needed
-    const initialized = await isSchemaInitialized()
-    if (!initialized) {
-      await initializeSchema()
-    }
-
     // Create test user
     const testUser = await createUser({
       email: `study-sessions-test-${timestamp}@example.com`,
@@ -63,7 +55,7 @@ describe('Study Sessions Database Operations', () => {
   })
 
   afterAll(async () => {
-    await closeDbConnection()
+    // PostgreSQL pool cleanup is handled automatically
   })
 
   describe('createStudySession', () => {
