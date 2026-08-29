@@ -36,7 +36,7 @@
     "drizzle-orm": "^0.45.1",
     "next": "^16.0.10",
     "next-auth": "^5.0.0-beta.30",
-    "nodemailer": "^7.0.12",
+    "nodemailer": "^9.0.6",
     "postgres": "^3.4.7",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
@@ -73,5 +73,14 @@
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.51.0",
     "vitest": "^4.0.15"
+  },
+  "overrides": {
+    "@esbuild-kit/core-utils": {
+      "esbuild": "^0.25.0"
+    },
+    "next-auth": {
+      "nodemailer": "$nodemailer"
+    },
+    "brace-expansion@1": "^1.1.18"
   }
 }

@@ -111,7 +111,7 @@ run_test "Preserve patch version" "5.7.0" "$version"
 # Test 6: Pre-release tag handling
 echo "Test 6: Pre-release tag handling"
 version=$(get_version "next-auth")
-run_test "Preserve pre-release tag" "5.0.0-beta.30" "$version"
+run_test "Preserve pre-release tag" "5.0.0-beta.32" "$version"
 
 # Test 7: Missing package graceful skip
 echo "Test 7: Missing package graceful skip"
